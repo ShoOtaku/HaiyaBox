@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyName>HaiyaBox</AssemblyName>
+    <RootNamespace>HaiyaBox</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- 如果AEPath环境变量存在，则使用，否则使用默认值 -->
+    <AELibPath Condition="'$(AEPath)' != ''">$(AEPath)AEAssistCNVersion\AEAssist\</AELibPath>
+    <AELibPath Condition="'$(AEPath)' == ''">..\..\..\AE\AEAssistCNVersion\AEAssist\</AELibPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>F:\FF14act\AEAssist 国服 1024\Plugins\HaiyaBox</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <OutputPath>F:\FF14act\AEAssist 国服 1024\Plugins\HaiyaBox</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DalamudPackagerEnabled>false</DalamudPackagerEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="AEAssist">
+      <HintPath>$(AELibPath)AEAssist.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ECommons">
+      <HintPath>$(AELibPath)ECommons.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Remove="DalamudPackager" />
+    <PackageReference Include="AEAssist.NET" Version="*" ExcludeAssets="runtime" />
+    <PackageReference Include="GitInfo" Version="3.5.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

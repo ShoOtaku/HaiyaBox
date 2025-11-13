@@ -70,36 +70,7 @@ namespace HaiyaBox.UI
             new(100, 0, 99)
         ];
         
-        /// <summary>
-        /// [落点预测功能]
-        /// 用户输入的前进距离，用于预测玩家面前的落点位置（单位与游戏内一致）。
-        /// </summary>
-        private float _moveForwardDistance = 10.0f;
-        /// <summary>
-        /// [落点预测功能]
-        /// 标识是否已成功计算出玩家面前的落点位置。
-        /// </summary>
-        private bool _hasCalculatedForwardPos;
-        /// <summary>
-        /// [落点预测功能]
-        /// 保存玩家当前在3D世界中的位置，作为预测落点的起始点。
-        /// </summary>
-        private Vector3 _forwardOrigin;
-        /// <summary>
-        /// [落点预测功能]
-        /// 保存根据玩家当前位置与朝向计算得到的落点位置（3D坐标）。
-        /// </summary>
-        private Vector3 _forwardDest;
-        /// <summary>
-        /// [落点预测功能]
-        /// 指示是否采用自定义起始点来计算预测落点。当为 true 时，将使用用户事先记录的 Ctrl 点作为起始坐标。
-        /// </summary>
-        private bool _useCustomOrigin;
-        /// <summary>
-        /// [落点预测功能]
-        /// 用户输入的自定义面向角度（单位：弧度，范围 -π ~ π），用于预测落点。
-        /// </summary>
-        private float _customRotation;
+
 
         
         /// <summary>
@@ -161,13 +132,17 @@ namespace HaiyaBox.UI
             ImGui.SameLine();
             if (ImGui.Button("复制##"))
             {
-                ImGui.SetClipboardText($"({Point1World.Value.X:F2}f, {Point1World.Value.Y:F2}f, {Point1World.Value.Z:F2}f)");
+                if (Point1World != null)
+                    ImGui.SetClipboardText(
+                        $"({Point1World.Value.X:F2}f, {Point1World.Value.Y:F2}f, {Point1World.Value.Z:F2}f)");
             }
             ImGui.Text($"点2: {FormatPointXZ(Point2World)}");
             ImGui.SameLine();
             if (ImGui.Button("复制##"))
             {
-                ImGui.SetClipboardText($"({Point2World.Value.X:F2}f, {Point2World.Value.Y:F2}f, {Point2World.Value.Z:F2}f)");
+                if (Point2World != null)
+                    ImGui.SetClipboardText(
+                        $"({Point2World.Value.X:F2}f, {Point2World.Value.Y:F2}f, {Point2World.Value.Z:F2}f)");
             }
 
             // 当记录了点1和点2后，计算并显示两点间的XZ平面距离，同时允许选择夹角顶点模式进行角度计算

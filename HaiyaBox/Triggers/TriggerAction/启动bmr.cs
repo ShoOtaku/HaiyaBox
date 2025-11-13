@@ -18,7 +18,7 @@ public class 启动bmr : ITriggerAction
     public string Remark { get; set; } = string.Empty; // 为 Remark 提供默认值
     public bool Handle()
     {
-        Aion(持续时间);
+        _ = Aion(持续时间);
         return true;
     }
 

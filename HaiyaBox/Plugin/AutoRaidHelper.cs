@@ -21,7 +21,7 @@ namespace HaiyaBox.Plugin
         #region IAEPlugin Implementation
 
 
-        private ActorControlHook actorControlHook;
+        private ActorControlHook? actorControlHook;
 
         public PluginSetting BuildPlugin()
         {

@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using AEAssist;
+using AEAssist.CombatRoutine.Trigger;
 using AEAssist.Helper;
 using Dalamud.Bindings.ImGui;
 using ECommons.DalamudServices;
@@ -17,7 +18,7 @@ namespace HaiyaBox.UI
         /// 获取全局的 GeometrySettings 配置单例，存储场地中心、朝向点及计算参数等配置。
         /// </summary>
         public GeometrySettings Settings => FullAutoSettings.Instance.GeometrySettings;
-        
+
         /// <summary>
         /// 卫月字体大小。
         /// </summary>
@@ -69,10 +70,10 @@ namespace HaiyaBox.UI
             new(100, 0, 101),
             new(100, 0, 99)
         ];
-        
+        private int spellListIndex = 0;
 
 
-        
+
         /// <summary>
         /// 在每一帧调用，主要用于更新鼠标点击记录（点1、点2、点3）。
         /// </summary>
@@ -81,7 +82,10 @@ namespace HaiyaBox.UI
             // 每帧检查是否按下Ctrl/Shift/Alt键，记录对应的点信息
             CheckPointRecording();
         }
-
+        /// <summary>
+        /// 事件记录管理器
+        /// </summary>
+        private readonly EventRecordManager _recordManager = EventRecordManager.Instance;
         /// <summary>
         /// 绘制与更新 GeometryTab 的各项UI组件，展示实时鼠标位置、Debug点操作、距离、角度计算等信息。
         /// </summary>
@@ -150,6 +154,44 @@ namespace HaiyaBox.UI
             {
                 ImGui.TextColored(new Vector4(0.2f, 1f, 0.2f, 1f),
                     $"点1 -> 点2: 距离 {TwoPointDistanceXZ:F2}");
+            }
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+
+            ImGui.Text("根据记录的读条事件计算：");
+
+            ImGui.Text("选择读条事件：");
+            var spellList = _recordManager.GetRecords("EnemyCastSpell").Select((p =>
+            {
+                if (p is EnemyCastSpellCondParams spellCondParams)
+                    return $"{spellCondParams.SpellName}:{spellCondParams.SpellId}";
+                return "";
+            })).ToList();
+            // 添加Combo选择框
+            if (spellList.Count > 0)
+            {
+                if (spellListIndex >= spellList.Count)
+                    spellListIndex = 0;
+
+                string currentSelection = spellList[spellListIndex] + $"#{spellListIndex+1}";
+                if (ImGui.BeginCombo("##SpellList", currentSelection))
+                {
+                    for (int i = 0; i < spellList.Count; i++)
+                    {
+                        bool isSelected = (spellListIndex == i);
+                        if (ImGui.Selectable(spellList[i] + $"#{i+1}", isSelected))
+                        {
+                            spellListIndex = i;
+                        }
+                    }
+                    ImGui.EndCombo();
+                }
+                
+            }
+            else
+            {
+                ImGui.TextColored(new Vector4(1f, 0.5f, 0.5f, 1f), "暂无读条事件记录");
             }
 
             ImGui.Spacing();
@@ -246,7 +288,7 @@ namespace HaiyaBox.UI
         }
 
 
-        
+
         /// <summary>
         /// 通过监听键盘按键（Ctrl、Shift、Alt）记录鼠标在世界坐标中的位置，
         /// 同时在记录 Debug 点时更新点1/点2/点3的值，并计算点1与点2之间的距离。

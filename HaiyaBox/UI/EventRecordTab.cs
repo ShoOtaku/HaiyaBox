@@ -395,7 +395,6 @@ namespace HaiyaBox.UI
 
             ImGui.Text($"  头标ID: {iconId}");
 
-
             // 被点名者信息
             ImGui.Spacing();
             ImGui.PushStyleColor(ImGuiCol.Text, new System.Numerics.Vector4(1f, 0.8f, 0.4f, 1));
@@ -496,7 +495,7 @@ namespace HaiyaBox.UI
             float x = (float)Math.Round(position.X, 2);
             float y = (float)Math.Round(position.Y, 2);
             float z = (float)Math.Round(position.Z, 2);
-    
+
             return new Vector3(x, y, z);
         }
         /// <summary>

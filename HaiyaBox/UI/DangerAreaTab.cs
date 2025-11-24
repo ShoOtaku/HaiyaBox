@@ -38,7 +38,9 @@ namespace HaiyaBox.UI
         private float _circleRadius = 5.0f;
         private float _rectWidth = 10.0f;
         private float _rectHeight = 10.0f;
+        private float _rectRotation = 0.0f; // 矩形旋转角度（度数）
         private Vector3 _tempDangerAreaPos = Vector3.Zero;
+        private string _tempDangerAreaPosInput = "100,0,100"; // 危险区位置文本输入
 
         // 参考点配置
         private Vector3 _referencePoint = Vector3.Zero;
@@ -138,11 +140,38 @@ namespace HaiyaBox.UI
                     // 矩形配置
                     ImGui.InputFloat("宽度", ref _rectWidth, 0.5f, 1.0f);
                     ImGui.InputFloat("高度", ref _rectHeight, 0.5f, 1.0f);
+                    ImGui.InputFloat("旋转角度（度）", ref _rectRotation, 1.0f, 5.0f);
+                    ImGui.SameLine();
+                    if (ImGui.SmallButton("归零##ResetRotation"))
+                    {
+                        _rectRotation = 0.0f;
+                    }
                 }
 
                 // 位置设置
                 ImGui.Text("危险区域位置:");
-                ImGui.InputFloat3("X,Y,Z", ref _tempDangerAreaPos);
+                ImGui.InputText("坐标 (x,y,z)", ref _tempDangerAreaPosInput, 50);
+
+                if (ImGui.Button("设置位置"))
+                {
+                    if (TryParseVector3(_tempDangerAreaPosInput, out Vector3 pos))
+                    {
+                        _tempDangerAreaPos = pos;
+                    }
+                }
+
+                ImGui.SameLine();
+                if (ImGui.Button("获取玩家位置##DangerArea"))
+                {
+                    var player = Svc.ClientState.LocalPlayer;
+                    if (player != null)
+                    {
+                        _tempDangerAreaPos = player.Position;
+                        _tempDangerAreaPosInput = $"{player.Position.X:F1},{player.Position.Y:F1},{player.Position.Z:F1}";
+                    }
+                }
+
+                ImGui.Text($"当前位置: ({_tempDangerAreaPos.X:F1}, {_tempDangerAreaPos.Y:F1}, {_tempDangerAreaPos.Z:F1})");
 
                 // 添加危险区域按钮
                 if (ImGui.Button("添加危险区域"))
@@ -160,6 +189,36 @@ namespace HaiyaBox.UI
 
                 // 显示当前危险区域数量
                 ImGui.Text($"当前危险区域数量: {BattleDataInstance.TempDangerAreas.Count}");
+
+                // 显示危险区域列表
+                if (BattleDataInstance.TempDangerAreas.Count > 0)
+                {
+                    ImGui.Separator();
+                    ImGui.Text("危险区域列表:");
+                    for (int i = 0; i < BattleDataInstance.TempDangerAreas.Count; i++)
+                    {
+                        var area = BattleDataInstance.TempDangerAreas[i];
+                        if (area is CircleDangerArea circle)
+                        {
+                            ImGui.Text($"{i+1}. [圆形] 中心: ({circle.Center.X:F1}, {circle.Center.Y:F1}), 半径: {circle.Radius:F1}");
+                        }
+                        else if (area is RectangleDangerArea rect)
+                        {
+                            ImGui.Text($"{i+1}. [矩形] 中心: ({rect.Center.X:F1}, {rect.Center.Y:F1}), 宽: {rect.Width:F1}, 高: {rect.Height:F1}, 旋转: {rect.Rotation:F1}°");
+                        }
+
+                        // 添加删除按钮
+                        ImGui.SameLine();
+                        if (ImGui.SmallButton($"删除##{i}"))
+                        {
+                            BattleDataInstance.TempDangerAreas.RemoveAt(i);
+                            BattleDataInstance.IsCalculated = false;
+                            MarkOverlayDirty();
+                            break; // 删除后退出循环，避免索引问题
+                        }
+                    }
+                }
+
                 ImGui.Spacing();
             }
         }
@@ -367,15 +426,13 @@ namespace HaiyaBox.UI
             }
             else
             {
-                // 添加矩形危险区域
-                var halfWidth = _rectWidth / 2.0;
-                var halfHeight = _rectHeight / 2.0;
+                // 添加矩形危险区域（使用中心点+宽高+旋转角度方式）
                 BattleDataInstance.TempDangerAreas.Add(new RectangleDangerArea
                 {
-                    MinX = center2D.X - halfWidth,
-                    MaxX = center2D.X + halfWidth,
-                    MinY = center2D.Y - halfHeight,
-                    MaxY = center2D.Y + halfHeight
+                    Center = center2D,
+                    Width = _rectWidth,
+                    Height = _rectHeight,
+                    Rotation = _rectRotation
                 });
             }
 

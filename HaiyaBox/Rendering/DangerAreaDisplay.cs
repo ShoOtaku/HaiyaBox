@@ -157,11 +157,30 @@ public static class DangerAreaDisplayBuilder
 
     private static IEnumerable<DisplayObjectLine> BuildRectangle(RectangleDangerArea rectangle, DangerAreaRenderConfig config, float height)
     {
-        var a = CreateWorldPosition(rectangle.MinX, rectangle.MinY, height);
-        var b = CreateWorldPosition(rectangle.MaxX, rectangle.MinY, height);
-        var c = CreateWorldPosition(rectangle.MaxX, rectangle.MaxY, height);
-        var d = CreateWorldPosition(rectangle.MinX, rectangle.MaxY, height);
+        // 矩形中心点
+        var center = Point.ToVector3(rectangle.Center);
+        center.Y = height;
 
+        // 计算半宽和半高
+        var halfWidth = (float)(rectangle.Width / 2.0);
+        var halfHeight = (float)(rectangle.Height / 2.0);
+
+        // 计算4个角点（未旋转状态，相对于中心）
+        var a = new Vector3(center.X - halfWidth, height, center.Z - halfHeight); // 左下
+        var b = new Vector3(center.X + halfWidth, height, center.Z - halfHeight); // 右下
+        var c = new Vector3(center.X + halfWidth, height, center.Z + halfHeight); // 右上
+        var d = new Vector3(center.X - halfWidth, height, center.Z + halfHeight); // 左上
+
+        // 如果有旋转角度，则应用旋转变换
+        if (Math.Abs(rectangle.Rotation) > 0.001)
+        {
+            a = GeometryUtilsXZ.RotateAroundPoint(a, center, (float)rectangle.Rotation);
+            b = GeometryUtilsXZ.RotateAroundPoint(b, center, (float)rectangle.Rotation);
+            c = GeometryUtilsXZ.RotateAroundPoint(c, center, (float)rectangle.Rotation);
+            d = GeometryUtilsXZ.RotateAroundPoint(d, center, (float)rectangle.Rotation);
+        }
+
+        // 创建4条边线
         yield return new DisplayObjectLine(a, b, config.RectangleColor, config.OutlineThickness);
         yield return new DisplayObjectLine(b, c, config.RectangleColor, config.OutlineThickness);
         yield return new DisplayObjectLine(c, d, config.RectangleColor, config.OutlineThickness);

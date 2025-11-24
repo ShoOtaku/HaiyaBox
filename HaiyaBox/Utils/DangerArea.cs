@@ -30,14 +30,32 @@ namespace HaiyaBox.Utils
 
     public class RectangleDangerArea : DangerArea
     {
-        public double MinX { get; set; }
-        public double MaxX { get; set; }
-        public double MinY { get; set; }
-        public double MaxY { get; set; }
+        public Point Center { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+        public double Rotation { get; set; } = 0.0; // 旋转角度（度数），默认为0
 
         public override bool IsPointInDanger(Point point)
         {
-            return point.X >= MinX && point.X <= MaxX && point.Y >= MinY && point.Y <= MaxY;
+            // 使用逆向旋转变换来检测点是否在旋转后的矩形内
+            // 1. 计算点相对矩形中心的偏移
+            double dx = point.X - Center.X;
+            double dy = point.Y - Center.Y;
+
+            // 2. 应用逆旋转变换（将点转换到矩形的局部坐标系）
+            double angleRad = -Rotation * Math.PI / 180.0; // 转换为弧度，取负值进行逆旋转
+            double cosAngle = Math.Cos(angleRad);
+            double sinAngle = Math.Sin(angleRad);
+
+            // 旋转变换公式
+            double localX = dx * cosAngle - dy * sinAngle;
+            double localY = dx * sinAngle + dy * cosAngle;
+
+            // 3. 在局部坐标系中检测点是否在矩形边界内
+            double halfWidth = Width / 2.0;
+            double halfHeight = Height / 2.0;
+
+            return Math.Abs(localX) <= halfWidth && Math.Abs(localY) <= halfHeight;
         }
     }
 

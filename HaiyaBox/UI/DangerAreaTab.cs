@@ -37,6 +37,7 @@ namespace HaiyaBox.UI
         private float _circleRadius = 5.0f;
         private float _rectWidth = 10.0f;
         private float _rectHeight = 10.0f;
+        private float _rectAngle = 0.0f; // 矩形角度（度）
         private Vector3 _tempDangerAreaPos = Vector3.Zero;
 
         // 参考点配置
@@ -125,6 +126,7 @@ namespace HaiyaBox.UI
                     // 矩形配置
                     ImGui.InputFloat("宽度", ref _rectWidth, 0.5f, 1.0f);
                     ImGui.InputFloat("高度", ref _rectHeight, 0.5f, 1.0f);
+                    ImGui.InputFloat("角度 (度)", ref _rectAngle, 5.0f, 10.0f);
                 }
 
                 // 位置设置

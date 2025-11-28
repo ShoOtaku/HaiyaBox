@@ -1,13 +1,18 @@
-﻿using System.Runtime.Loader;
+using System;
+using System.Collections.Generic;
+using System.Runtime.Loader;
 using AEAssist.AEPlugin;
 using AEAssist.CombatRoutine.Trigger;
 using AEAssist.Helper;
 using AEAssist.Verify;
 using Dalamud.Bindings.ImGui;
 using HaiyaBox.Hooks;
+using HaiyaBox.Settings;
+using HaiyaBox.Triggers;
 using HaiyaBox.Triggers.TriggerAction;
 using HaiyaBox.Triggers.TriggerCondition;
 using HaiyaBox.UI;
+using HaiyaBox.Utils;
 
 namespace HaiyaBox.Plugin
 {
@@ -20,10 +25,8 @@ namespace HaiyaBox.Plugin
         private readonly BlackListTab _blackListTab = new();
         private readonly DangerAreaTab _dangerAreaTab = new();
         private readonly TreasureOpenerService _treasureOpener = TreasureOpenerService.Instance;
-        #region IAEPlugin Implementation
-
-
         private ActorControlHook? actorControlHook;
+        private XSZToolboxIpc? _xszToolboxIpc;
 
         public PluginSetting BuildPlugin()
         {
@@ -45,6 +48,8 @@ namespace HaiyaBox.Plugin
         {
             _automationTab.OnLoad(loadContext);
             _eventRecordTab.OnLoad(loadContext);
+            _xszToolboxIpc = new XSZToolboxIpc();
+            XszRemote.Instance = _xszToolboxIpc;
         }
 
         public void Dispose()
@@ -54,6 +59,7 @@ namespace HaiyaBox.Plugin
             _dangerAreaTab.Dispose();
             actorControlHook?.Dispose();
             _treasureOpener.Dispose();
+            _xszToolboxIpc?.Dispose();
         }
 
         public void Update()
@@ -108,8 +114,6 @@ namespace HaiyaBox.Plugin
                 ImGui.EndTabBar();
             }
         }
-
-        #endregion
 
 
     }

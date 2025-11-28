@@ -382,18 +382,18 @@ namespace HaiyaBox.UI
                     LogHelper.Print("放弃roll点玩家："+_passRoles);
                     if (drCmdEnabled)
                     {
-                        RemoteControlHelper.Cmd("", "/xlenableplugin LazyLoot");
-                        RemoteControlHelper.Cmd("", "/fulf on");
-                        RemoteControlHelper.Cmd(_rollRoles, "/fulf need");
+                        RemoteControl.Cmd("", "/xlenableplugin LazyLoot");
+                        RemoteControl.Cmd("", "/fulf on");
+                        RemoteControl.Cmd(_rollRoles, "/fulf need");
                         if (_passRoles != "")
-                            RemoteControlHelper.Cmd(_passRoles, "/fulf pass");
+                            RemoteControl.Cmd(_passRoles, "/fulf pass");
                     }
                     else 
                     {
-                        RemoteControlHelper.Cmd("", "/xsz-fulf on");
-                        RemoteControlHelper.Cmd(_rollRoles, "/xsz-fulf need");
+                        RemoteControl.Cmd("", "/xsz-fulf on");
+                        RemoteControl.Cmd(_rollRoles, "/xsz-fulf need");
                         if (_passRoles != "")
-                            RemoteControlHelper.Cmd(_passRoles, "/xsz-fulf pass");
+                            RemoteControl.Cmd(_passRoles, "/xsz-fulf pass");
                     }
                 }
             }
@@ -410,35 +410,35 @@ namespace HaiyaBox.UI
             //xsz遥控测试
             if (ImGui.Button("发送测试消息"))
             {
-                //XSZToolbox.Helpers.RemoteInteraction.RemoteControlHelper.Cmd("MT", "/e 调用测试");
+                XszRemote.Cmd("MT", "/e 调用测试");
             }
-            /*ImGui.SameLine();
-            ImGui.Text($"房间id：{XSZToolbox.Helpers.RemoteInteraction.RemoteControlHelper.RoomId}");
-            ImGui.Text($"连接状态：{(XSZToolbox.Helpers.RemoteInteraction.RemoteControlHelper.IsConnected ? "已连接" : "未连接")}");*/
+            ImGui.SameLine();
+            ImGui.Text($"房间id：{XszRemote.GetRoomId()}");
+            ImGui.Text($"连接状态：{(XszRemote.IsConnected() ? "已连接" : "未连接")}");
             // 全队TP至指定位置，操作为"撞电网"
             if (ImGui.Button("全队TP撞电网"))
             {
                 if (Core.Resolve<MemApiDuty>().InMission)
-                    RemoteControlHelper.SetPos("", new Vector3(100, 0, 125));
+                    RemoteControl.SetPos("", new Vector3(100, 0, 125));
             }
             ImGui.SameLine();
             // 全队即刻退本按钮（需在副本内才可执行命令）
             if (ImGui.Button("全队即刻退本"))
             {
                 if (drCmdEnabled)
-                    RemoteControlHelper.Cmd("", "/pdr leaveduty");
+                    RemoteControl.Cmd("", "/pdr leaveduty");
                 else 
-                    RemoteControlHelper.Cmd("", "/xsz-leaveduty");
+                    RemoteControl.Cmd("", "/xsz-leaveduty");
             }
             ImGui.SameLine();
             if (ImGui.Button("全队AI ON"))
             {
-                RemoteControlHelper.Cmd("", "/bmrai on");
+                RemoteControl.Cmd("", "/bmrai on");
             }
             ImGui.SameLine();
             if (ImGui.Button("全队AI Off"))
             {
-                RemoteControlHelper.Cmd("", "/bmrai off");
+                RemoteControl.Cmd("", "/bmrai off");
             }
             // 修改为下拉菜单选择目标
             if (ImGui.BeginCombo("##KillAllCombo", _selectedKillTarget))
@@ -542,7 +542,7 @@ namespace HaiyaBox.UI
             {
                 if (!string.IsNullOrEmpty(_selectedRoles))
                 {
-                    RemoteControlHelper.Cmd(_selectedRoles, _customCmd);
+                    RemoteControl.Cmd(_selectedRoles, _customCmd);
                     LogHelper.Print($"为 {_selectedRoles} 发送了文本指令:{_customCmd}");
                 }
             }
@@ -562,7 +562,7 @@ namespace HaiyaBox.UI
                         if (data.ContentId == targetCid)
                         {
                             var targetName = data.NameString;
-                            targetRole = RemoteControlHelper.GetRoleByPlayerName(targetName);
+                            targetRole = RemoteControl.GetRoleByPlayerName(targetName);
                             break;
                         }
                     }
@@ -570,7 +570,7 @@ namespace HaiyaBox.UI
 
                 if (!string.IsNullOrEmpty(targetRole))
                 {
-                    RemoteControlHelper.Cmd(targetRole, "/gaction 跳跃");
+                    RemoteControl.Cmd(targetRole, "/gaction 跳跃");
                     Core.Resolve<MemApiChatMessage>().Toast2("顶蟹成功!", 1, 2000);
                 }
                 else
@@ -755,11 +755,11 @@ namespace HaiyaBox.UI
                 var leaderName = GetPartyLeaderName();
                 if (!string.IsNullOrEmpty(leaderName))
                 {
-                    var leaderRole = RemoteControlHelper.GetRoleByPlayerName(leaderName);
+                    var leaderRole = RemoteControl.GetRoleByPlayerName(leaderName);
                     if (drCmdEnabled)
-                        RemoteControlHelper.Cmd(leaderRole, $"/pdrduty n {Settings.FinalSendDutyName}");
+                        RemoteControl.Cmd(leaderRole, $"/pdrduty n {Settings.FinalSendDutyName}");
                     else
-                        RemoteControlHelper.Cmd(leaderRole, $"/xsz-duty normal {Settings.FinalSendDutyName}");
+                        RemoteControl.Cmd(leaderRole, $"/xsz-duty normal {Settings.FinalSendDutyName}");
                     LogHelper.Print($"为队长 {leaderName} 发送排本命令: {(Settings.DRCmdEnabled ? "/pdrduty n" : "/xsz-duty normal")} {Settings.FinalSendDutyName}");
                 }
             }
@@ -980,9 +980,9 @@ namespace HaiyaBox.UI
                     // 否则直接延迟指定时间再退本
                     await Task.Delay(Settings.AutoLeaveDelay * 1000);
                     if (Settings.DRCmdEnabled)
-                        RemoteControlHelper.Cmd("", "/pdr leaveduty");
+                        RemoteControl.Cmd("", "/pdr leaveduty");
                     else
-                        RemoteControlHelper.Cmd("", "/xsz-leaveduty");
+                        RemoteControl.Cmd("", "/xsz-leaveduty");
                     _isLeaveCompleted = true;
                 }
             }
@@ -1073,7 +1073,7 @@ namespace HaiyaBox.UI
                     string killRegex = Settings.BuildRegex(forKill: true);
                     if (!string.IsNullOrEmpty(killRegex))
                     {
-                        RemoteControlHelper.Cmd(killRegex, "/xlkill");
+                        RemoteControl.Cmd(killRegex, "/xlkill");
                     }
 
                     // 关机
@@ -1115,11 +1115,11 @@ namespace HaiyaBox.UI
                 var leaderName = GetPartyLeaderName();
                 if (!string.IsNullOrEmpty(leaderName))
                 {
-                    var leaderRole = RemoteControlHelper.GetRoleByPlayerName(leaderName);
+                    var leaderRole = RemoteControl.GetRoleByPlayerName(leaderName);
                     if (Settings.DRCmdEnabled && leaderRole != null)
-                        RemoteControlHelper.Cmd(leaderRole, $"/pdrduty n {Settings.FinalSendDutyName}");
+                        RemoteControl.Cmd(leaderRole, $"/pdrduty n {Settings.FinalSendDutyName}");
                     else
-                        RemoteControlHelper.Cmd(leaderRole, $"/xsz-duty normal {Settings.FinalSendDutyName}");
+                        RemoteControl.Cmd(leaderRole, $"/xsz-duty normal {Settings.FinalSendDutyName}");
                     LogHelper.Print($"自动排本：为队长 {leaderName} 发送排本命令: {(Settings.DRCmdEnabled ? "/pdrduty n" : "/xsz-duty normal")} {Settings.FinalSendDutyName}");
                 }
                 _lastAutoQueueTime = DateTime.Now;
@@ -1245,7 +1245,7 @@ namespace HaiyaBox.UI
                         {
                             if (!string.IsNullOrEmpty(role))
                             {
-                                RemoteControlHelper.Cmd(role, "/xlkill");
+                                RemoteControl.Cmd(role, "/xlkill");
                             }
                         }
 
@@ -1256,7 +1256,7 @@ namespace HaiyaBox.UI
                         // 执行单个玩家击杀
                         if (!string.IsNullOrEmpty(_selectedKillRole))
                         {
-                            RemoteControlHelper.Cmd(_selectedKillRole, "/xlkill");
+                            RemoteControl.Cmd(_selectedKillRole, "/xlkill");
                             LogHelper.Print($"已向 {_selectedKillName} (职能: {_selectedKillRole}) 发送击杀命令");
                         }
 

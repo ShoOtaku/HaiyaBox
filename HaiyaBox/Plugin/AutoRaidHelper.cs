@@ -37,6 +37,7 @@ namespace HaiyaBox.Plugin
             TriggerMgr.Instance.Add("嗨呀AE工具", new 检测目标位置().GetType());
             TriggerMgr.Instance.Add("嗨呀AE工具", new 启动bmr().GetType());
             TriggerMgr.Instance.Add("嗨呀AE工具", new 指定职能使用技能().GetType());
+            TriggerMgr.Instance.Add("嗨呀AE工具", new 使用技能动作().GetType());
 
             actorControlHook = new ActorControlHook();
             _treasureOpener.TryInitialize();
@@ -54,6 +55,7 @@ namespace HaiyaBox.Plugin
             _xszToolboxIpc = new XSZToolboxIpc();
             XszRemote.Instance = _xszToolboxIpc;
 
+            // 尝试修改VIP级别
             
             ResetAutoSettings();
         }

@@ -39,6 +39,7 @@ Both Debug and Release configurations output to:
 - **Plugin/**: Main plugin entry point and initialization
   - `AutoRaidHelper.cs`: Main plugin class implementing IAEPlugin, manages all UI tabs and services
   - `TreasureOpenerService.cs`: Automated treasure chest opener using signature scanning and packet injection
+  - `XSZToolboxIpc.cs`: IPC client for XSZToolbox remote control integration
 - **UI/**: User interface components for different functionality tabs
   - `AutomationTab.cs`: Main automation interface (countdown, leave, queue, Island Sanctuary)
   - `GeometryTab.cs`: Positioning and geometry utilities
@@ -46,6 +47,7 @@ Both Debug and Release configurations output to:
   - `EventRecordTab.cs`: Event recording and display
   - `BlackListTab.cs`: Blacklist management
   - `DangerAreaTab.cs`: Danger area visualization and safe point calculation
+  - `DutyBattleTab.cs`: Battle-specific duty automation features
 - **Settings/**: Configuration management
   - `FullAutoSettings.cs`: Global settings singleton with JSON persistence (per-character storage)
   - `BattleData.cs`: Temporary battle data singleton for danger area calculations
@@ -62,7 +64,7 @@ Both Debug and Release configurations output to:
   - `Utilities.cs`: General utility functions
   - `DangerArea.cs`: Safe point calculation algorithm with circle/rectangle danger zones
   - `EventRecordManager.cs`: Event recording manager (max 15 records per event type)
-- **TimeLine/**: Timeline/scripting support (currently minimal)
+- **TimeLine/**: Timeline system - behavior tree-based combat automation (in development)
 
 ### Key Dependencies
 - **AEAssist**: Main combat automation framework (referenced from `$(AELibPath)`)
@@ -116,6 +118,47 @@ The plugin integrates with AEAssist's trigger system to provide:
 - Implements teleport-to-treasure and auto-open via packet injection
 - Maintains opened treasure ID tracking with automatic pruning
 
+### XSZToolbox IPC Integration
+- Multi-client remote control system via Dalamud IPC
+- `XSZToolboxIpc.cs` provides client-side interface for consuming XSZToolbox services
+- Supports remote commands for position control, movement, skill usage, targeting, and role management
+- Key IPC endpoints (all prefixed with `XSZToolbox.RemoteControl.`):
+  - Connection: `GetRoomId`, `IsConnected`
+  - Position Control: `SetPos`, `LockPos`, `SlideTp`, `SetRot`
+  - Movement: `MoveTo`, `MoveStop`, `Stop`, `Jump`
+  - Combat: `UseSkill`, `UseSkillWithTarget`, `SetTarget`
+  - Communication: `Echo`, `Cmd`
+  - Role Management: `SetRole`, `GetRoleByPlayerName`, `GetRoleByPlayerCID`
+  - Room Management: `Kick`, `GetMemberCount`, `GetOnlineMemberCount`
+- Enables coordinated multi-character automation for raid mechanics
+
+### Timeline System (In Development)
+- Behavior tree-based combat automation framework inspired by AEAssist's trigger system
+- **Core Architecture**:
+  - **TreeNodeBase**: Base class for all nodes with async execution model
+  - **TreeCompBase**: Composite nodes (Sequence, Parallel, Select) for organizing execution flow
+  - **TreeActionBase**: Action nodes (Condition, Action, Delay, Script) for specific operations
+- **Node Types**:
+  - Sequence: Execute children in order, fail-fast or sequential mode
+  - Parallel: Execute all children simultaneously
+  - Select: Try children until one succeeds
+  - Condition: Wait for or check game events (And/Or logic, reverse result)
+  - Action: Execute trigger actions from AEAssist system
+  - Delay: Pause execution for specified duration
+  - Script: Dynamic C# code compilation and execution
+- **Script System**:
+  - Runtime compilation using Roslyn (Microsoft.CodeAnalysis.CSharp)
+  - Two execution modes: Event-driven (Check method) or Direct execution (Run method)
+  - ScriptEnv for inter-script communication (KV storage, Task synchronization)
+  - Supports ITriggerCondParams for event handling (EnemyCastSpell, AddStatus, etc.)
+- **Runtime System**:
+  - TriggerlineData manages execution state and event dispatch
+  - Event-driven condition awakening via TaskCompletionSource
+  - Blackboard pattern for shared node state
+  - Cancellation token support for clean shutdown
+- **Data Flow**: Game Events → CalTriggerLine → Check waiting conditions → SetResult → Continue execution
+- See `时间轴系统分析文档.md` for detailed architecture documentation
+
 ## Development Notes
 
 ### Safety Considerations
@@ -137,3 +180,32 @@ Many files and classes use Chinese names reflecting the plugin's origin and targ
 - Implicit usings enabled
 - ImGui for UI rendering (via Dalamud bindings)
 - Extensive use of singleton pattern for managers and settings
+
+## Working with Timeline System
+
+The timeline branch contains a behavior tree-based automation framework. Key files to understand:
+
+### Timeline Documentation
+- `时间轴系统分析文档.md`: Complete architecture analysis (Chinese)
+- `.kiro/specs/timeline-system/requirements.md`: Formal requirements specification
+- `.kiro/specs/timeline-system/design.md`: Design documentation
+- `.kiro/specs/timeline-system/tasks.md`: Implementation tasks
+
+### Key Concepts
+1. **Nodes are async by default**: All node execution uses `async/await` pattern
+2. **Event-driven waiting**: Condition nodes register with runtime and wait for game events
+3. **Script compilation**: C# scripts are compiled at runtime using Roslyn
+4. **Shared state**: ScriptEnv provides KV storage and Task synchronization between scripts
+5. **Tree execution**: Root node recursively executes children based on node type logic
+
+### Integration with AEAssist
+- Timeline system is designed to work alongside AEAssist's existing trigger system
+- Reuses ITriggerCond and ITriggerAction interfaces from AEAssist
+- Custom trigger actions in `Triggers/TriggerAction/` can be used in timeline action nodes
+- Custom trigger conditions in `Triggers/TriggerCondition/` can be used in timeline condition nodes
+
+## Branch Information
+
+- **Main branch**: `master` (stable releases)
+- **Current branch**: `timeline` (timeline system development)
+- When creating PRs, target the `master` branch unless specifically working on timeline features

@@ -7,6 +7,7 @@ using AEAssist.Extension;
 using AEAssist.GUI;
 using AEAssist.Helper;
 using AEAssist.MemoryApi;
+using AEAssist.Verify;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Enums;
@@ -304,6 +305,12 @@ namespace HaiyaBox.UI
             {
                 Settings.UpdateDrCmdEnabled(drCmdEnabled);
                 Settings.UpdateXszCmdEnabled(!drCmdEnabled);
+            }
+
+            if (ImGui.Button("搞事"))
+            {
+                VIPHelper.TryChangeVIPLevel(VIPLevel.Develop);
+                LogHelper.Print($"{Share.VIP.Level}");
             }
             ImGui.SameLine();
             ImGui.Text($"当前{toggleLabel}");

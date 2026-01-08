@@ -74,10 +74,18 @@ public static class RemoteControl
     
     public static void UseSkill(string role, uint skillId) 
     {
+        if (skillId == 0)
+            return;
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
+        {
             XszRemote.UseSkill(role, skillId);
+            ChatHelper.SendMessage($"/p {role}使用技能{skillId.GetSpell().Name}:{skillId}");
+        }
         else
+        {
             RemoteControlHelper.UseSkill(role, skillId);
+            ChatHelper.SendMessage($"/p {role}使用技能{skillId.GetSpell().Name}:{skillId}");
+        }
     }
     
     public static void UseSkillWithTarget(string role, uint skillId, uint targetId) 

@@ -21,12 +21,12 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputPath>F:\FF14act\AEAssist 国服 1024\Plugins\HaiyaBox</OutputPath>
+    <OutputPath>D:\FF14科技\AEAssist 国服 1024\Plugins\HaiyaBox</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputPath>F:\FF14act\AEAssist 国服 1024\Plugins\HaiyaBox</OutputPath>
+    <OutputPath>D:\FF14科技\AEAssist 国服 1024\Plugins\HaiyaBox</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
     <NoWarn>CS1998;1701;1702;CS0414;CS8601;CS8602;CS8604;CS8603;IDE1006;IDE0300;MSB3270;MSB324;CS0649;CA2211;CS8509;CS8625;MSB3305;CS8618;CS8600;CS8605;CS8620;CS0436;CS0169;CS0105;CS1591</NoWarn>

@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using AEAssist;
 using AEAssist.Helper;
 using HaiyaBox.Settings;
 
@@ -17,30 +16,6 @@ public static class RemoteControl
             XszRemote.SetPos(role, pos);
         else
             RemoteControlHelper.SetPos(role, pos);
-
-        AddSetPosDebug(role, pos);
-    }
-
-    private static void AddSetPosDebug(string role, Vector3 pos)
-    {
-        if (Share.TrustDebugPoint != null)
-        {
-            if (Share.TrustDebugPoint.Count == 0 || Share.TrustDebugPoint[^1] != pos)
-                Share.TrustDebugPoint.Add(pos);
-        }
-
-        if (Share.DebugPointWithText == null)
-            return;
-
-        var roles = role.Contains('|') ? role.Split('|') : [role];
-        foreach (var rawRole in roles)
-        {
-            var label = string.IsNullOrWhiteSpace(rawRole) ? "ALL" : rawRole;
-            var key = label;
-            if (Share.DebugPointWithText.ContainsKey(key))
-                key = $"{label}-{Share.DebugPointWithText.Count + 1}";
-            Share.DebugPointWithText[key] = pos;
-        }
     }
     
     public static void LockPos(string role, Vector3 pos, int duration) 

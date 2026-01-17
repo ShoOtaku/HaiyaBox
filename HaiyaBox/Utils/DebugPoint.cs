@@ -15,6 +15,8 @@ public static class DebugPoint
     private const float LineThickness = 2f;
     private const float LabelOffset = 4f;
     private static bool _subscribed;
+    public static List<Vector3> Point;
+    public static Dictionary<string, Vector3> DebugPointWithText;
 
     public static void Initialize()
     {
@@ -38,9 +40,9 @@ public static class DebugPoint
         _subscribed = false;
     }
 
-    public static void Add(Vector3 pos) => Share.TrustDebugPoint.Add(pos);
+    public static void Add(Vector3 pos) => Point.Add(pos);
 
-    public static void Clear() => Share.TrustDebugPoint.Clear();
+    public static void Clear() => Point.Clear();
 
     private static void Render()
     {
@@ -51,8 +53,8 @@ public static class DebugPoint
 
         try
         {
-            var points = Share.TrustDebugPoint;
-            var labeledPoints = Share.DebugPointWithText;
+            var points = Point;
+            var labeledPoints = DebugPointWithText;
 
             var hasPoints = points != null && points.Count > 0;
             var hasLabels = labeledPoints != null && labeledPoints.Count > 0;

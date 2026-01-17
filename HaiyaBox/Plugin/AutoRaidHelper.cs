@@ -57,7 +57,6 @@ namespace HaiyaBox.Plugin
             XszRemote.Instance = _xszToolboxIpc;
             DebugPoint.Initialize();
 
-
             
             ResetAutoSettings();
         }
@@ -74,6 +73,7 @@ namespace HaiyaBox.Plugin
             _automationTab.Dispose();
             _eventRecordTab.Dispose();
             _dangerAreaTab.Dispose();
+            DebugPoint.Dispose();
 
             
             actorControlHook?.Dispose();

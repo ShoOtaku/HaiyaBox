@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using AEAssist;
 using AEAssist.Helper;
 using HaiyaBox.Settings;
 
@@ -16,6 +17,7 @@ public static class RemoteControl
             XszRemote.SetPos(role, pos);
         else
             RemoteControlHelper.SetPos(role, pos);
+        Share.TrustDebugPoint.Add(pos);
     }
     
     public static void LockPos(string role, Vector3 pos, int duration) 

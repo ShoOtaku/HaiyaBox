@@ -852,43 +852,6 @@ namespace HaiyaBox.UI
 
                 if (Core.Resolve<MemApiDuty>().IsBoundByDuty() && _dutyCompleted)
                 {
-                    
-                    // 获取当前副本信息
-                    var info = AutomationSettings.DutyPresets.FirstOrDefault(d => d.Name == Settings.SelectedDutyName || d.Name == Settings.CustomDutyName);
-                    // 判断是否极神
-                    bool hasChest = info is { Category: DutyCategory.Extreme };
-                    LogHelper.Print($"[Roll点调试] 副本类型: {(hasChest ? "极神(有宝箱)" : "其他副本")}, 自动等待R点: {Settings.AutoLeaveAfterLootEnabled}");
-
-                    if (hasChest)
-                    {
-                        LogHelper.Print("[Roll点调试] 检测到极神副本，等待8秒让宝箱出现...");
-                        await Task.Delay(8 * 1000);
-                        if (Settings.AutoLeaveAfterLootEnabled && HasTreasureAvailable())
-                        {
-                            bool chestOpened = await TryOpenTreasureBeforeLeaveAsync();
-                            LogHelper.Print(chestOpened
-                                ? "[Roll点调试] 宝箱已自动开启，等待10秒再退本。"
-                                : "[Roll点调试] 未能自动开启宝箱，按超时流程等待10秒。");
-                            if (Settings.DRCmdEnabled)
-                            {
-                                RemoteControl.Cmd("", "/xlenableplugin LazyLoot");
-                                RemoteControl.Cmd(_rollRoles, "/lazy need");
-                                if (_passRoles != "")
-                                    RemoteControl.Cmd(_passRoles, "/lazy greed");
-                            }
-                            else 
-                            {
-                                RemoteControl.Cmd(_rollRoles, "/xsz-roll need");
-                                if (_passRoles != "")
-                                    RemoteControl.Cmd(_passRoles, "/xsz-roll greed");
-                            }
-                            await Task.Delay(TreasurePostOpenDelayMs);
-                        }
-                        else if (Settings.AutoLeaveAfterLootEnabled)
-                        {
-                            LogHelper.Print("[Roll点调试] 未检测到宝箱，跳过自动开箱流程。");
-                        }
-                    }
                     // 否则直接延迟指定时间再退本
                     await Task.Delay(Settings.AutoLeaveDelay * 1000);
                     if (Settings.DRCmdEnabled)
@@ -907,44 +870,8 @@ namespace HaiyaBox.UI
                 _isLeaveRunning = false;
             }
         }
-
-        private static async Task<bool> TryOpenTreasureBeforeLeaveAsync()
-        {
-            try
-            {
-                var timeoutAt = DateTime.UtcNow + TreasureOpenTimeout;
-                while (DateTime.UtcNow < timeoutAt)
-                {
-                    if (TreasureOpenerService.Instance.TryOpenTreasureOnce())
-                        return true;
-                    await Task.Delay(3000);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.PrintError($"自动开箱流程异常: {ex.Message}");
-            }
-
-            return false;
-        }
-
-        private static unsafe bool HasTreasureAvailable()
-        {
-            foreach (var obj in Svc.Objects)
-            {
-                if (obj.ObjectKind != Dalamud.Game.ClientState.Objects.Enums.ObjectKind.Treasure || !obj.IsTargetable || obj.Address == IntPtr.Zero)
-                    continue;
-
-                var treasure = (Treasure*)obj.Address;
-                if (treasure == null)
-                    continue;
-
-                if ((((byte)treasure->Flags) & 3) == 0)
-                    return true;
-            }
-
-            return false;
-        }
+        
+        
 
         /// <summary>
         /// 根据配置和当前队伍状态自动发送排本命令。

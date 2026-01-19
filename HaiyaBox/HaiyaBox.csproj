@@ -13,30 +13,18 @@
     <RootNamespace>HaiyaBox</RootNamespace>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- CI 环境检测 -->
-    <IsCI Condition="'$(CI)' != ''">true</IsCI>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(IsCI)' != 'true'">
-    <!-- 本地开发环境：如果AEPath环境变量存在，则使用，否则使用默认值 -->
-    <AELibPath Condition="'$(AEPath)' != ''">$(AEPath)AEAssistCNVersion\AEAssist\</AELibPath>
-    <AELibPath Condition="'$(AEPath)' == ''">..\..\..\AE\AEAssistCNVersion\AEAssist\</AELibPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' And '$(IsCI)' != 'true' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>D:\FF14科技\AEAssist 国服 1024\Plugins\HaiyaBox</OutputPath>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' And '$(IsCI)' != 'true' ">
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <OutputPath>D:\FF14科技\AEAssist 国服 1024\Plugins\HaiyaBox</OutputPath>
   </PropertyGroup>
 
   <!-- CI 环境使用相对路径输出 -->
-  <PropertyGroup Condition=" '$(IsCI)' == 'true' ">
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  <PropertyGroup Condition=" '$(CI)' == 'true' ">
     <OutputPath>$(MSBuildProjectDirectory)\bin\$(Configuration)\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
@@ -46,18 +34,6 @@
   <PropertyGroup>
     <DalamudPackagerEnabled>false</DalamudPackagerEnabled>
   </PropertyGroup>
-
-  <!-- 本地开发环境才引用本地 DLL -->
-  <ItemGroup Condition="'$(IsCI)' != 'true'">
-    <Reference Include="AEAssist">
-      <HintPath>$(AELibPath)AEAssist.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="ECommons">
-      <HintPath>$(AELibPath)ECommons.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Remove="DalamudPackager" />

@@ -10,6 +10,7 @@ on:
 
 env:
   DOTNET_VERSION: '10.0.x'
+  CI: 'true'
 
 jobs:
   build:
@@ -25,6 +26,9 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Add AEAssist NuGet Source
+        run: dotnet nuget add source https://www.myget.org/F/aeassist/api/v3/index.json --name "AEAssist"
 
       - name: Restore dependencies
         run: dotnet restore HaiyaBox.sln

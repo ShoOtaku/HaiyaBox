@@ -19,6 +19,12 @@ public class 四运数据 :IMechanismState
     public Dictionary<int,string> 连线玩家 = new();
     public Dictionary<string, Vector3> 接线起点 = new();
     public Dictionary<string, Vector3> 接线终点 = new();
+    public Dictionary<string, int> 最终接线方位 = new();
+    public List<string> 第一轮大圈 = new();
+    public List<string> 第一轮分摊 = new();
+    public List<string> 第二轮大圈 = new();
+    public List<string> 第二轮分摊 = new();
+    public int 分摊先后;
     public List<Vector3> 风塔 = new();
     public List<Vector3> 暗塔 = new();
     public List<Vector3> 土塔 = new();

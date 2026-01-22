@@ -6,6 +6,7 @@ using AEAssist.CombatRoutine.Trigger;
 using AEAssist.Helper;
 using Dalamud.Bindings.ImGui;
 using AEAssist.CombatRoutine.Module.Target;
+using AEAssist.GUI;
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
 using HaiyaBox.Settings;
@@ -90,6 +91,11 @@ namespace HaiyaBox.UI
         private string _inputDebug2;
         private float _inputDebugDistance;
 
+        // 3坐标输入
+        private float _inputX = 0f;
+        private float _inputY = 0f;
+        private float _inputZ = 0f;
+
         #endregion
 
         #region Public Methods
@@ -112,6 +118,7 @@ namespace HaiyaBox.UI
             DrawDebugPointsSection();
             DrawPointRecordingSection();
             DrawInputDebug();
+            DrawThreeCoordInput();
             DrawEnemyListSection();
             DrawEventRecordingSection();
             DrawCalculationSection();
@@ -214,6 +221,24 @@ namespace HaiyaBox.UI
             }
             if (_inputDebugDistance != 0)
                 ImGui.Text($"距离: {_inputDebugDistance}");
+            ImGui.Spacing();
+            ImGui.Separator();
+            ImGui.Spacing();
+        }
+
+        private void DrawThreeCoordInput()
+        {
+            ImGui.Spacing();
+            ImGui.TextColored(new Vector4(0.8f, 0.8f, 1f, 1f), "输入坐标参数 (X, Y, Z)");
+            ImGuiHelper.LeftInputFloat("X坐标", ref _inputX, 0.1f, 200f);
+            ImGuiHelper.LeftInputFloat("Y坐标", ref _inputY, 0.1f, 200);
+            ImGuiHelper.LeftInputFloat("Z坐标", ref _inputZ, 0.1f, 200);
+
+            if (ImGui.Button("添加到TrustDebug##xyz"))
+            {
+                var pos = new Vector3(_inputX, _inputY, _inputZ);
+                Share.TrustDebugPoint.Add(pos);
+            }
             ImGui.Spacing();
             ImGui.Separator();
             ImGui.Spacing();

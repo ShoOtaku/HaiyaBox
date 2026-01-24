@@ -17,7 +17,7 @@ public static class MechanismStateExtensions
 {
     /// <summary>
     /// 自动清空状态实例中的所有字段
-    /// string 字段设为 null，集合类型调用 Clear()，值类型设为 default，引用类型设为 null
+    /// string 字段设为 null，集合类型调用 Clear() 或创建新实例，值类型设为 default，引用类型设为 null
     /// </summary>
     public static void Reset(this IMechanismState state)
     {
@@ -37,6 +37,11 @@ public static class MechanismStateExtensions
                 {
                     var clearMethod = field.FieldType.GetMethod("Clear");
                     clearMethod?.Invoke(collection, null);
+                }
+                else
+                {
+                    // 集合为 null 时创建新实例（修复反序列化后集合为 null 的问题）
+                    field.SetValue(state, Activator.CreateInstance(field.FieldType));
                 }
             }
             else if (field.FieldType.IsValueType)

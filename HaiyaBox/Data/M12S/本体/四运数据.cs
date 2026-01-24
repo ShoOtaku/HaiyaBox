@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using AEAssist.CombatRoutine.Trigger;
 using Dalamud.Game.ClientState.Objects.Types;
+using ECommons.DalamudServices;
 using HaiyaBox.Utils;
 
 namespace XXLZFA.HaiyaBox.HaiyaBox.Data.M12S.本体;
@@ -46,33 +47,41 @@ public class 四运玩家
 
     public void Update(TetherCondParams tetherCondParams)
     {
-        var left = tetherCondParams.Left;
-        方位 = GeometryUtilsXZ.PositionTo8Dir(left.Position, new Vector3(100, 0, 100));
-        玩家Name = tetherCondParams.Right.Name.TextValue;
-        玩家Id = tetherCondParams.Left.EntityId;
-        玩家分身类型 = 方位 switch
+        try
         {
-            1 or 3 or 4 or 6 => 类型.大圈,
-            0 or 2 or 5 or 7 => 类型.分摊,
-            _ => 类型.无
-        };
-        if (四运数据.Instance.初始第一轮分身方位 % 2 == 0)
-        {
-            轮次 = 方位 switch
+            var left = tetherCondParams.Left;
+            方位 = GeometryUtilsXZ.PositionTo8Dir(left.Position, new Vector3(100, 0, 100));
+            玩家Name = tetherCondParams.Right.Name.TextValue;
+            玩家Id = tetherCondParams.Left.EntityId;
+            玩家分身类型 = 方位 switch
             {
-                0 or 2 or 4 or 6 => 1,
-                1 or 3 or 5 or 7 => 2,
-                _ => 0
+                1 or 3 or 4 or 6 => 类型.大圈,
+                0 or 2 or 5 or 7 => 类型.分摊,
+                _ => 类型.无
             };
+            if (四运数据.Instance.初始第一轮分身方位 % 2 == 0)
+            {
+                轮次 = 方位 switch
+                {
+                    0 or 2 or 4 or 6 => 1,
+                    1 or 3 or 5 or 7 => 2,
+                    _ => 0
+                };
+            }
+            else
+            {
+                轮次 = 方位 switch
+                {
+                    0 or 2 or 4 or 6 => 2,
+                    1 or 3 or 5 or 7 => 1,
+                    _ => 0
+                };
+            }
         }
-        else
+        catch (Exception ex)
         {
-            轮次 = 方位 switch
-            {
-                0 or 2 or 4 or 6 => 2,
-                1 or 3 or 5 or 7 => 1,
-                _ => 0
-            };
+            Svc.Log.Error($"四运玩家.Update 错误: Left={tetherCondParams.Left?.Name?.TextValue}, Right={tetherCondParams.Right?.Name?.TextValue}, Args0={tetherCondParams.Args0}, 异常: {ex.Message}\n{ex.StackTrace}");
+            throw;
         }
     }
 }
@@ -88,26 +97,34 @@ public class 四运Boss分身
 
     public void Update(TetherCondParams tetherCondParams )
     {
-        var left = tetherCondParams.Left;
-        分身Id = left.EntityId;
-        分身位置 = left.Position;
-        方位 = GeometryUtilsXZ.PositionTo8Dir(left.Position, new Vector3(100, 0, 100));
-        var right = tetherCondParams.Right;
-        连线玩家Id = right.EntityId;
-        分身类型 = tetherCondParams.Args0 switch
+        try
         {
-            368 => 类型.大圈,
-            369 => 类型.分摊,
-            _ => 类型.无
-        };
-        释放轮次 = 方位 switch
+            var left = tetherCondParams.Left;
+            分身Id = left.EntityId;
+            分身位置 = left.Position;
+            方位 = GeometryUtilsXZ.PositionTo8Dir(left.Position, new Vector3(100, 0, 100));
+            var right = tetherCondParams.Right;
+            连线玩家Id = right.EntityId;
+            分身类型 = tetherCondParams.Args0 switch
+            {
+                368 => 类型.大圈,
+                369 => 类型.分摊,
+                _ => 类型.无
+            };
+            释放轮次 = 方位 switch
+            {
+                0 or 4 => 1,
+                1 or 5 => 2,
+                2 or 6 => 3,
+                3 or 7 => 4,
+                _ => 0
+            };
+        }
+        catch (Exception ex)
         {
-            0 or 4 => 1,
-            1 or 5 => 2,
-            2 or 6 => 3,
-            3 or 7 => 4,
-            _ => 0
-        };
+            Svc.Log.Error($"四运Boss分身.Update 错误: Left={tetherCondParams.Left?.Name?.TextValue}, Right={tetherCondParams.Right?.Name?.TextValue}, Args0={tetherCondParams.Args0}, 异常: {ex.Message}\n{ex.StackTrace}");
+            throw;
+        }
     }
 }
 

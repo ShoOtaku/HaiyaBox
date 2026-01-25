@@ -167,27 +167,27 @@ public class 小世界塔
         };
         位置 = battleChara.Position;
         分组 = 位置.X > 100 ? 2 : 1;
-        方位 = GeometryUtilsXZ.PositionTo4Dir(位置, 分组 is 1? new Vector3(86, 0, 100) : new Vector3(114, 0, 100));
+        方位 = GeometryUtilsXZ.PositionTo4Dir(battleChara.Position, 分组 is 1? new Vector3(86, 0, 100) : new Vector3(114, 0, 100));
         if (类型 is 塔类型.土 or 塔类型.火)
         {
-            踩塔位置 = 位置;
+            踩塔位置 = battleChara.Position;
         }
 
         if (类型 is 塔类型.暗)
         {
             if (方位 is 0 or 3)
             {
-                踩塔位置 = 位置.WithZ(位置.Z - 2);
+                踩塔位置 = battleChara.Position.WithZ(battleChara.Position.Z - 2);
             }
             else
             {
-                踩塔位置 = 位置.WithZ(位置.Z + 2);
+                踩塔位置 = battleChara.Position.WithZ(battleChara.Position.Z + 2);
             }
         }
 
         if (类型 is 塔类型.风)
         {
-            踩塔位置 = 位置.WithX(位置.X + 分组 is 1 ? 2 : -2);
+            踩塔位置 = battleChara.Position.WithX(battleChara.Position.X + 分组 is 1 ? 2 : -2);
         }
     }
 }

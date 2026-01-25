@@ -59,7 +59,7 @@ public class 四运玩家
             var left = tetherCondParams.Left;
             方位 = GeometryUtilsXZ.PositionTo8Dir(left.Position, new Vector3(100, 0, 100));
             玩家Name = tetherCondParams.Right.Name.TextValue;
-            玩家Id = tetherCondParams.Left.EntityId;
+            玩家Id = tetherCondParams.Right.EntityId;
             玩家分身类型 = 方位 switch
             {
                 1 or 3 or 4 or 6 => 类型.大圈,

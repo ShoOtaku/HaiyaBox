@@ -179,7 +179,7 @@ public class 小世界塔
 
         if (类型 is 塔类型.暗)
         {
-            if (方位 is 0 or 3)
+            if (方位 is 0 or 1)
             {
                 踩塔位置 = battleChara.Position.WithZ(battleChara.Position.Z - 2);
             }

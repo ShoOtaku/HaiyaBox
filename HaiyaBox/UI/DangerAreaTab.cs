@@ -71,7 +71,7 @@ namespace HaiyaBox.UI
         // 可视化相关
         private readonly DangerAreaRenderer _dangerAreaRenderer = new();
         private readonly DangerAreaRenderConfig _renderConfig = DangerAreaRenderConfig.Default;
-        private bool _overlayEnabled;
+        public static bool OverlayEnabled;
         private bool _overlayDirty = true;
 
         /// <summary>
@@ -391,7 +391,7 @@ namespace HaiyaBox.UI
         {
             if (ImGui.CollapsingHeader("危险区域可视化", ImGuiTreeNodeFlags.DefaultOpen))
             {
-                bool enabled = _overlayEnabled;
+                bool enabled = OverlayEnabled;
                 if (ImGui.Checkbox("在战斗画面中绘制危险区域", ref enabled))
                 {
                     ToggleOverlay(enabled);
@@ -403,8 +403,8 @@ namespace HaiyaBox.UI
                     MarkOverlayDirty();
                 }
 
-                var statusColor = _overlayEnabled ? new Vector4(0.4f, 0.85f, 0.4f, 1f) : new Vector4(0.85f, 0.4f, 0.4f, 1f);
-                ImGui.TextColored(statusColor, _overlayEnabled ? "绘制已开启" : "绘制已关闭");
+                var statusColor = OverlayEnabled ? new Vector4(0.4f, 0.85f, 0.4f, 1f) : new Vector4(0.85f, 0.4f, 0.4f, 1f);
+                ImGui.TextColored(statusColor, OverlayEnabled ? "绘制已开启" : "绘制已关闭");
                 ImGui.Spacing();
             }
 
@@ -533,8 +533,8 @@ namespace HaiyaBox.UI
 
         private void ToggleOverlay(bool enabled)
         {
-            if (_overlayEnabled == enabled) return;
-            _overlayEnabled = enabled;
+            if (OverlayEnabled == enabled) return;
+            OverlayEnabled = enabled;
             _dangerAreaRenderer.Enabled = enabled;
             if (enabled)
             {
@@ -550,7 +550,7 @@ namespace HaiyaBox.UI
 
         private void SyncOverlayIfNeeded()
         {
-            if (!_overlayEnabled || !_overlayDirty) return;
+            if (!OverlayEnabled || !_overlayDirty) return;
             var payload = DangerAreaDisplayBuilder.Build(BattleDataInstance, _renderConfig);
             _dangerAreaRenderer.UpdateObjects(payload);
             _overlayDirty = false;

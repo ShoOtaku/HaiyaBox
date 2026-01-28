@@ -64,6 +64,7 @@ namespace HaiyaBox.Settings
         
         //DutyBattleSettings: 特定副本战斗设置，特定副本的一些本地功能
         public DutyBattleSettings DutyBattleSettings { get; set; } = new();
+        
 
         /// <summary>
         /// 保存当前配置到配置文件

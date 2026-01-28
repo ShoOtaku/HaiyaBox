@@ -9,6 +9,7 @@ using AEAssist.CombatRoutine.Module.Target;
 using AEAssist.GUI;
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
+using HaiyaBox.Rendering;
 using HaiyaBox.Settings;
 using HaiyaBox.Utils;
 
@@ -36,6 +37,8 @@ namespace HaiyaBox.UI
         public Vector3? Point2World { get; private set; }
         public float TwoPointDistanceXZ { get; private set; }
         public string ChordResultLabel { get; private set; } = "";
+        
+        public bool DrawDebugPoints { get; private set; } = false;
 
         // Distribution Configuration
         private int _distributionMode = 0;
@@ -116,6 +119,7 @@ namespace HaiyaBox.UI
             DrawHeaderSection();
             DrawMousePositionSection();
             DrawDebugPointsSection();
+            DrawVisualizationSection();
             DrawPointRecordingSection();
             DrawInputDebug();
             DrawThreeCoordInput();
@@ -126,9 +130,29 @@ namespace HaiyaBox.UI
         }
 
         #endregion
-
+        // 可视化相关
+        private readonly DangerAreaRenderer _dangerAreaRenderer = new();
         #region UI Drawing Methods
 
+        private void DrawVisualizationSection()
+        {
+            if (ImGui.CollapsingHeader("DebugPoint可视化", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                bool enabled = DangerAreaTab.OverlayEnabled;
+                if (ImGui.Checkbox("绘制Debug点", ref enabled))
+                {
+                    DangerAreaTab.OverlayEnabled = enabled;
+                }
+
+                ImGui.SameLine();
+
+
+                var statusColor = enabled ? new Vector4(0.4f, 0.85f, 0.4f, 1f) : new Vector4(0.85f, 0.4f, 0.4f, 1f);
+                ImGui.TextColored(statusColor, enabled ? "绘制已开启" : "绘制已关闭");
+                ImGui.Spacing();
+            }
+
+        }
         private void DrawTimeDot()
         {
             if (ImGui.Button("打断点##"))
@@ -230,9 +254,9 @@ namespace HaiyaBox.UI
         {
             ImGui.Spacing();
             ImGui.TextColored(new Vector4(0.8f, 0.8f, 1f, 1f), "输入坐标参数 (X, Y, Z)");
-            ImGuiHelper.LeftInputFloat("X坐标", ref _inputX, 0.1f, 200f);
-            ImGuiHelper.LeftInputFloat("Y坐标", ref _inputY, 0.1f, 200);
-            ImGuiHelper.LeftInputFloat("Z坐标", ref _inputZ, 0.1f, 200);
+            ImGuiHelper.LeftInputFloat("X坐标", ref _inputX, 0, 200);
+            ImGuiHelper.LeftInputFloat("Y坐标", ref _inputY, 0, 200);
+            ImGuiHelper.LeftInputFloat("Z坐标", ref _inputZ, 0, 200);
 
             if (ImGui.Button("添加到TrustDebug##xyz"))
             {

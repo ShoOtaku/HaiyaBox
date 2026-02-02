@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-02-02
+
+### 修复
+- **[AOESafetyCalculator]**: 补全 AOE 距离场实现并修复安全区边界判定与最小距离夹紧
+  - 方案: [202602022147_aoe-safety-fixes](archive/2026-02/202602022147_aoe-safety-fixes/)
+
 ## [0.2.0] - 2026-01-23
 
 ### 新增

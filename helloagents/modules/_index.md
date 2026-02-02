@@ -12,6 +12,7 @@
 | Settings | 配置和设置管理 | ✅ | [Settings.md](./Settings.md) |
 | Triggers | 触发器系统（条件和动作） | ✅ | [Triggers.md](./Triggers.md) |
 | UI | 用户界面标签页 | ✅ | [UI.md](./UI.md) |
+| AOESafetyCalculator | AOE 安全区与距离场计算 | ✅ | [AOESafetyCalculator.md](./AOESafetyCalculator.md) |
 | Utils | 通用工具类 | ✅ | [Utils.md](./Utils.md) |
 | Data | 副本数据（M11S, M12S 等） | ✅ | [Data.md](./Data.md) |
 

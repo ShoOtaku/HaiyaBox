@@ -11,6 +11,7 @@
 |------|------|
 | DangerArea | 危险区域工具类 |
 | DebugPoint | 调试点工具（使用 DangerAreaRenderer 渲染） |
+| AOEShapeDebug | AOE 形状调试绘制工具（轮廓线渲染） |
 | EventRecordManager | 事件记录管理器 |
 | Utilities | 通用工具方法 |
 | VIPHelper | VIP 辅助工具 |
@@ -28,6 +29,14 @@
 | `Clear()` | 清空所有调试点 |
 | `Point` | 位置点列表 |
 | `DebugPointWithText` | 带标签的调试点字典 |
+
+### AOEShapeDebug 公共 API
+| 方法 | 说明 |
+|---------|------|
+| `Initialize(DangerAreaRenderer)` | 初始化，注册渲染回调 |
+| `Dispose()` | 清理，注销渲染回调 |
+| `Clear()` | 清空所有调试形状 |
+| `Draw(AOEShape, WPos, Angle, float)` | 以轮廓线方式绘制 AOE 形状，持续指定秒数 |
 
 ### 公共 API
 | 类/方法 | 说明 |
@@ -53,6 +62,14 @@
   2. 在渲染时转换为 DisplayObjectDot 和 DisplayObjectText
   3. 提交给 DangerAreaRenderer 绘制
 **结果**: 游戏画面中显示绿色圆点和黄色文本标签
+
+### AOE 形状调试绘制
+**条件**: 调用 `AOEShapeDebug.Draw(shape, origin, rotation, durationSeconds)`
+**行为**:
+  1. 依据形状类型和尺寸分配调试颜色
+  2. 生成轮廓线 DisplayObject 列表
+  3. 通过 DangerAreaRenderer 临时回调绘制
+**结果**: 游戏画面中显示 AOE 轮廓，随时间自动过期
 
 ### 工具方法调用
 **条件**: 需要特定功能

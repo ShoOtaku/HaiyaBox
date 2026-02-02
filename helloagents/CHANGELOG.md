@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-02-02
+
+### 新增
+- **[Utils]**: 增加 AOEShapeDebug 调试绘制，支持 AOE 轮廓显示与颜色分桶
+  - 方案: [202602030248_aoe-shape-debug-render](archive/2026-02/202602030248_aoe-shape-debug-render/)
+  - 决策: aoe-shape-debug-render#D001(复用 DangerAreaRenderer 临时回调绘制)
+
+### 变更
+- **[Plugin]**: AutoRaidHelper 生命周期中初始化并释放 AOEShapeDebug
+  - 方案: [202602030248_aoe-shape-debug-render](archive/2026-02/202602030248_aoe-shape-debug-render/)
+
 ## [0.2.1] - 2026-02-02
 
 ### 修复

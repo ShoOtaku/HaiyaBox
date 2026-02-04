@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## [0.4.4] - 2026-02-04
+
+### 微调
+- **[UI]**: DangerAreaTab 补充场地范围与参考点绘制，并放大安全点显示
+  - 类型: 微调（无方案包）
+  - 文件: HaiyaBox/UI/DangerAreaTab.cs:59-63
+  - 文件: HaiyaBox/UI/DangerAreaTab.cs:201-360
+  - 文件: HaiyaBox/UI/DangerAreaTab.cs:832-887
+
 ## [0.4.3] - 2026-02-04
 
 ### 新增

@@ -56,6 +56,11 @@ namespace HaiyaBox.UI
         private static readonly uint SafePointSecondaryColor = PackColor(0.2f, 0.6f, 1f, 0.95f);
         private static readonly uint SafePointLabelBackgroundColor = PackColor(0.05f, 0.05f, 0.05f, 0.8f);
         private static readonly uint SafePointLabelTextColor = PackColor(1f, 1f, 1f, 1f);
+        private static readonly uint ArenaBoundsColor = PackColor(1f, 1f, 1f, 0.5f);
+        private static readonly uint ReferencePointColor = PackColor(1f, 1f, 0.2f, 1f);
+        private const float ArenaOutlineThickness = 2f;
+        private const float SafePointRenderScale = 4f;
+        private const string ReferencePointLabel = "REF";
 
         private int _shapeTypeIndex;
         private string _originInput = "100,0,100";
@@ -193,7 +198,7 @@ namespace HaiyaBox.UI
                 return;
             }
 
-            ImGui.Checkbox("启用场地限制", ref _arenaEnabled);
+            if (ImGui.Checkbox("启用场地限制", ref _arenaEnabled)) MarkOverlayDirty();
 
             var arenaLabel = _arenaTypeIndex == 0 ? "圆形" : "矩形";
             if (ImGui.BeginCombo("场地类型", arenaLabel))
@@ -201,10 +206,12 @@ namespace HaiyaBox.UI
                 if (ImGui.Selectable("圆形", _arenaTypeIndex == 0))
                 {
                     _arenaTypeIndex = 0;
+                    MarkOverlayDirty();
                 }
                 if (ImGui.Selectable("矩形", _arenaTypeIndex == 1))
                 {
                     _arenaTypeIndex = 1;
+                    MarkOverlayDirty();
                 }
                 ImGui.EndCombo();
             }
@@ -218,6 +225,7 @@ namespace HaiyaBox.UI
                 {
                     _arenaCenter = pos;
                     _safePointError = string.Empty;
+                    MarkOverlayDirty();
                 }
                 else
                 {
@@ -234,6 +242,7 @@ namespace HaiyaBox.UI
                     _arenaCenter = player.Position;
                     _arenaCenterInput = $"{player.Position.X:F1},{player.Position.Y:F1},{player.Position.Z:F1}";
                     _safePointError = string.Empty;
+                    MarkOverlayDirty();
                 }
             }
 
@@ -241,13 +250,13 @@ namespace HaiyaBox.UI
 
             if (_arenaTypeIndex == 0)
             {
-                ImGui.InputFloat("场地半径", ref _arenaRadius, 1f, 5f);
+                if (ImGui.InputFloat("场地半径", ref _arenaRadius, 1f, 5f)) MarkOverlayDirty();
             }
             else
             {
-                ImGui.InputFloat("半宽", ref _arenaHalfWidth, 0.5f, 1f);
-                ImGui.InputFloat("半长", ref _arenaHalfLength, 0.5f, 1f);
-                ImGui.InputFloat("朝向角度(度)", ref _arenaRotationDeg, 1f, 5f);
+                if (ImGui.InputFloat("半宽", ref _arenaHalfWidth, 0.5f, 1f)) MarkOverlayDirty();
+                if (ImGui.InputFloat("半长", ref _arenaHalfLength, 0.5f, 1f)) MarkOverlayDirty();
+                if (ImGui.InputFloat("朝向角度(度)", ref _arenaRotationDeg, 1f, 5f)) MarkOverlayDirty();
             }
 
             ImGui.Spacing();
@@ -291,7 +300,7 @@ namespace HaiyaBox.UI
 
             ImGui.Separator();
 
-            ImGui.Checkbox("使用参考点", ref _useReferencePoint);
+            if (ImGui.Checkbox("使用参考点", ref _useReferencePoint)) MarkOverlayDirty();
             if (_useReferencePoint)
             {
                 ImGui.Text("参考点 (x,y,z):");
@@ -302,6 +311,7 @@ namespace HaiyaBox.UI
                     {
                         _referencePoint = pos;
                         _safePointError = string.Empty;
+                        MarkOverlayDirty();
                     }
                     else
                     {
@@ -317,6 +327,7 @@ namespace HaiyaBox.UI
                         _referencePoint = player.Position;
                         _referencePointInput = $"{player.Position.X:F1},{player.Position.Y:F1},{player.Position.Z:F1}";
                         _safePointError = string.Empty;
+                        MarkOverlayDirty();
                     }
                 }
                 ImGui.Text($"当前参考点: {FormatVector3(_referencePoint)}");
@@ -346,7 +357,7 @@ namespace HaiyaBox.UI
                 MarkOverlayDirty();
             }
 
-            ImGui.InputFloat("安全点半径", ref _safePointRadius, 0.5f, 1f);
+            if (ImGui.InputFloat("安全点半径", ref _safePointRadius, 0.5f, 1f)) MarkOverlayDirty();
             ImGui.InputFloat("编号高度偏移", ref _safePointLabelHeight, 0.1f, 0.2f);
 
             if (ImGui.Button("计算安全点"))
@@ -818,6 +829,43 @@ namespace HaiyaBox.UI
                 }
             }
 
+            if (_arenaEnabled)
+            {
+                var arenaCenter = _arenaCenter;
+                if (_arenaTypeIndex == 0)
+                {
+                    payload.Add(new DisplayObjectCircle(arenaCenter, _arenaRadius, ArenaBoundsColor, ArenaOutlineThickness, false));
+                }
+                else
+                {
+                    var halfWidth = _arenaHalfWidth;
+                    var halfLength = _arenaHalfLength;
+                    var a = new Vector3(arenaCenter.X - halfWidth, arenaCenter.Y, arenaCenter.Z - halfLength);
+                    var b = new Vector3(arenaCenter.X + halfWidth, arenaCenter.Y, arenaCenter.Z - halfLength);
+                    var c = new Vector3(arenaCenter.X + halfWidth, arenaCenter.Y, arenaCenter.Z + halfLength);
+                    var d = new Vector3(arenaCenter.X - halfWidth, arenaCenter.Y, arenaCenter.Z + halfLength);
+                    if (Math.Abs(_arenaRotationDeg) > 0.001f)
+                    {
+                        a = GeometryUtilsXZ.RotateAroundPoint(a, arenaCenter, _arenaRotationDeg);
+                        b = GeometryUtilsXZ.RotateAroundPoint(b, arenaCenter, _arenaRotationDeg);
+                        c = GeometryUtilsXZ.RotateAroundPoint(c, arenaCenter, _arenaRotationDeg);
+                        d = GeometryUtilsXZ.RotateAroundPoint(d, arenaCenter, _arenaRotationDeg);
+                    }
+                    payload.Add(new DisplayObjectLine(a, b, ArenaBoundsColor, ArenaOutlineThickness));
+                    payload.Add(new DisplayObjectLine(b, c, ArenaBoundsColor, ArenaOutlineThickness));
+                    payload.Add(new DisplayObjectLine(c, d, ArenaBoundsColor, ArenaOutlineThickness));
+                    payload.Add(new DisplayObjectLine(d, a, ArenaBoundsColor, ArenaOutlineThickness));
+                }
+            }
+
+            var renderSafePointRadius = _safePointRadius * SafePointRenderScale;
+            if (_useReferencePoint)
+            {
+                var referencePos = new Vector3(_referencePoint.X, _searchCenter.Y, _referencePoint.Z);
+                payload.Add(new DisplayObjectDot(referencePos, renderSafePointRadius, ReferencePointColor));
+                payload.Add(new DisplayObjectText(referencePos + new Vector3(0f, _safePointLabelHeight, 0f), ReferencePointLabel, SafePointLabelBackgroundColor, SafePointLabelTextColor, 1f));
+            }
+
             if (_showSafePoints && _safePoints.Count > 0)
             {
                 var closeCount = _useReferencePoint ? Math.Clamp(_closeToReferenceCount, 0, _safePoints.Count) : 0;
@@ -826,7 +874,7 @@ namespace HaiyaBox.UI
                     var point = _safePoints[i];
                     var color = i < closeCount ? SafePointPrimaryColor : SafePointSecondaryColor;
                     var pos = new Vector3(point.X, _searchCenter.Y, point.Z);
-                    payload.Add(new DisplayObjectDot(pos, _safePointRadius, color));
+                    payload.Add(new DisplayObjectDot(pos, renderSafePointRadius, color));
                     if (_showSafePointLabels)
                     {
                         var labelPos = pos + new Vector3(0f, _safePointLabelHeight, 0f);

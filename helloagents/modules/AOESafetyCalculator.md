@@ -27,6 +27,7 @@
 | SafePositionQuery | 链式约束查询 |
 | ForbiddenZone | 禁止区域定义 |
 | ArenaBounds | 场地边界（圆形/矩形） |
+| SafeZoneDrawRegistry | SafeZone 绘制注册表与安全点通知 |
 
 ### AOE 形状
 | 类 | 说明 |
@@ -55,6 +56,13 @@
 **条件**: DangerAreaTab 添加/删除 AOEShape
 **行为**: 以 AOEShape 保存危险区数据并刷新 overlay
 **结果**: AOE 形状在游戏画面中可视化
+
+### SafeZone 自动绘制数据通道
+**条件**: SafeZoneCalculator/FindSafePositions 被调用
+**行为**:
+  1. 注册计算器实例
+  2. 上报安全点结果
+**结果**: 渲染层可读取距离场数据并自动绘制
 
 ## 依赖关系
 

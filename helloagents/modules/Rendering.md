@@ -11,6 +11,8 @@
 |------|------|
 | DangerAreaDisplay | 危险区域显示管理 |
 | DangerAreaRenderer | 危险区域渲染器，支持临时对象渲染 |
+| DistanceFieldContourBuilder | 距离场轮廓采样器（marching squares） |
+| SafeZoneAutoDraw | SafeZone 自动绘制服务 |
 
 ### DangerAreaRenderer 公共 API
 | 方法 | 说明 |
@@ -38,6 +40,14 @@
 **条件**: 每帧渲染循环
 **行为**: 更新所有活动区域和临时对象的渲染状态
 **结果**: 实时显示当前危险区域和临时对象
+
+### SafeZone 自动绘制
+**条件**: SafeZoneAutoDraw 开关启用且 SafeZoneCalculator 有活动区域
+**行为**:
+  1. 读取 SafeZoneCalculator 的场地与禁止区域
+  2. 使用 DistanceFieldContourBuilder 生成轮廓线
+  3. 在 FindSafePositions 后绘制安全点
+**结果**: 脚本侧距离场自动可视化
 
 ## 依赖关系
 

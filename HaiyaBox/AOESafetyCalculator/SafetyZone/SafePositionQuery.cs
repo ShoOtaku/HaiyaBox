@@ -116,6 +116,7 @@ public sealed class SafePositionQuery
             });
         }
 
+        SafeZoneDrawRegistry.ReportSafePoints(calculator, selectedPoints, currentTime);
         return selectedPoints;
     }
 

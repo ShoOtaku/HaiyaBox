@@ -6,6 +6,7 @@ using AOESafetyCalculator.SafetyZone;
 using AOESafetyCalculator.Shapes;
 using Dalamud.Bindings.ImGui;
 using ECommons.DalamudServices;
+using HaiyaBox.Settings;
 using HaiyaBox.Rendering;
 using HaiyaBox.Utils;
 
@@ -56,11 +57,12 @@ namespace HaiyaBox.UI
         private static readonly uint SafePointSecondaryColor = PackColor(0.2f, 0.6f, 1f, 0.95f);
         private static readonly uint SafePointLabelBackgroundColor = PackColor(0.05f, 0.05f, 0.05f, 0.8f);
         private static readonly uint SafePointLabelTextColor = PackColor(1f, 1f, 1f, 1f);
-        private static readonly uint ArenaBoundsColor = PackColor(1f, 1f, 1f, 0.5f);
+        private static readonly uint ArenaBoundsColor = PackColor(1f, 0f, 0f, 0.5f);
         private static readonly uint ReferencePointColor = PackColor(1f, 1f, 0.2f, 1f);
         private const float ArenaOutlineThickness = 2f;
-        private const float SafePointRenderScale = 4f;
-        private const string ReferencePointLabel = "REF";
+        private const float ArenaHeightOffset = 1f;
+        private const float SafePointRenderScale = 1f;
+        private const string ReferencePointLabel = "参考点";
 
         private int _shapeTypeIndex;
         private string _originInput = "100,0,100";
@@ -189,6 +191,37 @@ namespace HaiyaBox.UI
                 ImGui.TextColored(statusColor, enabled ? "绘制已开启" : "绘制已关闭");
                 ImGui.Spacing();
             }
+
+            DrawSafeZoneAutoDrawSection();
+        }
+
+        private void DrawSafeZoneAutoDrawSection()
+        {
+            if (!ImGui.CollapsingHeader("SafeZone 自动绘制", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                return;
+            }
+
+            var settings = FullAutoSettings.Instance.FaGeneralSetting;
+            bool enabled = settings.SafeZoneAutoDrawEnabled;
+            if (ImGui.Checkbox("自动绘制 SafeZone (DistanceField)", ref enabled))
+            {
+                settings.UpdateSafeZoneAutoDrawEnabled(enabled);
+                if (enabled && !OverlayEnabled)
+                {
+                    ToggleOverlay(true);
+                }
+            }
+
+            var stats = SafeZoneAutoDraw.GetStats();
+            ImGui.Text($"场地: {stats.ArenaCount}  危险区: {stats.ActiveZoneCount}  安全点: {stats.SafePointCount}");
+
+            if (ImGui.Button("清空自动绘制"))
+            {
+                SafeZoneAutoDraw.ClearAll();
+            }
+
+            ImGui.Spacing();
         }
 
         private void DrawArenaSection()
@@ -198,17 +231,17 @@ namespace HaiyaBox.UI
                 return;
             }
 
-            if (ImGui.Checkbox("启用场地限制", ref _arenaEnabled)) MarkOverlayDirty();
+            if (ImGui.Checkbox("启用场地限制##场地", ref _arenaEnabled)) MarkOverlayDirty();
 
             var arenaLabel = _arenaTypeIndex == 0 ? "圆形" : "矩形";
-            if (ImGui.BeginCombo("场地类型", arenaLabel))
+            if (ImGui.BeginCombo("场地类型##场地", arenaLabel))
             {
-                if (ImGui.Selectable("圆形", _arenaTypeIndex == 0))
+                if (ImGui.Selectable("圆形##场地", _arenaTypeIndex == 0))
                 {
                     _arenaTypeIndex = 0;
                     MarkOverlayDirty();
                 }
-                if (ImGui.Selectable("矩形", _arenaTypeIndex == 1))
+                if (ImGui.Selectable("矩形##场地", _arenaTypeIndex == 1))
                 {
                     _arenaTypeIndex = 1;
                     MarkOverlayDirty();
@@ -250,13 +283,13 @@ namespace HaiyaBox.UI
 
             if (_arenaTypeIndex == 0)
             {
-                if (ImGui.InputFloat("场地半径", ref _arenaRadius, 1f, 5f)) MarkOverlayDirty();
+                if (ImGui.InputFloat("场地半径##场地", ref _arenaRadius, 1f, 5f)) MarkOverlayDirty();
             }
             else
             {
-                if (ImGui.InputFloat("半宽", ref _arenaHalfWidth, 0.5f, 1f)) MarkOverlayDirty();
-                if (ImGui.InputFloat("半长", ref _arenaHalfLength, 0.5f, 1f)) MarkOverlayDirty();
-                if (ImGui.InputFloat("朝向角度(度)", ref _arenaRotationDeg, 1f, 5f)) MarkOverlayDirty();
+                if (ImGui.InputFloat("半宽##场地", ref _arenaHalfWidth, 0.5f, 1f)) MarkOverlayDirty();
+                if (ImGui.InputFloat("半长##场地", ref _arenaHalfLength, 0.5f, 1f)) MarkOverlayDirty();
+                if (ImGui.InputFloat("朝向角度(度)##场地", ref _arenaRotationDeg, 1f, 5f)) MarkOverlayDirty();
             }
 
             ImGui.Spacing();
@@ -294,9 +327,9 @@ namespace HaiyaBox.UI
             }
             ImGui.Text($"当前搜索中心: {FormatVector3(_searchCenter)}");
 
-            ImGui.InputFloat("搜索半径", ref _searchRadius, 1f, 5f);
-            ImGui.InputFloat("最小间距", ref _minDistanceBetween, 0.1f, 0.5f);
-            ImGui.InputFloat("最小角度间隔(度)", ref _minAngleBetweenDeg, 1f, 5f);
+            ImGui.InputFloat("搜索半径##安全点", ref _searchRadius, 1f, 5f);
+            ImGui.InputFloat("最小间距##安全点", ref _minDistanceBetween, 0.1f, 0.5f);
+            ImGui.InputFloat("最小角度间隔(度)##安全点", ref _minAngleBetweenDeg, 1f, 5f);
 
             ImGui.Separator();
 
@@ -332,41 +365,41 @@ namespace HaiyaBox.UI
                 }
                 ImGui.Text($"当前参考点: {FormatVector3(_referencePoint)}");
 
-                ImGui.Checkbox("按参考点排序", ref _orderByReference);
-                ImGui.InputInt("贴近参考点数量", ref _closeToReferenceCount, 1, 1);
-                ImGui.Checkbox("限制与参考点最大距离", ref _limitByMaxDistance);
+                ImGui.Checkbox("按参考点排序##安全点", ref _orderByReference);
+                ImGui.InputInt("贴近参考点数量##安全点", ref _closeToReferenceCount, 1, 1);
+                ImGui.Checkbox("限制与参考点最大距离##安全点", ref _limitByMaxDistance);
                 if (_limitByMaxDistance)
                 {
-                    ImGui.InputFloat("参考点最大距离", ref _maxDistanceFromReference, 0.5f, 1f);
+                    ImGui.InputFloat("参考点最大距离##安全点", ref _maxDistanceFromReference, 0.5f, 1f);
                 }
             }
 
             ImGui.Separator();
 
             var showSafePoints = _showSafePoints;
-            if (ImGui.Checkbox("在 Overlay 显示安全点", ref showSafePoints))
+            if (ImGui.Checkbox("在 Overlay 显示安全点##安全点", ref showSafePoints))
             {
                 _showSafePoints = showSafePoints;
                 MarkOverlayDirty();
             }
             ImGui.SameLine();
             var showLabels = _showSafePointLabels;
-            if (ImGui.Checkbox("显示安全点编号", ref showLabels))
+            if (ImGui.Checkbox("显示安全点编号##安全点", ref showLabels))
             {
                 _showSafePointLabels = showLabels;
                 MarkOverlayDirty();
             }
 
-            if (ImGui.InputFloat("安全点半径", ref _safePointRadius, 0.5f, 1f)) MarkOverlayDirty();
-            ImGui.InputFloat("编号高度偏移", ref _safePointLabelHeight, 0.1f, 0.2f);
+            if (ImGui.InputFloat("安全点半径##安全点", ref _safePointRadius, 0.5f, 1f)) MarkOverlayDirty();
+            ImGui.InputFloat("编号高度偏移##安全点", ref _safePointLabelHeight, 0.1f, 0.2f);
 
-            if (ImGui.Button("计算安全点"))
+            if (ImGui.Button("计算安全点##安全点"))
             {
                 ComputeSafePoints();
             }
 
             ImGui.SameLine();
-            if (ImGui.Button("清空安全点"))
+            if (ImGui.Button("清空安全点##安全点"))
             {
                 _safePoints.Clear();
                 _safePointError = string.Empty;
@@ -383,7 +416,7 @@ namespace HaiyaBox.UI
 
         private void DrawSafePointResultSection()
         {
-            if (!ImGui.CollapsingHeader("安全点结果", ImGuiTreeNodeFlags.DefaultOpen))
+            if (!ImGui.CollapsingHeader("安全点结果##安全点", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 return;
             }
@@ -407,7 +440,7 @@ namespace HaiyaBox.UI
 
         private void DrawShapeConfigSection()
         {
-            if (!ImGui.CollapsingHeader("AOE 形状参数设置", ImGuiTreeNodeFlags.DefaultOpen))
+            if (!ImGui.CollapsingHeader("AOE 形状参数设置##aoeshape", ImGuiTreeNodeFlags.DefaultOpen))
             {
                 return;
             }
@@ -417,13 +450,13 @@ namespace HaiyaBox.UI
             DrawCommonShapeInputs();
             DrawShapeSpecificInputs();
 
-            if (ImGui.Button("添加 AOEShape"))
+            if (ImGui.Button("添加 AOEShape##aoeshape"))
             {
                 AddShape();
             }
 
             ImGui.SameLine();
-            if (ImGui.Button("清除输入错误"))
+            if (ImGui.Button("清除输入错误##aoeshape"))
             {
                 _lastError = string.Empty;
             }
@@ -439,7 +472,7 @@ namespace HaiyaBox.UI
         private void DrawShapeTypeSelector()
         {
             var label = ShapeLabels[Math.Clamp(_shapeTypeIndex, 0, ShapeLabels.Length - 1)];
-            if (ImGui.BeginCombo("形状类型", label))
+            if (ImGui.BeginCombo("形状类型##aoeshape", label))
             {
                 for (int i = 0; i < ShapeLabels.Length; i++)
                 {
@@ -487,9 +520,9 @@ namespace HaiyaBox.UI
 
         private void DrawCommonShapeInputs()
         {
-            ImGui.InputFloat("旋转角度(度)", ref _rotationDeg, 1f, 5f);
-            ImGui.InputFloat("方向偏移(度)", ref _directionOffsetDeg, 1f, 5f);
-            ImGui.Checkbox("反转禁止区域", ref _invertForbiddenZone);
+            ImGui.InputFloat("旋转角度(度)##aoeshape", ref _rotationDeg, 1f, 5f);
+            ImGui.InputFloat("方向偏移(度)##aoeshape", ref _directionOffsetDeg, 1f, 5f);
+            ImGui.Checkbox("反转禁止区域##aoeshape", ref _invertForbiddenZone);
         }
 
         private void DrawShapeSpecificInputs()
@@ -497,43 +530,43 @@ namespace HaiyaBox.UI
             switch (_shapeTypeIndex)
             {
                 case 0: // Circle
-                    ImGui.InputFloat("半径", ref _circleRadius, 0.5f, 1f);
+                    ImGui.InputFloat("半径##aoeshape", ref _circleRadius, 0.5f, 1f);
                     break;
                 case 1: // Donut
-                    ImGui.InputFloat("内圈半径", ref _donutInnerRadius, 0.5f, 1f);
-                    ImGui.InputFloat("外圈半径", ref _donutOuterRadius, 0.5f, 1f);
+                    ImGui.InputFloat("内圈半径##aoeshape", ref _donutInnerRadius, 0.5f, 1f);
+                    ImGui.InputFloat("外圈半径##aoeshape", ref _donutOuterRadius, 0.5f, 1f);
                     break;
                 case 2: // Cone
-                    ImGui.InputFloat("半径", ref _coneRadius, 0.5f, 1f);
-                    ImGui.InputFloat("半角(度)", ref _coneHalfAngleDeg, 1f, 5f);
+                    ImGui.InputFloat("半径##aoeshape", ref _coneRadius, 0.5f, 1f);
+                    ImGui.InputFloat("半角(度)##aoeshape", ref _coneHalfAngleDeg, 1f, 5f);
                     break;
                 case 3: // DonutSector
-                    ImGui.InputFloat("内圈半径", ref _donutSectorInnerRadius, 0.5f, 1f);
-                    ImGui.InputFloat("外圈半径", ref _donutSectorOuterRadius, 0.5f, 1f);
-                    ImGui.InputFloat("半角(度)", ref _donutSectorHalfAngleDeg, 1f, 5f);
+                    ImGui.InputFloat("内圈半径##aoeshape", ref _donutSectorInnerRadius, 0.5f, 1f);
+                    ImGui.InputFloat("外圈半径##aoeshape", ref _donutSectorOuterRadius, 0.5f, 1f);
+                    ImGui.InputFloat("半角(度)##aoeshape", ref _donutSectorHalfAngleDeg, 1f, 5f);
                     break;
                 case 4: // Rect
-                    ImGui.InputFloat("前方长度", ref _rectLengthFront, 0.5f, 1f);
-                    ImGui.InputFloat("后方长度", ref _rectLengthBack, 0.5f, 1f);
-                    ImGui.InputFloat("半宽", ref _rectHalfWidth, 0.5f, 1f);
+                    ImGui.InputFloat("前方长度##aoeshape", ref _rectLengthFront, 0.5f, 1f);
+                    ImGui.InputFloat("后方长度##aoeshape", ref _rectLengthBack, 0.5f, 1f);
+                    ImGui.InputFloat("半宽##aoeshape", ref _rectHalfWidth, 0.5f, 1f);
                     break;
                 case 5: // Cross
-                    ImGui.InputFloat("臂长", ref _crossLength, 0.5f, 1f);
-                    ImGui.InputFloat("半宽", ref _crossHalfWidth, 0.5f, 1f);
+                    ImGui.InputFloat("臂长##aoeshape", ref _crossLength, 0.5f, 1f);
+                    ImGui.InputFloat("半宽##aoeshape", ref _crossHalfWidth, 0.5f, 1f);
                     break;
                 case 6: // TriCone
-                    ImGui.InputFloat("边长", ref _triConeSideLength, 0.5f, 1f);
-                    ImGui.InputFloat("半角(度)", ref _triConeHalfAngleDeg, 1f, 5f);
+                    ImGui.InputFloat("边长##aoeshape", ref _triConeSideLength, 0.5f, 1f);
+                    ImGui.InputFloat("半角(度)##aoeshape", ref _triConeHalfAngleDeg, 1f, 5f);
                     break;
                 case 7: // Capsule
-                    ImGui.InputFloat("半径", ref _capsuleRadius, 0.5f, 1f);
-                    ImGui.InputFloat("长度", ref _capsuleLength, 0.5f, 1f);
+                    ImGui.InputFloat("半径##aoeshape", ref _capsuleRadius, 0.5f, 1f);
+                    ImGui.InputFloat("长度##aoeshape", ref _capsuleLength, 0.5f, 1f);
                     break;
                 case 8: // ArcCapsule
-                    ImGui.InputFloat("半径", ref _arcCapsuleRadius, 0.5f, 1f);
-                    ImGui.InputFloat("弧长角度(度)", ref _arcCapsuleAngularLengthDeg, 1f, 5f);
-                    ImGui.InputText("轨道中心(x,y,z)", ref _orbitCenterInput, 64);
-                    if (ImGui.Button("设置轨道中心##Orbit"))
+                    ImGui.InputFloat("半径##aoeshape", ref _arcCapsuleRadius, 0.5f, 1f);
+                    ImGui.InputFloat("弧长角度(度)##aoeshape", ref _arcCapsuleAngularLengthDeg, 1f, 5f);
+                    ImGui.InputText("轨道中心(x,y,z)##aoeshape", ref _orbitCenterInput, 64);
+                    if (ImGui.Button("设置轨道中心##Orbit##aoeshape"))
                     {
                         if (TryParseVector3(_orbitCenterInput, out var pos))
                         {
@@ -832,6 +865,7 @@ namespace HaiyaBox.UI
             if (_arenaEnabled)
             {
                 var arenaCenter = _arenaCenter;
+                arenaCenter.Y += ArenaHeightOffset;
                 if (_arenaTypeIndex == 0)
                 {
                     payload.Add(new DisplayObjectCircle(arenaCenter, _arenaRadius, ArenaBoundsColor, ArenaOutlineThickness, false));

@@ -151,6 +151,29 @@ namespace HaiyaBox.UI
                 ImGui.Spacing();
             }
 
+            if (ImGui.CollapsingHeader("SafeZone 自动绘制", ImGuiTreeNodeFlags.DefaultOpen))
+            {
+                var settings = FullAutoSettings.Instance.FaGeneralSetting;
+                bool enabled = settings.SafeZoneAutoDrawEnabled;
+                if (ImGui.Checkbox("自动绘制 SafeZone (DistanceField)", ref enabled))
+                {
+                    settings.UpdateSafeZoneAutoDrawEnabled(enabled);
+                    if (enabled && !DangerAreaTab.OverlayEnabled)
+                    {
+                        DangerAreaTab.ToggleOverlayStatic(true);
+                    }
+                }
+
+                var stats = SafeZoneAutoDraw.GetStats();
+                ImGui.Text($"场地: {stats.ArenaCount}  危险区: {stats.ActiveZoneCount}  安全点: {stats.SafePointCount}");
+
+                if (ImGui.Button("清空自动绘制##Geometry"))
+                {
+                    SafeZoneAutoDraw.ClearAll();
+                }
+
+                ImGui.Spacing();
+            }
         }
         private void DrawTimeDot()
         {

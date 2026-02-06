@@ -17,6 +17,7 @@
 |------|------|------|
 | BattleData | (多字段) | 存储战斗相关配置 |
 | FullAutoSettings | (多字段) | 存储自动化行为配置 |
+| FaGeneralSetting | SafeZoneAutoDrawEnabled | SafeZone 自动绘制开关 |
 
 ## 行为规范
 

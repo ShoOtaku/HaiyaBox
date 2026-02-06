@@ -8,6 +8,7 @@ using AEAssist.Helper;
 using AEAssist.Verify;
 using Dalamud.Bindings.ImGui;
 using HaiyaBox.Hooks;
+using HaiyaBox.Rendering;
 using HaiyaBox.Settings;
 using HaiyaBox.Triggers.TriggerAction;
 using HaiyaBox.Triggers.TriggerCondition;
@@ -57,6 +58,7 @@ namespace HaiyaBox.Plugin
             XszRemote.Instance = _xszToolboxIpc;
             DebugPoint.Initialize(_dangerAreaTab.Renderer);
             AOEShapeDebug.Initialize(_dangerAreaTab.Renderer);
+            SafeZoneAutoDraw.Initialize(_dangerAreaTab.Renderer);
 
 
             ResetAutoSettings();
@@ -76,6 +78,7 @@ namespace HaiyaBox.Plugin
             _dangerAreaTab.Dispose();
             DebugPoint.Dispose();
             AOEShapeDebug.Dispose();
+            SafeZoneAutoDraw.Dispose();
 
             
             actorControlHook?.Dispose();
@@ -89,6 +92,7 @@ namespace HaiyaBox.Plugin
             _automationTab.Update();
             _blackListTab.Update();
             _dangerAreaTab.Update();
+            SafeZoneAutoDraw.Update();
             _treasureOpener.Update();
         }
 

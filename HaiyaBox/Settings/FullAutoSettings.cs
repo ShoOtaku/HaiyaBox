@@ -684,6 +684,9 @@ namespace HaiyaBox.Settings
         // 控制是否绘制坐标点并打印调试信息（默认启用）
         public bool PrintDebugInfo { get; set; } = true;
 
+        // 控制是否启用 SafeZone 自动绘制
+        public bool SafeZoneAutoDrawEnabled { get; set; }
+
         //控制是否打印所有ActorControl信息
         public bool PrintActorControl { get; set; } = false;
 
@@ -693,6 +696,12 @@ namespace HaiyaBox.Settings
         public void UpdatePrintDebugInfo(bool print)
         {
             PrintDebugInfo = print;
+            FullAutoSettings.Instance.Save();
+        }
+
+        public void UpdateSafeZoneAutoDrawEnabled(bool enabled)
+        {
+            SafeZoneAutoDrawEnabled = enabled;
             FullAutoSettings.Instance.Save();
         }
 

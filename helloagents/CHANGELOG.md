@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+### 新增
+- **[Rendering]**: SafeZone 自动绘制（DistanceField 轮廓 + 安全点标注），支持副本切换/团灭/战斗重置自动清理
+  - 方案: [202602061852_auto-draw-distancefield](archive/2026-02/202602061852_auto-draw-distancefield/)
+
+- **[AOESafetyCalculator]**: SafeZoneDrawRegistry 跟踪计算器/安全点供自动绘制
+  - 方案: [202602061852_auto-draw-distancefield](archive/2026-02/202602061852_auto-draw-distancefield/)
+
+- **[UI]**: DangerAreaTab 与 GeometryTab 增加 SafeZone 自动绘制开关、统计与清理入口
+  - 方案: [202602061852_auto-draw-distancefield](archive/2026-02/202602061852_auto-draw-distancefield/)
+
+- **[Settings]**: FaGeneralSetting 增加 SafeZoneAutoDrawEnabled 配置
+  - 方案: [202602061852_auto-draw-distancefield](archive/2026-02/202602061852_auto-draw-distancefield/)
+
+- **[Tests]**: DistanceFieldContourBuilder 单元测试
+  - 方案: [202602061852_auto-draw-distancefield](archive/2026-02/202602061852_auto-draw-distancefield/)
+
+## [0.4.5] - 2026-02-05
+
+### 微调
+- **[UI]**: DangerAreaTab 场地范围绘制改为红色并上浮 1 个单位
+  - 类型: 微调（无方案包）
+  - 文件: HaiyaBox/UI/DangerAreaTab.cs:59-62
+  - 文件: HaiyaBox/UI/DangerAreaTab.cs:833-839
+
 ## [0.4.4] - 2026-02-04
 
 ### 微调

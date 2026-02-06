@@ -17,6 +17,11 @@ public sealed class SafeZoneCalculator
     private readonly List<ForbiddenZone> zones = [];
     private ArenaBounds? arenaBounds;
 
+    public SafeZoneCalculator()
+    {
+        SafeZoneDrawRegistry.Register(this);
+    }
+
     /// <summary>
     /// 设置场地边界
     /// </summary>
@@ -24,6 +29,7 @@ public sealed class SafeZoneCalculator
     public void SetArenaBounds(ArenaBounds bounds)
     {
         arenaBounds = bounds;
+        SafeZoneDrawRegistry.Touch(this);
     }
 
     /// <summary>
@@ -38,6 +44,7 @@ public sealed class SafeZoneCalculator
     public void AddForbiddenZone(ForbiddenZone zone)
     {
         zones.Add(zone);
+        SafeZoneDrawRegistry.Touch(this);
     }
 
     /// <summary>
@@ -47,6 +54,7 @@ public sealed class SafeZoneCalculator
     public void AddForbiddenZones(IEnumerable<ForbiddenZone> zones)
     {
         this.zones.AddRange(zones);
+        SafeZoneDrawRegistry.Touch(this);
     }
 
     /// <summary>
@@ -55,6 +63,8 @@ public sealed class SafeZoneCalculator
     public void Clear()
     {
         zones.Clear();
+        SafeZoneDrawRegistry.ClearCalculator(this);
+        SafeZoneDrawRegistry.Touch(this);
     }
 
     /// <summary>
@@ -248,4 +258,6 @@ public sealed class SafeZoneCalculator
     {
         return new SafePositionQuery(this, count, searchCenter, searchRadius, currentTime);
     }
+
+    internal IReadOnlyList<ForbiddenZone> GetZones() => zones;
 }

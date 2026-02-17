@@ -386,29 +386,28 @@ public sealed class SafeZoneCalculator
     /// </summary>
     /// <param name="shape">AOE 形状（如 AOEShapeCircle, AOEShapeCone, AOEShapeRect 等）</param>
     /// <param name="origin">形状原点位置</param>
-    /// <param name="rotation">形状朝向。角度约定：0°=北，90°=东，180°=南，270°=西</param>
     /// <param name="activation">激活时间（null 表示立即激活）</param>
     /// <returns>返回 this 以支持链式调用</returns>
     /// <example>
     /// <code>
     /// // 圆形危险区，半径8米
-    /// calculator.AddAOEShape(new AOEShapeCircle(8f), bossPos, 0f.Degrees());
+    /// calculator.AddAOEShape(new AOEShapeCircle(8f), bossPos);
     /// 
     /// // 扇形危险区，半径20米，90度角，朝北
-    /// calculator.AddAOEShape(new AOEShapeCone(20f, 45f.Degrees()), bossPos, 0f.Degrees());
+    /// calculator.AddAOEShape(new AOEShapeCone(20f, 45f.Degrees(), 0f.Degrees()), bossPos);
     /// 
     /// // 矩形危险区，前方40米，宽20米，朝南
-    /// calculator.AddAOEShape(new AOEShapeRect(40f, 10f), origin, 180f.Degrees());
+    /// calculator.AddAOEShape(new AOEShapeRect(40f, 10f, 0, 180f.Degrees()), origin);
     /// 
     /// // 反转区域（形状内安全，形状外危险）
-    /// calculator.AddAOEShape(new AOEShapeCircle(8f, invertForbiddenZone: true), safePos, 0f.Degrees());
+    /// calculator.AddAOEShape(new AOEShapeCircle(8f, invertForbiddenZone: true), safePos);
     /// </code>
     /// </example>
-    public SafeZoneCalculator AddAOEShape(AOEShape shape, WPos origin, Angle rotation, DateTime? activation = null)
+    public SafeZoneCalculator AddAOEShape(AOEShape shape, WPos origin, DateTime? activation = null)
     {
         var distance = shape.InvertForbiddenZone
-            ? shape.InvertedDistance(origin, rotation)
-            : shape.Distance(origin, rotation);
+            ? shape.InvertedDistance(origin)
+            : shape.Distance(origin);
         
         AddForbiddenZone(new ForbiddenZone
         {

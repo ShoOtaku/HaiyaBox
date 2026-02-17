@@ -28,7 +28,6 @@ public static class AOEShapeDebug
     {
         public AOEShape Shape { get; init; } = null!;
         public WPos Origin { get; init; }
-        public Angle Rotation { get; init; }
         public DateTime ExpiresAt { get; init; }
         public uint Color { get; init; }
         public float Height { get; init; }
@@ -68,7 +67,7 @@ public static class AOEShapeDebug
         }
     }
 
-    public static void Draw(AOEShape shape, WPos origin, Angle rotation, float durationSeconds)
+    public static void Draw(AOEShape shape, WPos origin, float durationSeconds)
     {
         if (shape == null)
         {
@@ -86,7 +85,6 @@ public static class AOEShapeDebug
             {
                 Shape = shape,
                 Origin = origin,
-                Rotation = rotation,
                 ExpiresAt = now.AddSeconds(duration),
                 Color = color,
                 Height = height
@@ -143,7 +141,7 @@ public static class AOEShapeDebug
         return (int)hash;
     }
 
-    internal static IReadOnlyList<DisplayObject> BuildDisplayObjectsFor(AOEShape shape, WPos origin, Angle rotation, float height, uint color)
+    internal static IReadOnlyList<DisplayObject> BuildDisplayObjectsFor(AOEShape shape, WPos origin, float height, uint color)
     {
         var result = new List<DisplayObject>();
         switch (shape)
@@ -159,22 +157,22 @@ public static class AOEShapeDebug
                 }
                 break;
             case AOEShapeCone cone:
-                result.AddRange(BuildCone(cone, origin, rotation, height, color));
+                result.AddRange(BuildCone(cone, origin, height, color));
                 break;
             case AOEShapeDonutSector donutSector:
-                result.AddRange(BuildDonutSector(donutSector, origin, rotation, height, color));
+                result.AddRange(BuildDonutSector(donutSector, origin, height, color));
                 break;
             case AOEShapeRect rect:
-                result.AddRange(BuildRect(rect, origin, rotation, height, color));
+                result.AddRange(BuildRect(rect, origin, height, color));
                 break;
             case AOEShapeCross cross:
-                result.AddRange(BuildCross(cross, origin, rotation, height, color));
+                result.AddRange(BuildCross(cross, origin, height, color));
                 break;
             case AOEShapeTriCone tri:
-                result.AddRange(BuildTri(tri, origin, rotation, height, color));
+                result.AddRange(BuildTri(tri, origin, height, color));
                 break;
             case AOEShapeCapsule capsule:
-                result.AddRange(BuildCapsule(capsule, origin, rotation, height, color));
+                result.AddRange(BuildCapsule(capsule, origin, height, color));
                 break;
             case AOEShapeArcCapsule arc:
                 result.AddRange(BuildArcCapsule(arc, origin, height, color));
@@ -203,7 +201,7 @@ public static class AOEShapeDebug
         var result = new List<DisplayObject>();
         foreach (var entry in snapshot)
         {
-            result.AddRange(BuildDisplayObjectsFor(entry.Shape, entry.Origin, entry.Rotation, entry.Height, entry.Color));
+            result.AddRange(BuildDisplayObjectsFor(entry.Shape, entry.Origin, entry.Height, entry.Color));
         }
 
         return result;
@@ -215,9 +213,9 @@ public static class AOEShapeDebug
         return new DisplayObjectCircle(center, radius, color, LineThickness, false);
     }
 
-    private static IEnumerable<DisplayObject> BuildCone(AOEShapeCone cone, WPos origin, Angle rotation, float height, uint color)
+    private static IEnumerable<DisplayObject> BuildCone(AOEShapeCone cone, WPos origin, float height, uint color)
     {
-        var dir = rotation + cone.DirectionOffset;
+        var dir = cone.Direction;
         var start = dir - cone.HalfAngle;
         var end = dir + cone.HalfAngle;
         var points = new List<Vector3>();
@@ -226,9 +224,9 @@ public static class AOEShapeDebug
         return BuildLineLoop(points, color);
     }
 
-    private static IEnumerable<DisplayObject> BuildDonutSector(AOEShapeDonutSector sector, WPos origin, Angle rotation, float height, uint color)
+    private static IEnumerable<DisplayObject> BuildDonutSector(AOEShapeDonutSector sector, WPos origin, float height, uint color)
     {
-        var dir = rotation + sector.DirectionOffset;
+        var dir = sector.Direction;
         var start = dir - sector.HalfAngle;
         var end = dir + sector.HalfAngle;
         var points = new List<Vector3>();
@@ -245,9 +243,9 @@ public static class AOEShapeDebug
         return BuildLineLoop(points, color);
     }
 
-    private static IEnumerable<DisplayObject> BuildRect(AOEShapeRect rect, WPos origin, Angle rotation, float height, uint color)
+    private static IEnumerable<DisplayObject> BuildRect(AOEShapeRect rect, WPos origin, float height, uint color)
     {
-        var dir = (rotation + rect.DirectionOffset).ToDirection();
+        var dir = rect.Direction.ToDirection();
         var normal = dir.OrthoL();
         var front = origin + dir * rect.LengthFront;
         var back = origin - dir * rect.LengthBack;
@@ -264,9 +262,9 @@ public static class AOEShapeDebug
         return BuildLineLoop(points, color);
     }
 
-    private static IEnumerable<DisplayObject> BuildCross(AOEShapeCross cross, WPos origin, Angle rotation, float height, uint color)
+    private static IEnumerable<DisplayObject> BuildCross(AOEShapeCross cross, WPos origin, float height, uint color)
     {
-        var dir = (rotation + cross.DirectionOffset).ToDirection();
+        var dir = cross.Direction.ToDirection();
         var normal = dir.OrthoL();
         var len = cross.Length;
         var hw = cross.HalfWidth;
@@ -296,9 +294,9 @@ public static class AOEShapeDebug
         return BuildLineLoop(points, color);
     }
 
-    private static IEnumerable<DisplayObject> BuildTri(AOEShapeTriCone tri, WPos origin, Angle rotation, float height, uint color)
+    private static IEnumerable<DisplayObject> BuildTri(AOEShapeTriCone tri, WPos origin, float height, uint color)
     {
-        var dir = rotation + tri.DirectionOffset;
+        var dir = tri.Direction;
         var left = (dir + tri.HalfAngle).ToDirection() * tri.SideLength;
         var right = (dir - tri.HalfAngle).ToDirection() * tri.SideLength;
         var points = new List<Vector3>
@@ -311,10 +309,10 @@ public static class AOEShapeDebug
         return BuildLineLoop(points, color);
     }
 
-    private static IEnumerable<DisplayObject> BuildCapsule(AOEShapeCapsule capsule, WPos origin, Angle rotation, float height, uint color)
+    private static IEnumerable<DisplayObject> BuildCapsule(AOEShapeCapsule capsule, WPos origin, float height, uint color)
     {
-        var dir = (rotation + capsule.DirectionOffset).ToDirection();
-        var angle = (rotation + capsule.DirectionOffset).Rad;
+        var dir = capsule.Direction.ToDirection();
+        var angle = capsule.Direction.Rad;
         var start = origin;
         var end = origin + dir * capsule.Length;
         var points = new List<Vector3>();

@@ -21,7 +21,6 @@ namespace HaiyaBox.UI
         {
             public AOEShape Shape { get; init; } = null!;
             public Vector3 Origin { get; init; }
-            public Angle Rotation { get; init; }
             public bool Enabled { get; set; } = true;
             public uint Color { get; init; }
         }
@@ -643,7 +642,6 @@ namespace HaiyaBox.UI
                     break;
                 }
                 ImGui.Text($"  位置: {FormatVector3(entry.Origin)}");
-                ImGui.Text($"  旋转: {entry.Rotation.Deg:F1}°");
                 ImGui.Spacing();
             }
         }
@@ -659,19 +657,18 @@ namespace HaiyaBox.UI
             }
 
             _origin = origin;
-            var rotation = _rotationDeg.Degrees();
-            var offset = _directionOffsetDeg.Degrees();
+            var direction = (_rotationDeg + _directionOffsetDeg).Degrees();
 
             AOEShape shape = _shapeTypeIndex switch
             {
                 0 => new AOEShapeCircle(_circleRadius, _invertForbiddenZone),
                 1 => new AOEShapeDonut(_donutInnerRadius, _donutOuterRadius, _invertForbiddenZone),
-                2 => new AOEShapeCone(_coneRadius, _coneHalfAngleDeg.Degrees(), offset, _invertForbiddenZone),
-                3 => new AOEShapeDonutSector(_donutSectorInnerRadius, _donutSectorOuterRadius, _donutSectorHalfAngleDeg.Degrees(), offset, _invertForbiddenZone),
-                4 => new AOEShapeRect(_rectLengthFront, _rectHalfWidth, _rectLengthBack, offset, _invertForbiddenZone),
-                5 => new AOEShapeCross(_crossLength, _crossHalfWidth, offset, _invertForbiddenZone),
-                6 => new AOEShapeTriCone(_triConeSideLength, _triConeHalfAngleDeg.Degrees(), offset, _invertForbiddenZone),
-                7 => new AOEShapeCapsule(_capsuleRadius, _capsuleLength, offset, _invertForbiddenZone),
+                2 => new AOEShapeCone(_coneRadius, _coneHalfAngleDeg.Degrees(), direction, _invertForbiddenZone),
+                3 => new AOEShapeDonutSector(_donutSectorInnerRadius, _donutSectorOuterRadius, _donutSectorHalfAngleDeg.Degrees(), direction, _invertForbiddenZone),
+                4 => new AOEShapeRect(_rectLengthFront, _rectHalfWidth, _rectLengthBack, direction, _invertForbiddenZone),
+                5 => new AOEShapeCross(_crossLength, _crossHalfWidth, direction, _invertForbiddenZone),
+                6 => new AOEShapeTriCone(_triConeSideLength, _triConeHalfAngleDeg.Degrees(), direction, _invertForbiddenZone),
+                7 => new AOEShapeCapsule(_capsuleRadius, _capsuleLength, direction, _invertForbiddenZone),
                 8 => CreateArcCapsuleShape(),
                 _ => new AOEShapeCircle(_circleRadius, _invertForbiddenZone)
             };
@@ -680,7 +677,6 @@ namespace HaiyaBox.UI
             {
                 Shape = shape,
                 Origin = origin,
-                Rotation = rotation,
                 Enabled = true,
                 Color = NextColor()
             });
@@ -829,8 +825,8 @@ namespace HaiyaBox.UI
                 if (!entry.Enabled) continue;
                 var origin = WPos.FromVec3(entry.Origin);
                 var distance = entry.Shape.InvertForbiddenZone
-                    ? entry.Shape.InvertedDistance(origin, entry.Rotation)
-                    : entry.Shape.Distance(origin, entry.Rotation);
+                    ? entry.Shape.InvertedDistance(origin)
+                    : entry.Shape.Distance(origin);
                 zones.Add(new ForbiddenZone { Shape = distance });
             }
             return zones;
@@ -868,7 +864,7 @@ namespace HaiyaBox.UI
             {
                 if (!entry.Enabled) continue;
                 var origin = entry.Origin;
-                var objects = AOEShapeDebug.BuildDisplayObjectsFor(entry.Shape, WPos.FromVec3(origin), entry.Rotation, origin.Y, entry.Color);
+                var objects = AOEShapeDebug.BuildDisplayObjectsFor(entry.Shape, WPos.FromVec3(origin), origin.Y, entry.Color);
                 if (objects != null)
                 {
                     payload.AddRange(objects);

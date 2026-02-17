@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using AOESafetyCalculator.Core;
 using AOESafetyCalculator.DistanceField;
 
@@ -41,25 +41,22 @@ public abstract class AOEShape(bool invertForbiddenZone)
     /// </summary>
     /// <param name="position">要检测的位置（世界坐标）</param>
     /// <param name="origin">AOE 的原点位置</param>
-    /// <param name="rotation">AOE 的朝向角度</param>
     /// <returns>true 表示位置在形状内，false 表示在形状外</returns>
-    public abstract bool Check(WPos position, WPos origin, Angle rotation);
+    public abstract bool Check(WPos position, WPos origin);
 
     /// <summary>
     /// 获取 AOE 形状的距离场计算器（形状内部为负，外部为正）
     /// </summary>
     /// <param name="origin">AOE 的原点位置</param>
-    /// <param name="rotation">AOE 的朝向角度</param>
     /// <returns>距离场计算器</returns>
-    public abstract ShapeDistance Distance(WPos origin, Angle rotation);
+    public abstract ShapeDistance Distance(WPos origin);
 
     /// <summary>
     /// 获取反转的距离场计算器（形状内部为正，外部为负）
     /// </summary>
     /// <param name="origin">AOE 的原点位置</param>
-    /// <param name="rotation">AOE 的朝向角度</param>
     /// <returns>反转的距离场计算器</returns>
-    public abstract ShapeDistance InvertedDistance(WPos origin, Angle rotation);
+    public abstract ShapeDistance InvertedDistance(WPos origin);
 }
 
 /// <summary>
@@ -71,10 +68,10 @@ public abstract class AOEShape(bool invertForbiddenZone)
 /// </remarks>
 /// <param name="radius">扇形半径（码）</param>
 /// <param name="halfAngle">扇形半角（总角度的一半）</param>
-/// <param name="directionOffset">方向偏移角度（相对于朝向）</param>
+/// <param name="direction">扇形中心方向。角度约定：0°=北，90°=东，180°=南，270°=西</param>
 /// <param name="invertForbiddenZone">是否反转禁止区域</param>
 [SkipLocalsInit]
-public sealed class AOEShapeCone(float radius, Angle halfAngle, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
+public sealed class AOEShapeCone(float radius, Angle halfAngle, Angle direction = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     /// <summary>扇形半径（码）</summary>
     public readonly float Radius = radius;
@@ -82,32 +79,30 @@ public sealed class AOEShapeCone(float radius, Angle halfAngle, Angle directionO
     /// <summary>扇形半角（总角度 = HalfAngle × 2）</summary>
     public readonly Angle HalfAngle = halfAngle;
 
-    /// <summary>方向偏移角度</summary>
-    public readonly Angle DirectionOffset = directionOffset;
+    /// <summary>扇形中心方向</summary>
+    public readonly Angle Direction = direction;
 
     /// <summary>返回形状的字符串描述</summary>
-    public override string ToString() => $"Cone: r={Radius:f3}, angle={HalfAngle * 2f}, off={DirectionOffset}, ifz={InvertForbiddenZone}";
+    public override string ToString() => $"Cone: r={Radius:f3}, angle={HalfAngle * 2f}, dir={Direction}, ifz={InvertForbiddenZone}";
 
     /// <summary>检测位置是否在扇形内</summary>
-    public override bool Check(WPos position, WPos origin, Angle rotation)
-        => position.InCircleCone(origin, Radius, rotation + DirectionOffset, HalfAngle);
+    public override bool Check(WPos position, WPos origin)
+        => position.InCircleCone(origin, Radius, Direction, HalfAngle);
 
     /// <summary>获取距离计算器</summary>
-    public override ShapeDistance Distance(WPos origin, Angle rotation)
+    public override ShapeDistance Distance(WPos origin)
     {
-        var dir = rotation + DirectionOffset;
         return InvertForbiddenZone
-            ? new SDInvertedCone(origin, Radius, dir, HalfAngle)
-            : new SDCone(origin, Radius, dir, HalfAngle);
+            ? new SDInvertedCone(origin, Radius, Direction, HalfAngle)
+            : new SDCone(origin, Radius, Direction, HalfAngle);
     }
 
     /// <summary>获取反转的距离计算器</summary>
-    public override ShapeDistance InvertedDistance(WPos origin, Angle rotation)
+    public override ShapeDistance InvertedDistance(WPos origin)
     {
-        var dir = rotation + DirectionOffset;
         return InvertForbiddenZone
-            ? new SDCone(origin, Radius, dir, HalfAngle)
-            : new SDInvertedCone(origin, Radius, dir, HalfAngle);
+            ? new SDCone(origin, Radius, Direction, HalfAngle)
+            : new SDInvertedCone(origin, Radius, Direction, HalfAngle);
     }
 }
 
@@ -130,11 +125,11 @@ public sealed class AOEShapeCircle(float radius, bool invertForbiddenZone = fals
     public override string ToString() => $"Circle: r={Radius:f3}, ifz={InvertForbiddenZone}";
 
     /// <summary>检测位置是否在圆形内</summary>
-    public override bool Check(WPos position, WPos origin, Angle rotation = default)
+    public override bool Check(WPos position, WPos origin)
         => position.InCircle(origin, Radius);
 
     /// <summary>获取距离计算器</summary>
-    public override ShapeDistance Distance(WPos origin, Angle rotation)
+    public override ShapeDistance Distance(WPos origin)
     {
         return InvertForbiddenZone
             ? new SDInvertedCircle(origin, Radius)
@@ -142,7 +137,7 @@ public sealed class AOEShapeCircle(float radius, bool invertForbiddenZone = fals
     }
 
     /// <summary>获取反转的距离计算器</summary>
-    public override ShapeDistance InvertedDistance(WPos origin, Angle rotation)
+    public override ShapeDistance InvertedDistance(WPos origin)
     {
         return InvertForbiddenZone
             ? new SDCircle(origin, Radius)
@@ -173,11 +168,11 @@ public sealed class AOEShapeDonut(float innerRadius, float outerRadius, bool inv
     public override string ToString() => $"Donut: r={InnerRadius:f3}-{OuterRadius:f3}, ifz={InvertForbiddenZone}";
 
     /// <summary>检测位置是否在环形内</summary>
-    public override bool Check(WPos position, WPos origin, Angle rotation = default)
+    public override bool Check(WPos position, WPos origin)
         => position.InDonut(origin, InnerRadius, OuterRadius);
 
     /// <summary>获取距离计算器</summary>
-    public override ShapeDistance Distance(WPos origin, Angle rotation)
+    public override ShapeDistance Distance(WPos origin)
     {
         return InvertForbiddenZone
             ? new SDInvertedDonut(origin, InnerRadius, OuterRadius)
@@ -185,7 +180,7 @@ public sealed class AOEShapeDonut(float innerRadius, float outerRadius, bool inv
     }
 
     /// <summary>获取反转的距离计算器</summary>
-    public override ShapeDistance InvertedDistance(WPos origin, Angle rotation)
+    public override ShapeDistance InvertedDistance(WPos origin)
     {
         return InvertForbiddenZone
             ? new SDDonut(origin, InnerRadius, OuterRadius)
@@ -203,10 +198,10 @@ public sealed class AOEShapeDonut(float innerRadius, float outerRadius, bool inv
 /// <param name="innerRadius">内圆半径（码）</param>
 /// <param name="outerRadius">外圆半径（码）</param>
 /// <param name="halfAngle">扇形半角</param>
-/// <param name="directionOffset">方向偏移角度</param>
+/// <param name="direction">扇形中心方向。角度约定：0°=北，90°=东，180°=南，270°=西</param>
 /// <param name="invertForbiddenZone">是否反转禁止区域</param>
 [SkipLocalsInit]
-public sealed class AOEShapeDonutSector(float innerRadius, float outerRadius, Angle halfAngle, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
+public sealed class AOEShapeDonutSector(float innerRadius, float outerRadius, Angle halfAngle, Angle direction = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     /// <summary>内圆半径（码）</summary>
     public readonly float InnerRadius = innerRadius;
@@ -217,32 +212,30 @@ public sealed class AOEShapeDonutSector(float innerRadius, float outerRadius, An
     /// <summary>扇形半角（总角度的一半）</summary>
     public readonly Angle HalfAngle = halfAngle;
 
-    /// <summary>方向偏移角度</summary>
-    public readonly Angle DirectionOffset = directionOffset;
+    /// <summary>扇形中心方向</summary>
+    public readonly Angle Direction = direction;
 
     /// <summary>返回形状的字符串描述</summary>
-    public override string ToString() => $"Donut sector: r={InnerRadius:f3}-{OuterRadius:f3}, angle={HalfAngle * 2f}, off={DirectionOffset}, ifz={InvertForbiddenZone}";
+    public override string ToString() => $"Donut sector: r={InnerRadius:f3}-{OuterRadius:f3}, angle={HalfAngle * 2f}, dir={Direction}, ifz={InvertForbiddenZone}";
 
     /// <summary>检测位置是否在扇形环内</summary>
-    public override bool Check(WPos position, WPos origin, Angle rotation)
-        => position.InDonutCone(origin, InnerRadius, OuterRadius, rotation + DirectionOffset, HalfAngle);
+    public override bool Check(WPos position, WPos origin)
+        => position.InDonutCone(origin, InnerRadius, OuterRadius, Direction, HalfAngle);
 
     /// <summary>获取距离计算器</summary>
-    public override ShapeDistance Distance(WPos origin, Angle rotation)
+    public override ShapeDistance Distance(WPos origin)
     {
-        var dir = rotation + DirectionOffset;
         return InvertForbiddenZone
-            ? new SDInvertedDonutSector(origin, InnerRadius, OuterRadius, dir, HalfAngle)
-            : new SDDonutSector(origin, InnerRadius, OuterRadius, dir, HalfAngle);
+            ? new SDInvertedDonutSector(origin, InnerRadius, OuterRadius, Direction, HalfAngle)
+            : new SDDonutSector(origin, InnerRadius, OuterRadius, Direction, HalfAngle);
     }
 
     /// <summary>获取反转的距离计算器</summary>
-    public override ShapeDistance InvertedDistance(WPos origin, Angle rotation)
+    public override ShapeDistance InvertedDistance(WPos origin)
     {
-        var dir = rotation + DirectionOffset;
         return InvertForbiddenZone
-            ? new SDDonutSector(origin, InnerRadius, OuterRadius, dir, HalfAngle)
-            : new SDInvertedDonutSector(origin, InnerRadius, OuterRadius, dir, HalfAngle);
+            ? new SDDonutSector(origin, InnerRadius, OuterRadius, Direction, HalfAngle)
+            : new SDInvertedDonutSector(origin, InnerRadius, OuterRadius, Direction, HalfAngle);
     }
 }
 
@@ -256,10 +249,10 @@ public sealed class AOEShapeDonutSector(float innerRadius, float outerRadius, An
 /// <param name="lengthFront">前方长度（码）</param>
 /// <param name="halfWidth">半宽度（码）- 总宽度 = halfWidth × 2</param>
 /// <param name="lengthBack">后方长度（码）- 默认为 0</param>
-/// <param name="directionOffset">方向偏移角度</param>
+/// <param name="direction">矩形朝向。角度约定：0°=北，90°=东，180°=南，270°=西</param>
 /// <param name="invertForbiddenZone">是否反转禁止区域</param>
 [SkipLocalsInit]
-public sealed class AOEShapeRect(float lengthFront, float halfWidth, float lengthBack = default, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
+public sealed class AOEShapeRect(float lengthFront, float halfWidth, float lengthBack = default, Angle direction = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     /// <summary>前方长度（码）- 从原点向前延伸的距离</summary>
     public readonly float LengthFront = lengthFront;
@@ -270,32 +263,30 @@ public sealed class AOEShapeRect(float lengthFront, float halfWidth, float lengt
     /// <summary>后方长度（码）- 从原点向后延伸的距离</summary>
     public readonly float LengthBack = lengthBack;
 
-    /// <summary>方向偏移角度</summary>
-    public readonly Angle DirectionOffset = directionOffset;
+    /// <summary>矩形朝向</summary>
+    public readonly Angle Direction = direction;
 
     /// <summary>返回形状的字符串描述</summary>
-    public override string ToString() => $"Rect: l={LengthFront:f3}+{LengthBack:f3}, w={HalfWidth * 2f}, off={DirectionOffset}, ifz={InvertForbiddenZone}";
+    public override string ToString() => $"Rect: l={LengthFront:f3}+{LengthBack:f3}, w={HalfWidth * 2f}, dir={Direction}, ifz={InvertForbiddenZone}";
 
     /// <summary>检测位置是否在矩形内</summary>
-    public override bool Check(WPos position, WPos origin, Angle rotation)
-        => position.InRect(origin, rotation + DirectionOffset, LengthFront, LengthBack, HalfWidth);
+    public override bool Check(WPos position, WPos origin)
+        => position.InRect(origin, Direction, LengthFront, LengthBack, HalfWidth);
 
     /// <summary>获取距离计算器</summary>
-    public override ShapeDistance Distance(WPos origin, Angle rotation)
+    public override ShapeDistance Distance(WPos origin)
     {
-        var dir = rotation + DirectionOffset;
         return InvertForbiddenZone
-            ? new SDInvertedRect(origin, dir, LengthFront, LengthBack, HalfWidth)
-            : new SDRect(origin, dir, LengthFront, LengthBack, HalfWidth);
+            ? new SDInvertedRect(origin, Direction, LengthFront, LengthBack, HalfWidth)
+            : new SDRect(origin, Direction, LengthFront, LengthBack, HalfWidth);
     }
 
     /// <summary>获取反转的距离计算器</summary>
-    public override ShapeDistance InvertedDistance(WPos origin, Angle rotation)
+    public override ShapeDistance InvertedDistance(WPos origin)
     {
-        var dir = rotation + DirectionOffset;
         return InvertForbiddenZone
-            ? new SDRect(origin, dir, LengthFront, LengthBack, HalfWidth)
-            : new SDInvertedRect(origin, dir, LengthFront, LengthBack, HalfWidth);
+            ? new SDRect(origin, Direction, LengthFront, LengthBack, HalfWidth)
+            : new SDInvertedRect(origin, Direction, LengthFront, LengthBack, HalfWidth);
     }
 }
 
@@ -308,10 +299,10 @@ public sealed class AOEShapeRect(float lengthFront, float halfWidth, float lengt
 /// </remarks>
 /// <param name="length">十字臂长度（码）- 从中心到端点的距离</param>
 /// <param name="halfWidth">半宽度（码）- 十字臂宽度的一半</param>
-/// <param name="directionOffset">方向偏移角度</param>
+/// <param name="direction">十字朝向。角度约定：0°=北，90°=东，180°=南，270°=西</param>
 /// <param name="invertForbiddenZone">是否反转禁止区域</param>
 [SkipLocalsInit]
-public sealed class AOEShapeCross(float length, float halfWidth, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
+public sealed class AOEShapeCross(float length, float halfWidth, Angle direction = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     /// <summary>十字臂长度（码）- 从中心到端点的距离</summary>
     public readonly float Length = length;
@@ -319,32 +310,30 @@ public sealed class AOEShapeCross(float length, float halfWidth, Angle direction
     /// <summary>半宽度（码）- 十字臂宽度的一半</summary>
     public readonly float HalfWidth = halfWidth;
 
-    /// <summary>方向偏移角度</summary>
-    public readonly Angle DirectionOffset = directionOffset;
+    /// <summary>十字朝向</summary>
+    public readonly Angle Direction = direction;
 
     /// <summary>返回形状的字符串描述</summary>
-    public override string ToString() => $"Cross: l={Length:f3}, w={HalfWidth * 2f}, off={DirectionOffset}, ifz={InvertForbiddenZone}";
+    public override string ToString() => $"Cross: l={Length:f3}, w={HalfWidth * 2f}, dir={Direction}, ifz={InvertForbiddenZone}";
 
     /// <summary>检测位置是否在十字形内</summary>
-    public override bool Check(WPos position, WPos origin, Angle rotation)
-        => position.InCross(origin, rotation + DirectionOffset, Length, HalfWidth);
+    public override bool Check(WPos position, WPos origin)
+        => position.InCross(origin, Direction, Length, HalfWidth);
 
     /// <summary>获取距离计算器</summary>
-    public override ShapeDistance Distance(WPos origin, Angle rotation)
+    public override ShapeDistance Distance(WPos origin)
     {
-        var dir = rotation + DirectionOffset;
         return InvertForbiddenZone
-            ? new SDInvertedCross(origin, dir, Length, HalfWidth)
-            : new SDCross(origin, dir, Length, HalfWidth);
+            ? new SDInvertedCross(origin, Direction, Length, HalfWidth)
+            : new SDCross(origin, Direction, Length, HalfWidth);
     }
 
     /// <summary>获取反转的距离计算器</summary>
-    public override ShapeDistance InvertedDistance(WPos origin, Angle rotation)
+    public override ShapeDistance InvertedDistance(WPos origin)
     {
-        var dir = rotation + DirectionOffset;
         return InvertForbiddenZone
-            ? new SDCross(origin, dir, Length, HalfWidth)
-            : new SDInvertedCross(origin, dir, Length, HalfWidth);
+            ? new SDCross(origin, Direction, Length, HalfWidth)
+            : new SDInvertedCross(origin, Direction, Length, HalfWidth);
     }
 }
 
@@ -357,10 +346,10 @@ public sealed class AOEShapeCross(float length, float halfWidth, Angle direction
 /// </remarks>
 /// <param name="sideLength">三角形边长（码）</param>
 /// <param name="halfAngle">半角（总角度的一半）</param>
-/// <param name="directionOffset">方向偏移角度</param>
+/// <param name="direction">三角形中心方向。角度约定：0°=北，90°=东，180°=南，270°=西</param>
 /// <param name="invertForbiddenZone">是否反转禁止区域</param>
 [SkipLocalsInit]
-public sealed class AOEShapeTriCone(float sideLength, Angle halfAngle, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
+public sealed class AOEShapeTriCone(float sideLength, Angle halfAngle, Angle direction = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     /// <summary>三角形边长（码）</summary>
     public readonly float SideLength = sideLength;
@@ -368,24 +357,23 @@ public sealed class AOEShapeTriCone(float sideLength, Angle halfAngle, Angle dir
     /// <summary>半角（总角度的一半）</summary>
     public readonly Angle HalfAngle = halfAngle;
 
-    /// <summary>方向偏移角度</summary>
-    public readonly Angle DirectionOffset = directionOffset;
+    /// <summary>三角形中心方向</summary>
+    public readonly Angle Direction = direction;
 
     /// <summary>返回形状的字符串描述</summary>
-    public override string ToString() => $"TriCone: side={SideLength:f3}, angle={HalfAngle * 2f}, off={DirectionOffset}, ifz={InvertForbiddenZone}";
+    public override string ToString() => $"TriCone: side={SideLength:f3}, angle={HalfAngle * 2f}, dir={Direction}, ifz={InvertForbiddenZone}";
 
     /// <summary>检测位置是否在三角形内</summary>
-    public override bool Check(WPos position, WPos origin, Angle rotation)
+    public override bool Check(WPos position, WPos origin)
         => position.InTri(origin,
-            origin + SideLength * (rotation + DirectionOffset + HalfAngle).ToDirection(),
-            origin + SideLength * (rotation + DirectionOffset - HalfAngle).ToDirection());
+            origin + SideLength * (Direction + HalfAngle).ToDirection(),
+            origin + SideLength * (Direction - HalfAngle).ToDirection());
 
     /// <summary>获取距离计算器</summary>
-    public override ShapeDistance Distance(WPos origin, Angle rotation)
+    public override ShapeDistance Distance(WPos origin)
     {
-        var dir = rotation + DirectionOffset;
-        var left = (dir + HalfAngle).ToDirection() * SideLength;
-        var right = (dir - HalfAngle).ToDirection() * SideLength;
+        var left = (Direction + HalfAngle).ToDirection() * SideLength;
+        var right = (Direction - HalfAngle).ToDirection() * SideLength;
         var triangle = new RelTriangle(default, left, right);
         return InvertForbiddenZone
             ? new SDInvertedTri(origin, triangle)
@@ -393,11 +381,10 @@ public sealed class AOEShapeTriCone(float sideLength, Angle halfAngle, Angle dir
     }
 
     /// <summary>获取反转的距离计算器</summary>
-    public override ShapeDistance InvertedDistance(WPos origin, Angle rotation)
+    public override ShapeDistance InvertedDistance(WPos origin)
     {
-        var dir = rotation + DirectionOffset;
-        var left = (dir + HalfAngle).ToDirection() * SideLength;
-        var right = (dir - HalfAngle).ToDirection() * SideLength;
+        var left = (Direction + HalfAngle).ToDirection() * SideLength;
+        var right = (Direction - HalfAngle).ToDirection() * SideLength;
         var triangle = new RelTriangle(default, left, right);
         return InvertForbiddenZone
             ? new SDTri(origin, triangle)
@@ -414,10 +401,10 @@ public sealed class AOEShapeTriCone(float sideLength, Angle halfAngle, Angle dir
 /// </remarks>
 /// <param name="radius">胶囊半径（码）- 两端半圆的半径</param>
 /// <param name="length">胶囊长度（码）- 从原点到远端的距离</param>
-/// <param name="directionOffset">方向偏移角度</param>
+/// <param name="direction">胶囊朝向。角度约定：0°=北，90°=东，180°=南，270°=西</param>
 /// <param name="invertForbiddenZone">是否反转禁止区域</param>
 [SkipLocalsInit]
-public sealed class AOEShapeCapsule(float radius, float length, Angle directionOffset = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
+public sealed class AOEShapeCapsule(float radius, float length, Angle direction = default, bool invertForbiddenZone = false) : AOEShape(invertForbiddenZone)
 {
     /// <summary>胶囊半径（码）- 两端半圆的半径</summary>
     public readonly float Radius = radius;
@@ -425,32 +412,30 @@ public sealed class AOEShapeCapsule(float radius, float length, Angle directionO
     /// <summary>胶囊长度（码）- 从原点到远端的距离</summary>
     public readonly float Length = length;
 
-    /// <summary>方向偏移角度</summary>
-    public readonly Angle DirectionOffset = directionOffset;
+    /// <summary>胶囊朝向</summary>
+    public readonly Angle Direction = direction;
 
     /// <summary>返回形状的字符串描述</summary>
-    public override string ToString() => $"Capsule: radius={Radius:f3}, length={Length}, off={DirectionOffset}, ifz={InvertForbiddenZone}";
+    public override string ToString() => $"Capsule: radius={Radius:f3}, length={Length}, dir={Direction}, ifz={InvertForbiddenZone}";
 
     /// <summary>检测位置是否在胶囊形内</summary>
-    public override bool Check(WPos position, WPos origin, Angle rotation)
-        => position.InCapsule(origin, (rotation + DirectionOffset).ToDirection(), Radius, Length);
+    public override bool Check(WPos position, WPos origin)
+        => position.InCapsule(origin, Direction.ToDirection(), Radius, Length);
 
     /// <summary>获取距离计算器</summary>
-    public override ShapeDistance Distance(WPos origin, Angle rotation)
+    public override ShapeDistance Distance(WPos origin)
     {
-        var dir = rotation + DirectionOffset;
         return InvertForbiddenZone
-            ? new SDInvertedCapsule(origin, dir, Length, Radius)
-            : new SDCapsule(origin, dir, Length, Radius);
+            ? new SDInvertedCapsule(origin, Direction, Length, Radius)
+            : new SDCapsule(origin, Direction, Length, Radius);
     }
 
     /// <summary>获取反转的距离计算器</summary>
-    public override ShapeDistance InvertedDistance(WPos origin, Angle rotation)
+    public override ShapeDistance InvertedDistance(WPos origin)
     {
-        var dir = rotation + DirectionOffset;
         return InvertForbiddenZone
-            ? new SDCapsule(origin, dir, Length, Radius)
-            : new SDInvertedCapsule(origin, dir, Length, Radius);
+            ? new SDCapsule(origin, Direction, Length, Radius)
+            : new SDInvertedCapsule(origin, Direction, Length, Radius);
     }
 }
 
@@ -481,11 +466,11 @@ public sealed class AOEShapeArcCapsule(float radius, Angle angularLength, WPos o
     public override string ToString() => $"ArcCapsule: radius={Radius:f3}, length={AngularLength}, orbitCenter={OrbitCenter}, ifz={InvertForbiddenZone}";
 
     /// <summary>检测位置是否在弧形胶囊内</summary>
-    public override bool Check(WPos position, WPos origin, Angle rotation)
+    public override bool Check(WPos position, WPos origin)
         => position.InArcCapsule(origin, -(origin - OrbitCenter), AngularLength, Radius);
 
     /// <summary>获取距离计算器</summary>
-    public override ShapeDistance Distance(WPos origin, Angle rotation)
+    public override ShapeDistance Distance(WPos origin)
     {
         return InvertForbiddenZone
             ? new SDInvertedArcCapsule(origin, OrbitCenter, AngularLength, Radius)
@@ -493,7 +478,7 @@ public sealed class AOEShapeArcCapsule(float radius, Angle angularLength, WPos o
     }
 
     /// <summary>获取反转的距离计算器</summary>
-    public override ShapeDistance InvertedDistance(WPos origin, Angle rotation)
+    public override ShapeDistance InvertedDistance(WPos origin)
     {
         return InvertForbiddenZone
             ? new SDArcCapsule(origin, OrbitCenter, AngularLength, Radius)

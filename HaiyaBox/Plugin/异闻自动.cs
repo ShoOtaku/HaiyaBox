@@ -123,6 +123,7 @@ public class 异闻自动
             if (!副本结束tp)
             {
                 流程结束时间 = DateTime.Now;
+                ChatHelper.SendMessage("/xsz-invuln off");
                 Core.Me.SetPos(new Vector3(-760.0f, -54.0f, -811.3f));
                 副本结束tp = true;
             }
@@ -394,7 +395,7 @@ public class 异闻自动
             return;
         if (condParams is TargetIconEffectTestCondParams iconEffect )
         {
-            if (iconEffect.Target == Core.Me)
+            if (iconEffect.Target == Core.Me && iconEffect.IconId == 499)
             {
                 Core.Me.SetPos(new Vector3(374.3f, -29.6f, 558.9f));
             }

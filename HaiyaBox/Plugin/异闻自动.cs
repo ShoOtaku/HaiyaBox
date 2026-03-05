@@ -39,6 +39,17 @@ public class 异闻自动
     private bool 无敌已关闭_战斗结束 = false;
     private bool 传送指令已发送 = false;
 
+    private uint 上次地图ID = 0;
+    private DateTime 进入地图时间 = DateTime.Now;
+    private bool 正在等待进入 = false;
+
+    private DateTime 切换Boss时间 = DateTime.Now;
+    private bool 正在等待切换Boss = false;
+
+    private DateTime 战斗开始时间 = DateTime.Now;
+    private int 战斗进度 = 0;
+    private bool 上一帧在战斗中 = false;
+
     private readonly uint[] 敌人ID列表 = { 19097, 19226, 19056 };
     /// <summary>
     /// 在模块加载时调用
@@ -75,15 +86,35 @@ public class 异闻自动
         ImGui.Text("DEBUG");
         
         ImGui.Text($"进度:{进度}");
-        ImGui.Text($"战斗时间:{AI.Instance.BattleData.CurrBattleTimeInMs}");
+        ImGui.Text($"战斗时间:{(int)(DateTime.Now - 战斗开始时间).TotalMilliseconds}");
         ImGui.Text($"老一可选中:{TargetMgr.Instance.EnemysIn20.Values.Any(e => e.BaseId == 19097 && e.IsTargetable)}");
         ImGui.Text($"老二可选中:{TargetMgr.Instance.EnemysIn20.Values.Any(e => e.BaseId == 19226 && e.IsTargetable)}");
         ImGui.Text($"老三可选中:{TargetMgr.Instance.EnemysIn20.Values.Any(e => e.BaseId == 19056 && e.IsTargetable)}");
     }
     public void Update()
     {
-        if (Core.Resolve<MemApiMap>().GetCurrTerrId() != 1317)
+        var 当前地图ID = Core.Resolve<MemApiMap>().GetCurrTerrId();
+        
+        if (当前地图ID != 1317)
+        {
+            上次地图ID = 当前地图ID;
             return;
+        }
+
+        if (上次地图ID != 1317 && !正在等待进入)
+        {
+            正在等待进入 = true;
+            进入地图时间 = DateTime.Now;
+            上次地图ID = 1317;
+            重置所有状态();
+        }
+
+        if (正在等待进入)
+        {
+            if ((DateTime.Now - 进入地图时间).TotalSeconds < 10)
+                return;
+            正在等待进入 = false;
+        }
 
         if (流程结束 && !副本结束tp)
         {
@@ -99,10 +130,16 @@ public class 异闻自动
 
         if (Core.Me.IsInCombat())
         {
+            if (!上一帧在战斗中)
+            {
+                战斗开始时间 = DateTime.Now;
+            }
+            上一帧在战斗中 = true;
             更新战斗中进度();
             return;
         }
 
+        上一帧在战斗中 = false;
         执行非战斗流程();
     }
 
@@ -125,42 +162,66 @@ public class 异闻自动
         if (新进度 != 进度)
         {
             进度 = 新进度;
+            战斗开始时间 = DateTime.Now;
+            战斗进度 = 新进度;
             无敌已开启 = false;
             传送指令已发送 = false;
             老一换位f = false;
             老二换位f = false;
         }
+
+        var 战斗时间ms = (DateTime.Now - 战斗开始时间).TotalMilliseconds;
         
         if (无敌挂机 )
         {
-            if (Core.Me.IsTargetable && AI.Instance.BattleData.CurrBattleTimeInMs > 15 * 1000 && !无敌已开启)
+            if (Core.Me.IsTargetable && 战斗时间ms > 15 * 1000 && !无敌已开启)
             {
                 无敌已开启 = true;
-                LogHelper.Print("/xsz-invuln on");
+                if (进度 == 1)
+                {
+                    Core.Me.SetPos(new Vector3(375.3f, -29.5f, 524.9f));
+                }
+
+                if (进度 == 2)
+                {
+                    Core.Me.SetPos(new Vector3(170.1f, -16.0f, -818.7f));
+                }
+
+                if (进度 == 3)
+                {
+                    Core.Me.SetPos(new Vector3(-759f, -54, -790));
+                }
+                ChatHelper.SendMessage("/xsz-invuln on");
             }
             return;
         }
         if (进度 == 1)
         {
-            if (AI.Instance.BattleData.CurrBattleTimeInMs > 200 * 1000 && !老一换位f)
+            if (战斗时间ms > 195 * 1000 && !老一换位f)
             {
                 老一换位f = true;
-                LogHelper.Print($"/xsz-respawn set 370.3 -29.5 530.4");
+                ChatHelper.SendMessage($"/xsz-respawn set 370.3 -29.5 530.4");
             }
         }
 
         if (进度 == 2)
         {
-            if (AI.Instance.BattleData.CurrBattleTimeInMs > 200 * 1000 && !老二换位f)
+            if (战斗时间ms > 160 * 1000 && !老二换位f)
             {
                 老二换位f = true;
-                LogHelper.Print($"/xsz-respawn set 170.1 -16.0 -809.7");
+                ChatHelper.SendMessage($"/xsz-respawn set 170.1 -16.0 -809.7");
+            }
+
+            if (!开始头标 )
+            {
+                事件启动 = true;
+                开始头标 = true;
             }
         }
 
         if (进度 == 3)
         {
-            if (AI.Instance.BattleData.CurrBattleTimeInMs < 45 * 1000)
+            if (战斗时间ms < 45 * 1000)
             {
                 var 自己 = Core.Me;
                 var 目标 = 自己.GetCurrTarget();
@@ -171,15 +232,16 @@ public class 异闻自动
                     if ((DateTime.Now - 跟随时间).TotalMilliseconds < 500)
                         return;
                     跟随时间 = DateTime.Now;
-                    var 坐标 = GeometryUtilsXZ.ExtendPoint(老三, 目标.Position, 5);
+                    var 坐标 = GeometryUtilsXZ.ExtendPoint(老三, 目标.Position, -5);
                     Core.Me.SetPos(坐标);
                 }
             }
 
-            if (!开始头标 && AI.Instance.BattleData.CurrBattleTimeInMs > 45 * 1000)
+            if (!开始头标 && 战斗时间ms > 45 * 1000)
             {
                 事件启动 = true;
                 开始头标 = true;
+                Core.Me.SetPos(new Vector3(374.3f, -29.6f, 558.9f));
             }
         }
     }
@@ -189,10 +251,10 @@ public class 异闻自动
         if (进度 >= 3 && !敌人可选中(敌人ID列表[2]))
         {
             流程结束 = true;
+            ChatHelper.SendMessage("/xsz-invuln off");
             if (!Core.Me.IsTargetable && 无敌挂机 && !无敌已关闭_战斗结束)
             {
                 无敌已关闭_战斗结束 = true;
-                LogHelper.Print("/xsz-invuln off");
             }
             return;
         }
@@ -205,6 +267,7 @@ public class 异闻自动
                 敌人已选中 = true;
                 正在等待 = false;
                 传送指令已发送 = false;
+                正在等待切换Boss = false;
                 return;
             }
         }
@@ -213,6 +276,7 @@ public class 异闻自动
         {
             敌人已选中 = false;
             正在等待 = false;
+            正在等待切换Boss = false;
             return;
         }
 
@@ -228,8 +292,20 @@ public class 异闻自动
 
     private void 开始等待传送()
     {
+        if (!正在等待切换Boss)
+        {
+            正在等待切换Boss = true;
+            切换Boss时间 = DateTime.Now;
+        }
+        
+        if ((DateTime.Now - 切换Boss时间).TotalSeconds < 5)
+            return;
+        
+        正在等待切换Boss = false;
         正在等待 = true;
         等待开始时间 = DateTime.Now;
+        事件启动 = false;
+        开始头标 = false;
         
         Vector3 目标位置 = 进度 switch
         {
@@ -242,10 +318,9 @@ public class 异闻自动
         if (!传送指令已发送)
         {
             传送指令已发送 = true;
+            ChatHelper.SendMessage("/xsz-invuln off");
             Core.Me.SetPos(目标位置);
-            if (!Core.Me.IsTargetable && 无敌挂机)
-                LogHelper.Print("/xsz-invuln off");
-            LogHelper.Print($"/xsz-respawn set {目标位置.X} {目标位置.Y} {目标位置.Z}");
+            ChatHelper.SendMessage($"/xsz-respawn set {目标位置.X} {目标位置.Y} {目标位置.Z}");
         }
     }
 
@@ -266,6 +341,7 @@ public class 异闻自动
                 进度 = i + 1;
                 敌人已选中 = true;
                 正在等待 = false;
+                正在等待切换Boss = false;
                 return;
             }
         }
@@ -276,6 +352,25 @@ public class 异闻自动
 
         正在等待 = false;
         传送指令已发送 = false;
+        正在等待切换Boss = false;
+    }
+
+    private void 重置所有状态()
+    {
+        进度 = 0;
+        战斗进度 = 0;
+        流程结束 = false;
+        正在等待 = false;
+        敌人已选中 = false;
+        老一换位f = false;
+        老二换位f = false;
+        副本结束tp = false;
+        开始头标 = false;
+        事件启动 = false;
+        无敌已开启 = false;
+        无敌已关闭_战斗结束 = false;
+        传送指令已发送 = false;
+        正在等待切换Boss = false;
     }
 
     private bool 敌人可选中(uint 敌人ID)

@@ -10,6 +10,7 @@ using AEAssist.MemoryApi;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Conditions;
 using ECommons.DalamudServices;
+using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using HaiyaBox.Utils;
 
 namespace HaiyaBox.Plugin;
@@ -40,6 +41,8 @@ public class 异闻自动
     private bool 无敌已开启 = false;
     private bool 无敌已关闭_战斗结束 = false;
     private bool 传送指令已发送 = false;
+    private bool 复活位置指令 = false;
+    private float 当前目标血量;
 
     private uint 上次地图ID = 0;
     private DateTime 进入地图时间 = DateTime.Now;
@@ -47,6 +50,7 @@ public class 异闻自动
 
     private DateTime 切换Boss时间 = DateTime.Now;
     private bool 正在等待切换Boss = false;
+    private bool 已完成一轮检测 = false;
 
     private DateTime 战斗开始时间 = DateTime.Now;
     private int 战斗进度 = 0;
@@ -158,6 +162,8 @@ public class 异闻自动
 
     private void 更新战斗中进度()
     {
+        if (Core.Me.GetCurrTarget() != null)
+            当前目标血量 = Core.Me.GetCurrTarget().CurrentHpPercent();
         int 新进度 = 进度;
         if (TargetMgr.Instance.EnemysIn20.Values.Any(e => e.BaseId == 19097 && e.IsTargetable))
         {
@@ -208,12 +214,19 @@ public class 异闻自动
             }
             return;
         }
+        
         if (进度 == 1)
         {
             if (战斗时间ms > 195 * 1000 && !老一换位f)
             {
                 老一换位f = true;
                 ChatHelper.SendMessage($"/xsz-respawn set 370.3 -29.5 530.4");
+            }
+
+            if (!复活位置指令)
+            {
+                复活位置指令 = true;
+                ChatHelper.SendMessage($"/xsz-respawn set 375.3 -29.5 534.9");
             }
         }
 
@@ -224,16 +237,20 @@ public class 异闻自动
                 老二换位f = true;
                 ChatHelper.SendMessage($"/xsz-respawn set 170.1 -16.0 -809.7");
             }
-
-            if (!开始头标 )
+            if (!复活位置指令)
             {
-                事件启动 = true;
-                开始头标 = true;
+                复活位置指令 = true;
+                ChatHelper.SendMessage($"/xsz-respawn set 170.1 -16.0 -818.7");
             }
         }
 
         if (进度 == 3)
         {
+            if (!复活位置指令)
+            {
+                复活位置指令 = true;
+                ChatHelper.SendMessage($"/xsz-respawn set -759 -54 -803");
+            }
             if (战斗时间ms < 45 * 1000)
             {
                 var 自己 = Core.Me;
@@ -255,7 +272,7 @@ public class 异闻自动
 
     private void 执行非战斗流程()
     {
-        if (进度 >= 3 && !敌人可选中(敌人ID列表[2]))
+        if (进度 >= 3 && !敌人可选中(敌人ID列表[2]) && 当前目标血量 < 0.01f)
         {
             流程结束 = true;
             
@@ -302,6 +319,8 @@ public class 异闻自动
         if (!正在等待切换Boss)
         {
             正在等待切换Boss = true;
+            传送指令已发送 = false;
+            复活位置指令 = false;
             切换Boss时间 = DateTime.Now;
         }
         
@@ -311,14 +330,13 @@ public class 异闻自动
         正在等待切换Boss = false;
         正在等待 = true;
         等待开始时间 = DateTime.Now;
-        事件启动 = false;
         开始头标 = false;
         
         Vector3 目标位置 = 进度 switch
         {
-            0 => 老一,
-            1 => 老二,
-            2 => 老三,
+            1 => 老一,
+            2 => 老二,
+            3 => 老三,
             _ => 老一
         };
         
@@ -327,7 +345,6 @@ public class 异闻自动
             传送指令已发送 = true;
             ChatHelper.SendMessage("/xsz-invuln off");
             Core.Me.SetPos(目标位置);
-            ChatHelper.SendMessage($"/xsz-respawn set {目标位置.X} {目标位置.Y} {目标位置.Z}");
         }
     }
 
@@ -356,7 +373,21 @@ public class 异闻自动
         if (等待时间 < 5)
             return;
 
-
+        if (进度 == 3)
+        {
+            if (已完成一轮检测)
+            {
+                流程结束 = true;
+                return;
+            }
+            已完成一轮检测 = true;
+            进度 = 0;
+        }
+        else
+        {
+            进度++;
+        }
+        
         正在等待 = false;
         传送指令已发送 = false;
         正在等待切换Boss = false;
@@ -364,6 +395,7 @@ public class 异闻自动
 
     private void 重置所有状态()
     {
+        事件启动 = true;
         进度 = 0;
         战斗进度 = 0;
         流程结束 = false;
@@ -374,11 +406,11 @@ public class 异闻自动
         副本结束tp = false;
         结束指令已发送 = false;
         开始头标 = false;
-        事件启动 = false;
         无敌已开启 = false;
         无敌已关闭_战斗结束 = false;
         传送指令已发送 = false;
         正在等待切换Boss = false;
+        已完成一轮检测 = false;
     }
 
     private bool 敌人可选中(uint 敌人ID)
@@ -395,11 +427,10 @@ public class 异闻自动
             return;
         if (condParams is TargetIconEffectTestCondParams iconEffect )
         {
-            if (iconEffect.Target == Core.Me && iconEffect.IconId == 499)
+            if (iconEffect.Target == Core.Me && (iconEffect.IconId == 499 || iconEffect.IconId == 185) )
             {
                 Core.Me.SetPos(new Vector3(374.3f, -29.6f, 558.9f));
             }
         }
-
     }
 }

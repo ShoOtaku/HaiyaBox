@@ -108,7 +108,8 @@ public class 异闻自动
             上次地图ID = 当前地图ID;
             return;
         }
-
+        if (!功能启动)
+            return;
         if (上次地图ID != 1317 && !正在等待进入)
         {
             正在等待进入 = true;

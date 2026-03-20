@@ -108,81 +108,14 @@ public class 异闻自动
         }
     }
 
-    private async Task AddonSetTask()
-    {
-        await Task.Delay(500);
-        Core.Resolve<MemApiAddon>().SetAddonClicked(_addonName, 1);
-        
-    } 
+
     public void Update()
     {
         商客异闻fa();
     }
     private void 商客异闻fa()
     {
-        var 当前地图ID = Core.Resolve<MemApiMap>().GetCurrTerrId();
-        
-        if (当前地图ID != 1317)
-        {
-            上次地图ID = 当前地图ID;
-            return;
-        }
-        if (!功能启动)
-            return;
-        if (上次地图ID != 1317 && !正在等待进入)
-        {
-            正在等待进入 = true;
-            进入地图时间 = DateTime.Now;
-            上次地图ID = 1317;
-            重置所有状态();
-        }
-
-        if (正在等待进入)
-        {
-            if ((DateTime.Now - 进入地图时间).TotalSeconds < 10)
-                return;
-            正在等待进入 = false;
-        }
-
-        if (流程结束 )
-        {
-            if (!副本结束tp)
-            {
-                流程结束时间 = DateTime.Now;
-                ChatHelper.SendMessage("/xsz-invuln off");
-                if (是否遥控位)
-                {
-                    XszRemote.SetPos("", new Vector3(-760.0f, -54.0f, -811.3f));
-                    副本结束tp = true;
-                }
-            }
-            事件启动 = false;
-            开始头标 = false;
-            
-            if (!结束指令已发送 && (DateTime.Now - 流程结束时间).TotalSeconds >= 5 && 是否遥控位)
-            {
-                结束指令已发送 = true;
-                XszRemote.Cmd("","/xsz-leaveduty");
-            }
-            return;
-        }
-
-        if (Svc.Condition[ConditionFlag.Unconscious] || Svc.Condition[ConditionFlag.BetweenAreas])
-            return;
-
-        if (Core.Me.IsInCombat())
-        {
-            if (!上一帧在战斗中)
-            {
-                战斗开始时间 = DateTime.Now;
-            }
-            上一帧在战斗中 = true;
-            更新战斗中进度();
-            return;
-        }
-
-        上一帧在战斗中 = false;
-        执行非战斗流程();
+       
     }
 
     private void 商客异变fa()
@@ -196,262 +129,7 @@ public class 异闻自动
         }
         
     }
-
-    private void 更新战斗中进度()
-    {
-        if (Core.Me.GetCurrTarget() != null)
-            当前目标血量 = Core.Me.GetCurrTarget().CurrentHpPercent();
-        int 新进度 = 进度;
-        if (TargetMgr.Instance.EnemysIn20.Values.Any(e => e.BaseId == 19097 && e.IsTargetable))
-        {
-            新进度 = 1;
-        }
-        if (TargetMgr.Instance.EnemysIn20.Values.Any(e => e.BaseId == 19226 && e.IsTargetable))
-        {
-            新进度 = 2;
-        }
-        if (TargetMgr.Instance.EnemysIn20.Values.Any(e => e.BaseId == 19056 && e.IsTargetable))
-        {
-            新进度 = 3;
-        }
-        
-        if (新进度 != 进度)
-        {
-            进度 = 新进度;
-            战斗开始时间 = DateTime.Now;
-            战斗进度 = 新进度;
-            无敌已开启 = false;
-            传送指令已发送 = false;
-            老一换位f = false;
-            老二换位f = false;
-        }
-
-        var 战斗时间ms = (DateTime.Now - 战斗开始时间).TotalMilliseconds;
-        
-        if (无敌挂机 )
-        {
-            if (Core.Me.IsTargetable && 战斗时间ms > 15 * 1000 && !无敌已开启)
-            {
-                无敌已开启 = true;
-                if (进度 == 1)
-                {
-                    Core.Me.SetPos(new Vector3(375.3f, -29.5f, 524.9f));
-                }
-
-                if (进度 == 2)
-                {
-                    Core.Me.SetPos(new Vector3(170.1f, -16.0f, -818.7f));
-                }
-
-                if (进度 == 3)
-                {
-                    Core.Me.SetPos(new Vector3(-759f, -54, -790));
-                }
-                ChatHelper.SendMessage("/xsz-invuln on");
-            }
-            return;
-        }
-        
-        if (进度 == 1 && 是否遥控位)
-        {
-            if (战斗时间ms > 195 * 1000 && !老一换位f)
-            {
-                老一换位f = true;
-                XszRemote.Cmd("",$"/xsz-respawn set 370.3 -29.5 530.4");
-            }
-
-            if (!复活位置指令)
-            {
-                复活位置指令 = true;
-                XszRemote.Cmd("",$"/xsz-respawn set 375.3 -29.5 534.9");
-            }
-        }
-
-        if (进度 == 2 &&是否遥控位)
-        {
-            if (战斗时间ms > 160 * 1000 && !老二换位f)
-            {
-                老二换位f = true;
-                XszRemote.Cmd("",$"/xsz-respawn set 170.1 -16.0 -809.7");
-            }
-            if (!复活位置指令)
-            {
-                复活位置指令 = true;
-                XszRemote.Cmd("",$"/xsz-respawn set 170.1 -16.0 -818.7");
-            }
-        }
-
-        if (进度 == 3)
-        {
-            if (!复活位置指令 && 是否遥控位)
-            {
-                复活位置指令 = true;
-                XszRemote.Cmd("",$"/xsz-respawn set -759 -54 -803");
-            }
-            if (战斗时间ms < 30 * 1000)
-            {
-                var 自己 = Core.Me;
-                var 目标 = 自己.GetCurrTarget();
-                if (目标  == null)
-                    return;
-                if (目标.DistanceToPlayer() > 6)
-                {
-                    if ((DateTime.Now - 跟随时间).TotalMilliseconds < 500)
-                        return;
-                    跟随时间 = DateTime.Now;
-                    var 坐标 = GeometryUtilsXZ.ExtendPoint(老三, 目标.Position, -5);
-                    Core.Me.SetPos(坐标);
-                }
-            }
-            
-        }
-    }
-
-    private void 执行非战斗流程()
-    {
-        if (进度 >= 3 && !敌人可选中(敌人ID列表[2]) && 当前目标血量 < 0.01f)
-        {
-            流程结束 = true;
-            
-            if (!Core.Me.IsTargetable)
-            {
-                ChatHelper.SendMessage("/xsz-invuln off");
-            }
-            return;
-        }
-
-        for (int i = 0; i < 敌人ID列表.Length; i++)
-        {
-            if (敌人可选中(敌人ID列表[i]))
-            {
-                进度 = i + 1;
-                敌人已选中 = true;
-                正在等待 = false;
-                传送指令已发送 = false;
-                正在等待切换Boss = false;
-                return;
-            }
-        }
-
-        if (敌人已选中)
-        {
-            敌人已选中 = false;
-            正在等待 = false;
-            正在等待切换Boss = false;
-            return;
-        }
-
-        if (!正在等待)
-        {
-            开始等待传送();
-        }
-        else
-        {
-            检查等待结果();
-        }
-    }
-
-    private void 开始等待传送()
-    {
-        if (!正在等待切换Boss)
-        {
-            正在等待切换Boss = true;
-            传送指令已发送 = false;
-            复活位置指令 = false;
-            切换Boss时间 = DateTime.Now;
-        }
-        
-        if ((DateTime.Now - 切换Boss时间).TotalSeconds < 5)
-            return;
-        
-        正在等待切换Boss = false;
-        正在等待 = true;
-        等待开始时间 = DateTime.Now;
-        开始头标 = false;
-        
-        Vector3 目标位置 = 进度 switch
-        {
-            1 => 老一,
-            2 => 老二,
-            3 => 老三,
-            _ => 老一
-        };
-        
-        if (!传送指令已发送)
-        {
-            传送指令已发送 = true;
-            ChatHelper.SendMessage("/xsz-invuln off");
-            if (是否遥控位)
-            {
-                XszRemote.SetPos("", 目标位置);
-            }
-        }
-    }
-
-    private void 检查等待结果()
-    {
-        if (Svc.Condition[ConditionFlag.Unconscious] || Svc.Condition[ConditionFlag.BetweenAreas])
-        {
-            正在等待 = false;
-            return;
-        }
-
-        var 等待时间 = (DateTime.Now - 等待开始时间).TotalSeconds;
-        
-        for (int i = 0; i < 敌人ID列表.Length; i++)
-        {
-            if (敌人可选中(敌人ID列表[i]))
-            {
-                进度 = i + 1;
-                敌人已选中 = true;
-                正在等待 = false;
-                正在等待切换Boss = false;
-                return;
-            }
-        }
-        
-        if (等待时间 < 5)
-            return;
-
-        if (进度 == 3)
-        {
-            if (已完成一轮检测)
-            {
-                流程结束 = true;
-                return;
-            }
-            已完成一轮检测 = true;
-            进度 = 0;
-        }
-        else
-        {
-            进度++;
-        }
-        
-        正在等待 = false;
-        传送指令已发送 = false;
-        正在等待切换Boss = false;
-    }
-
-    private void 重置所有状态()
-    {
-        事件启动 = true;
-        进度 = 0;
-        战斗进度 = 0;
-        流程结束 = false;
-        正在等待 = false;
-        敌人已选中 = false;
-        老一换位f = false;
-        老二换位f = false;
-        副本结束tp = false;
-        结束指令已发送 = false;
-        开始头标 = false;
-        无敌已开启 = false;
-        无敌已关闭_战斗结束 = false;
-        传送指令已发送 = false;
-        正在等待切换Boss = false;
-        已完成一轮检测 = false;
-    }
+    
 
     private bool 敌人可选中(uint 敌人ID)
     {
@@ -471,6 +149,70 @@ public class 异闻自动
             {
                 Core.Me.SetPos(new Vector3(374.3f, -29.6f, 558.9f));
             }
+        }
+    }
+}
+
+public class 商客异变
+{
+    public static int 进度;
+    public static Vector3 重生点;
+    public static Vector3 boss1检测点;
+    public static Vector3 boss2检测点;
+    public static Vector3 boss3检测点;
+    public static Vector3 交互位置;
+    public static uint 当前bossId;
+
+    public static void Reset()
+    {
+        进度 = 0;
+        重生点 = new Vector3(100, 0, 100);
+        交互位置 = new Vector3(100, 0, 100);
+        当前bossId = 10203;
+    }
+
+    public static void Update()
+    {
+        if (Core.Me != null)
+        {
+            if (GeometryUtilsXZ.DistanceXZ(boss1检测点, Core.Me.Position) < 20)
+            {
+                进度 = 1;
+            }            
+            if (GeometryUtilsXZ.DistanceXZ(boss2检测点, Core.Me.Position) < 20)
+            {
+                进度 = 2;
+            }            
+            if (GeometryUtilsXZ.DistanceXZ(boss3检测点, Core.Me.Position) < 20)
+            {
+                进度 = 3;
+            }
+        }
+
+        var target = Core.Me.GetCurrTarget();
+        if (target != null)
+        {
+            当前bossId = target.BaseId;
+        }
+
+        switch (进度)
+        {
+            case 0:
+                交互位置 = new Vector3(100, 0, 100);
+                重生点 = new Vector3(100, 0, 100);
+                break;
+            case 1:
+                交互位置 = new Vector3(100, 0, 100);
+                重生点 = new Vector3(100, 0, 100);
+                break;
+            case 2:
+                交互位置 = new Vector3(100, 0, 100);
+                重生点 = new Vector3(100, 0, 100);
+                break;
+            case 3:
+                交互位置 = new Vector3(100, 0, 100);
+                重生点 = new Vector3(100, 0, 100);
+                break;
         }
     }
 }

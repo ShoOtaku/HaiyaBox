@@ -2,11 +2,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using AEAssist;
+using AEAssist.Extension;
 using AEAssist.Helper;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.ClientState.Objects.Types;
+using ECommons.Automation;
 using ECommons.DalamudServices;
+using ECommons.GameFunctions;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using HaiyaBox.Utils;
 using ValueType = FFXIVClientStructs.FFXIV.Component.GUI.ValueType;
@@ -128,11 +134,31 @@ public class AddonDebugTab
         return textNode->NodeText.ToString();
     }
 
+    private unsafe uint GetEventId(IGameObject gameObject)
+    {
+        var gameObjecetStruct = gameObject.Struct();
+        return gameObjecetStruct->EventId;
+    }
+
+    private uint eventId = 984302;
     public void Draw()
     {
         ImGui.Text("Addon 调试界面");
         ImGui.Separator();
-        
+
+        var 目的地s = Svc.Objects.Where(e => e.Name.TextValue == "选择目的地");
+        foreach (var gameObject in 目的地s)
+        {
+            ImGui.Text($"坐标：{gameObject.Position}");
+        }
+        var 目的地id = Svc.Objects.FirstOrDefault(e => e.Name.TextValue == "选择目的地" && e.IsTargetable);
+        if (目的地id != null)
+        {
+            if (ImGui.Button("交互"))
+            {
+                目的地id.TargetInteract();
+            }
+        }
         ImGui.Checkbox("自动刷新", ref _autoRefresh);
         ImGui.SameLine();
         if (ImGui.Button("手动刷新"))

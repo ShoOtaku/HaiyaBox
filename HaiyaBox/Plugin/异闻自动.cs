@@ -161,58 +161,19 @@ public class 商客异变
     public static Vector3 boss2检测点;
     public static Vector3 boss3检测点;
     public static Vector3 交互位置;
+    public static bool 交互完成;
     public static uint 当前bossId;
+    public static bool 战斗中;
+    public static float boss血量;
+    public static bool boss已死亡;
 
     public static void Reset()
     {
-        进度 = 0;
-        重生点 = new Vector3(100, 0, 100);
-        交互位置 = new Vector3(100, 0, 100);
-        当前bossId = 10203;
+
     }
 
     public static void Update()
     {
-        if (Core.Me != null)
-        {
-            if (GeometryUtilsXZ.DistanceXZ(boss1检测点, Core.Me.Position) < 20)
-            {
-                进度 = 1;
-            }            
-            if (GeometryUtilsXZ.DistanceXZ(boss2检测点, Core.Me.Position) < 20)
-            {
-                进度 = 2;
-            }            
-            if (GeometryUtilsXZ.DistanceXZ(boss3检测点, Core.Me.Position) < 20)
-            {
-                进度 = 3;
-            }
-        }
-
-        var target = Core.Me.GetCurrTarget();
-        if (target != null)
-        {
-            当前bossId = target.BaseId;
-        }
-
-        switch (进度)
-        {
-            case 0:
-                交互位置 = new Vector3(100, 0, 100);
-                重生点 = new Vector3(100, 0, 100);
-                break;
-            case 1:
-                交互位置 = new Vector3(100, 0, 100);
-                重生点 = new Vector3(100, 0, 100);
-                break;
-            case 2:
-                交互位置 = new Vector3(100, 0, 100);
-                重生点 = new Vector3(100, 0, 100);
-                break;
-            case 3:
-                交互位置 = new Vector3(100, 0, 100);
-                重生点 = new Vector3(100, 0, 100);
-                break;
-        }
+      
     }
 }

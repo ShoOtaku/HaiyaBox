@@ -243,6 +243,11 @@ public class XszRemote
         return Instance?.GetRoleByPlayerCID(playerCid);
     }
 
+    public static string? GetNameByRole(string role)
+    {
+        return Instance?.GetNameByRole(role);
+    }
+
     /// <summary>
     /// 获取成员总数
     /// </summary>

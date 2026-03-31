@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 using AEAssist;
+using AEAssist.CombatRoutine.Module;
 using AEAssist.Helper;
 using HaiyaBox.Settings;
 
@@ -150,6 +151,11 @@ public static class RemoteControl
         else 
             return RemoteControlHelper.GetRoleByPlayerCID(playerCid);
     }
+
+    public static string? GetNameByRole(string role)
+    {
+        return XszRemote.GetNameByRole(role);
+    }
     
     public static int GetMemberCount() 
     {
@@ -165,5 +171,12 @@ public static class RemoteControl
             return XszRemote.GetOnlineMemberCount();
         // RemoteControlHelper doesn't seem to have GetOnlineMemberCount, so we'll just use XszRemote when enabled
         return 0;
+    }
+
+    public static async Task SlideMoveDelay(string s, Vector3 pos, long 战斗时间)
+    {
+        var 当前战斗时间 = AI.Instance.BattleData.CurrBattleTimeInMs;
+        await Task.Delay((int)(战斗时间 - 当前战斗时间));
+        XszRemote.SetPos(s,pos);
     }
 }

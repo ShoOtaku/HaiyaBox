@@ -1,4 +1,4 @@
-﻿﻿using AEAssist.AEPlugin;
+﻿using AEAssist.AEPlugin;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Ipc;
 using System.Numerics;
@@ -7,133 +7,133 @@ using ECommons.DalamudServices;
 namespace HaiyaBox.Plugin;
 
 /// <summary>
-    /// XSZToolbox IPC客户端实现
+/// XSZToolbox IPC客户端实现
+/// </summary>
+public class XSZToolboxIpc : IDisposable
+{
+    private bool _disposedValue;
+
+    /// <summary>
+    /// 房间ID订阅者
     /// </summary>
-    public class XSZToolboxIpc : IDisposable
-    {
-        private bool _disposedValue;
+    private ICallGateSubscriber<string?> _roomIdSubscriber;
 
-        /// <summary>
-        /// 房间ID订阅者
-        /// </summary>
-        private ICallGateSubscriber<string?> _roomIdSubscriber;
+    /// <summary>
+    /// 连接状态订阅者
+    /// </summary>
+    private ICallGateSubscriber<bool> _isConnectedSubscriber;
 
-        /// <summary>
-        /// 连接状态订阅者
-        /// </summary>
-        private ICallGateSubscriber<bool> _isConnectedSubscriber;
+    /// <summary>
+    /// 设置位置订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, Vector3, object> _setPosSubscriber;
 
-        /// <summary>
-        /// 设置位置订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, Vector3, object> _setPosSubscriber;
+    /// <summary>
+    /// 锁定位置订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, Vector3, int, object> _lockPosSubscriber;
 
-        /// <summary>
-        /// 锁定位置订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, Vector3, int, object> _lockPosSubscriber;
+    /// <summary>
+    /// 滑动传送订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, Vector3, long, object> _slideTpSubscriber;
 
-        /// <summary>
-        /// 滑动传送订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, Vector3, long, object> _slideTpSubscriber;
+    /// <summary>
+    /// 延迟移动订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, Vector3, long, object> _moveManagedSubscriber;
 
-        /// <summary>
-        /// 延迟移动订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, Vector3, long, object> _moveManagedSubscriber;
+    /// <summary>
+    /// 延迟传送订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, Vector3, long, object> _setPosManagedSubscriber;
 
-        /// <summary>
-        /// 延迟传送订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, Vector3, long, object> _setPosManagedSubscriber;
+    /// <summary>
+    /// 设置集合信息订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, string, Vector3, object> _setMoveAssembleSubscriber;
 
-        /// <summary>
-        /// 设置集合信息订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, string, Vector3, object> _setMoveAssembleSubscriber;
+    /// <summary>
+    /// 设置集合补偿时间订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, int, object> _setMoveAssembleDelaySubscriber;
 
-        /// <summary>
-        /// 设置集合补偿时间订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, int, object> _setMoveAssembleDelaySubscriber;
+    /// <summary>
+    /// 设置旋转订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, float, object> _setRotSubscriber;
 
-        /// <summary>
-        /// 设置旋转订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, float, object> _setRotSubscriber;
+    /// <summary>
+    /// 移动到位置订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, Vector3, object> _moveToSubscriber;
 
-        /// <summary>
-        /// 移动到位置订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, Vector3, object> _moveToSubscriber;
+    /// <summary>
+    /// 停止移动订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, object> _moveStopSubscriber;
 
-        /// <summary>
-        /// 停止移动订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, object> _moveStopSubscriber;
+    /// <summary>
+    /// 停止所有动作订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, bool, object> _stopSubscriber;
 
-        /// <summary>
-        /// 停止所有动作订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, bool, object> _stopSubscriber;
+    /// <summary>
+    /// 跳跃订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, bool, object> _jumpSubscriber;
 
-        /// <summary>
-        /// 跳跃订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, bool, object> _jumpSubscriber;
+    /// <summary>
+    /// 使用技能订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, uint, object> _useSkillSubscriber;
 
-        /// <summary>
-        /// 使用技能订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, uint, object> _useSkillSubscriber;
+    /// <summary>
+    /// 使用技能(带目标)订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, uint, uint, object> _useSkillWithTargetSubscriber;
 
-        /// <summary>
-        /// 使用技能(带目标)订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, uint, uint, object> _useSkillWithTargetSubscriber;
+    /// <summary>
+    /// 设置目标订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, uint, object> _setTargetSubscriber;
 
-        /// <summary>
-        /// 设置目标订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, uint, object> _setTargetSubscriber;
+    /// <summary>
+    /// 发送消息订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, string, object> _echoSubscriber;
 
-        /// <summary>
-        /// 发送消息订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, string, object> _echoSubscriber;
+    /// <summary>
+    /// 执行命令订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, string, object> _cmdSubscriber;
 
-        /// <summary>
-        /// 执行命令订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, string, object> _cmdSubscriber;
+    /// <summary>
+    /// 踢出房间订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, object> _kickSubscriber;
 
-        /// <summary>
-        /// 踢出房间订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, object> _kickSubscriber;
+    /// <summary>
+    /// 设置角色订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, string, object> _setRoleSubscriber;
 
-        /// <summary>
-        /// 设置角色订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, string, object> _setRoleSubscriber;
+    /// <summary>
+    /// 通过玩家名称获取角色订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, string?> _getRoleByPlayerNameSubscriber;
 
-        /// <summary>
-        /// 通过玩家名称获取角色订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, string?> _getRoleByPlayerNameSubscriber;
+    /// <summary>
+    /// 通过玩家CID获取角色订阅者
+    /// </summary>
+    private ICallGateSubscriber<string, string?> _getRoleByPlayerCidSubscriber;
 
-        /// <summary>
-        /// 通过玩家CID获取角色订阅者
-        /// </summary>
-        private ICallGateSubscriber<string, string?> _getRoleByPlayerCidSubscriber;
+    /// <summary>
+    /// 获取成员数量订阅者
+    /// </summary>
+    private ICallGateSubscriber<int> _getMemberCountSubscriber;
 
-        /// <summary>
-        /// 获取成员数量订阅者
-        /// </summary>
-        private ICallGateSubscriber<int> _getMemberCountSubscriber;
-
-        /// <summary>
+    /// <summary>
     /// 获取在线成员数量订阅者
     /// </summary>
     private ICallGateSubscriber<int> _getOnlineMemberCountSubscriber;
@@ -147,48 +147,76 @@ namespace HaiyaBox.Plugin;
     /// 滑动移动超时订阅者
     /// </summary>
     private ICallGateSubscriber<string, Vector3, long, object> _slideMoveTimeoutSubscriber;
-
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        public XSZToolboxIpc()
-        {
-            InitializeSubscribers();
-        }
+    
+    private ICallGateSubscriber<string, string?> _getNameByRoleSubscriber;
 
     /// <summary>
-        /// 初始化所有IPC订阅者
-        /// </summary>
-        private void InitializeSubscribers()
-        {
-            _roomIdSubscriber = Svc.PluginInterface.GetIpcSubscriber<string?>("XSZToolbox.RemoteControl.GetRoomId");
-            _isConnectedSubscriber = Svc.PluginInterface.GetIpcSubscriber<bool>("XSZToolbox.RemoteControl.IsConnected");
-            _setPosSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, Vector3, object>("XSZToolbox.RemoteControl.SetPos");
-            _lockPosSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, Vector3, int, object>("XSZToolbox.RemoteControl.LockPos");
-            _slideTpSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, Vector3, long, object>("XSZToolbox.RemoteControl.SlideTp");
-            _moveManagedSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, Vector3, long, object>("XSZToolbox.RemoteControl.MoveManaged");
-            _setPosManagedSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, Vector3, long, object>("XSZToolbox.RemoteControl.SetPosManaged");
-            _setMoveAssembleSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, string, Vector3, object>("XSZToolbox.RemoteControl.SetMoveAssemble");
-            _setMoveAssembleDelaySubscriber = Svc.PluginInterface.GetIpcSubscriber<string, int, object>("XSZToolbox.RemoteControl.SetMoveAssembleDelay");
-            _setRotSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, float, object>("XSZToolbox.RemoteControl.SetRot");
-            _moveToSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, Vector3, object>("XSZToolbox.RemoteControl.MoveTo");
-            _moveStopSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, object>("XSZToolbox.RemoteControl.MoveStop");
-            _stopSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, bool, object>("XSZToolbox.RemoteControl.Stop");
-            _jumpSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, bool, object>("XSZToolbox.RemoteControl.Jump");
-            _useSkillSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, uint, object>("XSZToolbox.RemoteControl.UseSkill");
-            _useSkillWithTargetSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, uint, uint, object>("XSZToolbox.RemoteControl.UseSkillWithTarget");
-            _setTargetSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, uint, object>("XSZToolbox.RemoteControl.SetTarget");
-            _echoSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, string, object>("XSZToolbox.RemoteControl.Echo");
-            _cmdSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, string, object>("XSZToolbox.RemoteControl.Cmd");
-            _kickSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, object>("XSZToolbox.RemoteControl.Kick");
-            _setRoleSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, string, object>("XSZToolbox.RemoteControl.SetRole");
-            _getRoleByPlayerNameSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, string?>("XSZToolbox.RemoteControl.GetRoleByPlayerName");
-            _getRoleByPlayerCidSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, string?>("XSZToolbox.RemoteControl.GetRoleByPlayerCID");
-            _getMemberCountSubscriber = Svc.PluginInterface.GetIpcSubscriber<int>("XSZToolbox.RemoteControl.GetMemberCount");
-            _getOnlineMemberCountSubscriber = Svc.PluginInterface.GetIpcSubscriber<int>("XSZToolbox.RemoteControl.GetOnlineMemberCount");
-            _slideMoveDelaySubscriber = Svc.PluginInterface.GetIpcSubscriber<string, Vector3, long, object>("XSZToolbox.RemoteControl.SlideMoveDelay");
-            _slideMoveTimeoutSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, Vector3, long, object>("XSZToolbox.RemoteControl.SlideMoveTimeout");
-        }
+    /// 构造函数
+    /// </summary>
+    public XSZToolboxIpc()
+    {
+        InitializeSubscribers();
+    }
+
+    /// <summary>
+    /// 初始化所有IPC订阅者
+    /// </summary>
+    private void InitializeSubscribers()
+    {
+        _roomIdSubscriber = Svc.PluginInterface.GetIpcSubscriber<string?>("XSZToolbox.RemoteControl.GetRoomId");
+        _isConnectedSubscriber = Svc.PluginInterface.GetIpcSubscriber<bool>("XSZToolbox.RemoteControl.IsConnected");
+        _setPosSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, Vector3, object>("XSZToolbox.RemoteControl.SetPos");
+        _lockPosSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, Vector3, int, object>("XSZToolbox.RemoteControl.LockPos");
+        _slideTpSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, Vector3, long, object>("XSZToolbox.RemoteControl.SlideTp");
+        _moveManagedSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, Vector3, long, object>("XSZToolbox.RemoteControl.MoveManaged");
+        _setPosManagedSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, Vector3, long, object>(
+                "XSZToolbox.RemoteControl.SetPosManaged");
+        _setMoveAssembleSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, string, Vector3, object>(
+                "XSZToolbox.RemoteControl.SetMoveAssemble");
+        _setMoveAssembleDelaySubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, int, object>("XSZToolbox.RemoteControl.SetMoveAssembleDelay");
+        _setRotSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, float, object>("XSZToolbox.RemoteControl.SetRot");
+        _moveToSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, Vector3, object>("XSZToolbox.RemoteControl.MoveTo");
+        _moveStopSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, object>("XSZToolbox.RemoteControl.MoveStop");
+        _stopSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, bool, object>("XSZToolbox.RemoteControl.Stop");
+        _jumpSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, bool, object>("XSZToolbox.RemoteControl.Jump");
+        _useSkillSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, uint, object>("XSZToolbox.RemoteControl.UseSkill");
+        _useSkillWithTargetSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, uint, uint, object>(
+                "XSZToolbox.RemoteControl.UseSkillWithTarget");
+        _setTargetSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, uint, object>("XSZToolbox.RemoteControl.SetTarget");
+        _echoSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, string, object>("XSZToolbox.RemoteControl.Echo");
+        _cmdSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, string, object>("XSZToolbox.RemoteControl.Cmd");
+        _kickSubscriber = Svc.PluginInterface.GetIpcSubscriber<string, object>("XSZToolbox.RemoteControl.Kick");
+        _setRoleSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, string, object>("XSZToolbox.RemoteControl.SetRole");
+        _getRoleByPlayerNameSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, string?>("XSZToolbox.RemoteControl.GetRoleByPlayerName");
+        _getRoleByPlayerCidSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, string?>("XSZToolbox.RemoteControl.GetRoleByPlayerCID");
+        _getMemberCountSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<int>("XSZToolbox.RemoteControl.GetMemberCount");
+        _getOnlineMemberCountSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<int>("XSZToolbox.RemoteControl.GetOnlineMemberCount");
+        _slideMoveDelaySubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, Vector3, long, object>(
+                "XSZToolbox.RemoteControl.SlideMoveDelay");
+        _slideMoveTimeoutSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, Vector3, long, object>(
+                "XSZToolbox.RemoteControl.SlideMoveTimeout");
+        _getNameByRoleSubscriber = 
+            Svc.PluginInterface.GetIpcSubscriber<string,string?>("XSZToolbox.RemoteControl.GetNameByRole");
+    }
 
     /// <summary>
     /// 获取当前房间ID
@@ -249,53 +277,53 @@ namespace HaiyaBox.Plugin;
     /// <param name="role">角色名称</param>
     /// <param name="pos">目标位置</param>
     /// <param name="time">滑动时间(毫秒)</param>
-        public void SlideTp(string role, Vector3 pos, long time)
-        {
-            _slideTpSubscriber?.InvokeAction(role, pos, time);
-        }
+    public void SlideTp(string role, Vector3 pos, long time)
+    {
+        _slideTpSubscriber?.InvokeAction(role, pos, time);
+    }
 
-        /// <summary>
-        /// 延迟移动指定角色到目标位置
-        /// </summary>
-        /// <param name="role">角色名称</param>
-        /// <param name="pos">目标位置</param>
-        /// <param name="battleTimeMs">目标战斗时间(毫秒)</param>
-        public void MoveManaged(string role, Vector3 pos, long battleTimeMs)
-        {
-            _moveManagedSubscriber?.InvokeAction(role, pos, battleTimeMs);
-        }
+    /// <summary>
+    /// 延迟移动指定角色到目标位置
+    /// </summary>
+    /// <param name="role">角色名称</param>
+    /// <param name="pos">目标位置</param>
+    /// <param name="battleTimeMs">目标战斗时间(毫秒)</param>
+    public void MoveManaged(string role, Vector3 pos, long battleTimeMs)
+    {
+        _moveManagedSubscriber?.InvokeAction(role, pos, battleTimeMs);
+    }
 
-        /// <summary>
-        /// 延迟传送指定角色到目标位置
-        /// </summary>
-        /// <param name="role">角色名称</param>
-        /// <param name="pos">目标位置</param>
-        /// <param name="battleTimeMs">目标战斗时间(毫秒)</param>
-        public void SetPosManaged(string role, Vector3 pos, long battleTimeMs)
-        {
-            _setPosManagedSubscriber?.InvokeAction(role, pos, battleTimeMs);
-        }
+    /// <summary>
+    /// 延迟传送指定角色到目标位置
+    /// </summary>
+    /// <param name="role">角色名称</param>
+    /// <param name="pos">目标位置</param>
+    /// <param name="battleTimeMs">目标战斗时间(毫秒)</param>
+    public void SetPosManaged(string role, Vector3 pos, long battleTimeMs)
+    {
+        _setPosManagedSubscriber?.InvokeAction(role, pos, battleTimeMs);
+    }
 
-        /// <summary>
-        /// 设置集合信息
-        /// </summary>
-        /// <param name="role">角色名称</param>
-        /// <param name="assembleMode">集合模式</param>
-        /// <param name="assemblePoint">集合预留点</param>
-        public void SetMoveAssemble(string role, string assembleMode, Vector3 assemblePoint)
-        {
-            _setMoveAssembleSubscriber?.InvokeAction(role, assembleMode, assemblePoint);
-        }
+    /// <summary>
+    /// 设置集合信息
+    /// </summary>
+    /// <param name="role">角色名称</param>
+    /// <param name="assembleMode">集合模式</param>
+    /// <param name="assemblePoint">集合预留点</param>
+    public void SetMoveAssemble(string role, string assembleMode, Vector3 assemblePoint)
+    {
+        _setMoveAssembleSubscriber?.InvokeAction(role, assembleMode, assemblePoint);
+    }
 
-        /// <summary>
-        /// 设置集合补偿时间
-        /// </summary>
-        /// <param name="role">角色名称</param>
-        /// <param name="delayMs">补偿时间(毫秒)</param>
-        public void SetMoveAssembleDelay(string role, int delayMs)
-        {
-            _setMoveAssembleDelaySubscriber?.InvokeAction(role, delayMs);
-        }
+    /// <summary>
+    /// 设置集合补偿时间
+    /// </summary>
+    /// <param name="role">角色名称</param>
+    /// <param name="delayMs">补偿时间(毫秒)</param>
+    public void SetMoveAssembleDelay(string role, int delayMs)
+    {
+        _setMoveAssembleDelaySubscriber?.InvokeAction(role, delayMs);
+    }
 
     /// <summary>
     /// 设置指定角色的旋转角度
@@ -434,6 +462,11 @@ namespace HaiyaBox.Plugin;
     public string? GetRoleByPlayerCID(string playerCid)
     {
         return _getRoleByPlayerCidSubscriber?.InvokeFunc(playerCid);
+    }
+
+    public string? GetNameByRole(string role)
+    {
+        return _getNameByRoleSubscriber?.InvokeFunc(role);
     }
 
     /// <summary>

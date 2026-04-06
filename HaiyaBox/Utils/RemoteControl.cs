@@ -10,7 +10,7 @@ public static class RemoteControl
 {
     public static string GetRoomId => FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled ? XszRemote.GetRoomId() : RemoteControlHelper.RoomId;
     
-    public static bool IsConnected() => FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled ? XszRemote.IsConnected() : true;
+    public static bool IsConnected() => !FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled || XszRemote.IsConnected();
     
     public static void SetPos(string role, Vector3 pos) 
     {

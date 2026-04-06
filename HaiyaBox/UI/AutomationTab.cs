@@ -261,12 +261,15 @@ namespace HaiyaBox.UI
             // 打印副本完成事件日志
             LogHelper.Print($"副本任务完成（DutyCompleted 事件，ID: {e}）");
             _dutyCompleted = true; // 标记副本已完成
+            
             _runtimes++;
             // 查找字典中是否存在与当前副本 ID 对应的更新操作
             if (_dutyUpdateActions.TryGetValue((DutyType)e, out var updateAction))
             {
                 updateAction();
             }
+            if (Core.Resolve<MemApiMap>().GetCurrTerrId() == 1238)
+                ChatHelper.SendMessage("/aeReload");
         }
 
         /// <summary>
@@ -277,6 +280,8 @@ namespace HaiyaBox.UI
         private void OnDutyWiped(object? sender, ushort e)
         {
             LogHelper.Print($"副本团灭重置（DutyWiped 事件，ID: {e}）");
+            if (Core.Resolve<MemApiMap>().GetCurrTerrId() == 1238)
+                ChatHelper.SendMessage("/aeReload");
             // 如有需要，在此处重置其他状态
             _isCountdownCompleted = false;
         }

@@ -214,8 +214,8 @@ public class XSZToolboxIpc : IDisposable
         _slideMoveTimeoutSubscriber =
             Svc.PluginInterface.GetIpcSubscriber<string, Vector3, long, object>(
                 "XSZToolbox.RemoteControl.SlideMoveTimeout");
-        _getNameByRoleSubscriber = 
-            Svc.PluginInterface.GetIpcSubscriber<string,string?>("XSZToolbox.RemoteControl.GetNameByRole");
+        _getNameByRoleSubscriber =
+            Svc.PluginInterface.GetIpcSubscriber<string, string?>("XSZToolbox.RemoteControl.GetNamebyRole");
     }
 
     /// <summary>

@@ -227,9 +227,14 @@ namespace HaiyaBox.UI
             {
                 return;
             }
-            var mousePos = ImGui.GetMousePos();
-            Svc.GameGui.ScreenToWorld(mousePos, out var worldPos);
-            
+            var mousePos = ImGui.GetIO().MousePos;
+            if (!Svc.GameGui.ScreenToWorld(mousePos, out var worldPos))
+            {
+                LogHelper.PrintError($"[/remotetp] ScreenToWorld失败。屏幕={mousePos}");
+                return;
+            }
+
+            LogHelper.Print($"[/remotetp] 目标={args} 屏幕={mousePos} 世界={worldPos}");
             XszRemote.SetPos(args, worldPos);
         }
         /// <summary>

@@ -93,6 +93,7 @@ namespace HaiyaBox.UI
                 { DutyType.Recollection, () => UpdateDuty(DutyType.Recollection, ref _recollectionCompletedCount, 1, "泽莲尼娅") },
                 { DutyType.Renlong , () => UpdateDuty(DutyType.Renlong, ref _renlongCompletedCount, 1, "上位刃龙")}
             };
+            LoadPersistedUiState();
             Settings.AutoEnterOccult = false;
         }
 
@@ -289,6 +290,48 @@ namespace HaiyaBox.UI
         private bool killGame = false;
         private bool shutdown = false;
         private string commond = "";
+
+        private void LoadPersistedUiState()
+        {
+            ApplyDictionary(Settings.RoleSelection, _roleSelection);
+            ApplyDictionary(Settings.RollSelection, _rollSelection);
+            _selectedRoles = Settings.SelectedRoles;
+            _customRoleEnabled = Settings.CustomRoleEnabled;
+            _customRoleInput = Settings.CustomRoleInput;
+            _customCmd = Settings.CustomCommand;
+            _rollRoles = Settings.RollRoles;
+            _passRoles = Settings.PassRoles;
+            killGame = Settings.KillGameAfterRunLimit;
+        }
+
+        private static void ApplyDictionary(Dictionary<string, bool>? source, Dictionary<string, bool> target)
+        {
+            if (source == null)
+                return;
+
+            foreach (var key in target.Keys.ToList())
+            {
+                if (source.TryGetValue(key, out var value))
+                {
+                    target[key] = value;
+                }
+            }
+        }
+
+        private void PersistRoleSelection()
+        {
+            Settings.UpdateRoleSelection(new Dictionary<string, bool>(_roleSelection));
+            Settings.UpdateSelectedRoles(_selectedRoles);
+            Settings.UpdateCustomRoleEnabled(_customRoleEnabled);
+            Settings.UpdateCustomRoleInput(_customRoleInput);
+        }
+
+        private void PersistRollSelection()
+        {
+            Settings.UpdateRollSelection(new Dictionary<string, bool>(_rollSelection));
+            Settings.UpdateRollRoles(_rollRoles);
+            Settings.UpdatePassRoles(_passRoles);
+        }
         
         /// <summary>
         /// 绘制 AutomationTab 的所有 UI 控件，
@@ -387,6 +430,7 @@ namespace HaiyaBox.UI
                     if (ImGui.Checkbox(role+"##R点需求", ref value))
                     {
                         _rollSelection[role] = value;
+                        PersistRollSelection();
                     }
 
 
@@ -400,6 +444,7 @@ namespace HaiyaBox.UI
 
                     var pass = _rollSelection.Where(roll => !roll.Value).Select(roll => roll.Key);
                     _passRoles = string.Join("|", pass); // 修正后的pass处理
+                    PersistRollSelection();
                     LogHelper.Print("需求roll点玩家：" + _rollRoles);
                     LogHelper.Print("放弃roll点玩家："+_passRoles);
                     if (Settings.DRCmdEnabled)
@@ -537,17 +582,24 @@ namespace HaiyaBox.UI
                         .Where(pair => pair.Value)
                         .Select(pair => pair.Key);
                     _selectedRoles = string.Join("|", selected);
+                    PersistRoleSelection();
                 }
             }
 
             ImGui.SameLine();
-            ImGui.Checkbox("自定义", ref _customRoleEnabled);
+            if (ImGui.Checkbox("自定义", ref _customRoleEnabled))
+            {
+                PersistRoleSelection();
+            }
 
             if (_customRoleEnabled)
             {
                 ImGui.SameLine();
                 ImGui.SetNextItemWidth(100f * scale); // 可选：设定宽度
-                ImGui.InputText("##_customRoleInput", ref _customRoleInput, 20);
+                if (ImGui.InputText("##_customRoleInput", ref _customRoleInput, 20))
+                {
+                    Settings.UpdateCustomRoleInput(_customRoleInput);
+                }
 
                 // 更新字符串拼接逻辑
                 var selected = _roleSelection
@@ -561,9 +613,13 @@ namespace HaiyaBox.UI
                 }
 
                 _selectedRoles = string.Join("|", selected);
+                Settings.UpdateSelectedRoles(_selectedRoles);
             }
 
-            ImGui.InputTextWithHint("##_customCmd", "请输入需要发送的指令", ref _customCmd, 256);
+            if (ImGui.InputTextWithHint("##_customCmd", "请输入需要发送的指令", ref _customCmd, 256))
+            {
+                Settings.UpdateCustomCommand(_customCmd);
+            }
 
             ImGui.SameLine();
 
@@ -641,7 +697,10 @@ namespace HaiyaBox.UI
                     ImGui.Separator();
                     ImGui.Text("完成指定次数后的操作：");
                     ImGui.SameLine();
-                    ImGui.Checkbox("关游戏##次数", ref killGame);
+                    if (ImGui.Checkbox("关游戏##次数", ref killGame))
+                    {
+                        Settings.UpdateKillGameAfterRunLimit(killGame);
+                    }
                 }
             }
 

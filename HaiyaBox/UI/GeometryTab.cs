@@ -744,8 +744,9 @@ namespace HaiyaBox.UI
 
         private bool ScreenToWorld(Vector2 screenPos, out Vector3 worldPos)
         {
-            Svc.GameGui.ScreenToWorld(screenPos, out worldPos);
-            return true;
+            var viewportPos = ImGui.GetMainViewport().Pos;
+            var localScreenPos = screenPos - viewportPos;
+            return Svc.GameGui.ScreenToWorld(localScreenPos, out worldPos);
         }
 
         private Vector3 StringToVector3(string str)

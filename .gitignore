@@ -91,6 +91,7 @@ artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+.dotnet/
 AutoRaidHelper/AutoRaidHelper.sln
 AutoRaidHelper/AutoRaidHelper.csproj
 TimeLine/护锁刃龙上位狩猎战/

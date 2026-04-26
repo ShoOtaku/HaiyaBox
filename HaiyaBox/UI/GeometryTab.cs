@@ -202,7 +202,7 @@ namespace HaiyaBox.UI
         private void DrawMousePositionSection()
         {
             var mousePos = ImGui.GetMousePos();
-            if (ScreenToWorld(mousePos, out var wPos3D))
+            if (ScreenToWorld(mousePos, out Vector3 wPos3D))
             {
                 ImGui.Text($"鼠标屏幕: <{mousePos.X:F2}, {mousePos.Y:F2}>\n鼠标世界: <{wPos3D.X:F2}, {wPos3D.Z:F2}>");
 

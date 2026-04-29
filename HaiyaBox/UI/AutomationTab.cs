@@ -354,6 +354,8 @@ namespace HaiyaBox.UI
                 ImGui.Text($"Version: {parts[0]}.{parts[1]}.{parts[2]}+{parts[4]}");
             }
             ImGui.Separator();
+            DrawAutoUpdateSection();
+            ImGui.Separator();
             //【地图记录与倒计时设置】
             ImGui.Text("本内自动化设置:");
             ImGui.SameLine();
@@ -845,6 +847,47 @@ namespace HaiyaBox.UI
                         ImGui.Text($"[{i}] {status.Name} 状态: {onlineText}, {dutyText}");
                     }
                 }
+            }
+        }
+
+        private void DrawAutoUpdateSection()
+        {
+            var updateSettings = FullAutoSettings.Instance.AutoUpdateSettings;
+            var updater = GitHubAutoUpdater.Instance;
+
+            ImGui.Text("GitHub自动更新:");
+            bool enabled = updateSettings.Enabled;
+            if (ImGui.Checkbox("启用自动更新", ref enabled))
+            {
+                updateSettings.UpdateEnabled(enabled);
+            }
+
+            ImGui.SameLine();
+            bool includePrerelease = updateSettings.IncludePrerelease;
+            if (ImGui.Checkbox("包含预发布", ref includePrerelease))
+            {
+                updateSettings.UpdateIncludePrerelease(includePrerelease);
+            }
+
+            ImGui.SameLine();
+            if (ImGui.Button(updater.IsRunning ? "检查中..." : "立即检查"))
+            {
+                updater.CheckNow();
+            }
+
+            ImGui.SetNextItemWidth(80f * scale);
+            int interval = updateSettings.CheckIntervalMinutes;
+            if (ImGui.InputInt("检查间隔(分钟)", ref interval))
+            {
+                updateSettings.UpdateCheckIntervalMinutes(interval);
+            }
+
+            ImGui.Text($"状态: {updater.Status}");
+            ImGui.Text($"最新版本: {updater.LatestTag ?? updateSettings.LastSeenTag}");
+            ImGui.Text($"已安装标记: {updateSettings.InstalledTag}");
+            if (!string.IsNullOrWhiteSpace(updater.LastError))
+            {
+                ImGui.TextColored(new Vector4(1f, 0.3f, 0.3f, 1f), $"错误: {updater.LastError}");
             }
         }
 

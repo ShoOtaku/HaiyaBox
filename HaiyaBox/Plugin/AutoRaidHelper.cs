@@ -24,6 +24,7 @@ namespace HaiyaBox.Plugin
         private readonly EventRecordTab _eventRecordTab = new();
         private readonly DangerAreaTab _dangerAreaTab = new();
         private readonly TreasureOpenerService _treasureOpener = TreasureOpenerService.Instance;
+        private readonly GitHubAutoUpdater _autoUpdater = GitHubAutoUpdater.Instance;
         private ActorControlHook? actorControlHook;
         private XSZToolboxIpc? _xszToolboxIpc;
         private readonly MoveManage _moveManage = new();
@@ -82,6 +83,7 @@ namespace HaiyaBox.Plugin
             SafeZoneAutoDraw.Dispose();
             异闻自动.Instance.Dispose();
             AutoSelectAddonService.Instance.Dispose();
+            _autoUpdater.Dispose();
 
             
             actorControlHook?.Dispose();
@@ -99,6 +101,7 @@ namespace HaiyaBox.Plugin
             _treasureOpener.Update();
             _moveManage.Update();
             AutoSelectAddonService.Instance.Update();
+            _autoUpdater.Update();
         }
 
         public void OnPluginUI()

@@ -68,6 +68,9 @@ namespace HaiyaBox.Settings
         
         //AutoSelectSettings: 自动选择Addon设置
         public AutoSelectSettings AutoSelectSettings { get; set; } = new();
+
+        //AutoUpdateSettings: GitHub 自动更新设置
+        public AutoUpdateSettings AutoUpdateSettings { get; set; } = new();
         
 
         /// <summary>
@@ -898,6 +901,45 @@ namespace HaiyaBox.Settings
         public void UpdatePrintActorControl(bool print)
         {
             PrintActorControl = print;
+            FullAutoSettings.Instance.Save();
+        }
+    }
+
+    public class AutoUpdateSettings
+    {
+        public bool Enabled { get; set; } = true;
+        public bool IncludePrerelease { get; set; } = true;
+        public int CheckIntervalMinutes { get; set; } = 30;
+        public string InstalledTag { get; set; } = "";
+        public string LastSeenTag { get; set; } = "";
+
+        public void UpdateEnabled(bool enabled)
+        {
+            Enabled = enabled;
+            FullAutoSettings.Instance.Save();
+        }
+
+        public void UpdateIncludePrerelease(bool includePrerelease)
+        {
+            IncludePrerelease = includePrerelease;
+            FullAutoSettings.Instance.Save();
+        }
+
+        public void UpdateCheckIntervalMinutes(int minutes)
+        {
+            CheckIntervalMinutes = Math.Clamp(minutes, 5, 24 * 60);
+            FullAutoSettings.Instance.Save();
+        }
+
+        public void UpdateInstalledTag(string tag)
+        {
+            InstalledTag = tag;
+            FullAutoSettings.Instance.Save();
+        }
+
+        public void UpdateLastSeenTag(string tag)
+        {
+            LastSeenTag = tag;
             FullAutoSettings.Instance.Save();
         }
     }

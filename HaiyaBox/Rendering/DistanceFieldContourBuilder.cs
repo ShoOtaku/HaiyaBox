@@ -117,10 +117,7 @@ public static class DistanceFieldContourBuilder
     private static Vector3 Interp(WPos p1, float d1, WPos p2, float d2, float height)
     {
         var t = d1 / (d1 - d2);
-        if (float.IsNaN(t) || float.IsInfinity(t))
-        {
-            t = 0.5f;
-        }
+        if (float.IsNaN(t) || float.IsInfinity(t)) t = 0.5f;
         t = Math.Clamp(t, 0f, 1f);
         var x = p1.X + (p2.X - p1.X) * t;
         var z = p1.Z + (p2.Z - p1.Z) * t;

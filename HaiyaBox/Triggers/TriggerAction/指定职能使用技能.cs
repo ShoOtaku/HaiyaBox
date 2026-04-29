@@ -1,6 +1,4 @@
-﻿using System;
-using System.Numerics;
-using AEAssist;
+﻿using AEAssist;
 using AEAssist.CombatRoutine.Trigger;
 using AEAssist.Extension;
 using AEAssist.Helper;
@@ -14,7 +12,7 @@ public class 指定职能使用技能A : ITriggerAction
 {
     public string DisplayName { get; } = "指定职能使用技能";
     public string Remark { get; set; } = string.Empty; // 为 Remark 提供默认值
-    
+
 
     public Dictionary<string, bool> roles = new()
     {
@@ -39,13 +37,11 @@ public class 指定职能使用技能A : ITriggerAction
 
         foreach (var role in roles.Keys.ToList())
         {
-            bool isChecked = roles[role];
-            if (ImGui.Checkbox(role, ref isChecked))
-            {
-                roles[role] = isChecked;
-            }
+            var isChecked = roles[role];
+            if (ImGui.Checkbox(role, ref isChecked)) roles[role] = isChecked;
             ImGui.SameLine();
         }
+
         ImGui.NewLine();
         ImGui.InputUInt("技能id", ref skillId);
         ImGui.Checkbox("指定目标", ref toTarget);
@@ -65,29 +61,29 @@ public class 指定职能使用技能A : ITriggerAction
         var party = Svc.Party;
         switch (selectIndex)
         {
-            case 1 :
+            case 1:
                 targetId = 0;
                 break;
-            case 2 :
-                targetId = party[1].ObjectId;
+            case 2:
+                targetId = party[1].GameObject.EntityId;
                 break;
             case 3:
-                targetId = party[2].ObjectId;
+                targetId = party[2].GameObject.EntityId;
                 break;
             case 4:
-                targetId = party[3].ObjectId;
+                targetId = party[3].GameObject.EntityId;
                 break;
             case 5:
-                targetId = party[4].ObjectId;
+                targetId = party[4].GameObject.EntityId;
                 break;
             case 6:
-                targetId = party[5].ObjectId;
+                targetId = party[5].GameObject.EntityId;
                 break;
             case 7:
-                targetId = party[6].ObjectId;
+                targetId = party[6].GameObject.EntityId;
                 break;
             case 8:
-                targetId = party[7].ObjectId;
+                targetId = party[7].GameObject.EntityId;
                 break;
             case 9:
                 targetId = Core.Me.GetCurrTarget().EntityId;
@@ -103,13 +99,13 @@ public class 指定职能使用技能A : ITriggerAction
         }
 
         foreach (var role in roles)
-        {
             if (role.Value)
             {
                 if (toTarget)
                 {
                     XszRemote.UseSkillWithTarget(role.Key, skillId, targetId);
-                    ChatHelper.SendMessage($"/p 使用技能（指定目标）:{role.Key} 技能id：{skillId} 技能名:{skillId.GetSpell().Name} 目标id:{targetId}");
+                    ChatHelper.SendMessage(
+                        $"/p 使用技能（指定目标）:{role.Key} 技能id：{skillId} 技能名:{skillId.GetSpell().Name} 目标id:{targetId}");
                 }
                 else
 
@@ -121,8 +117,7 @@ public class 指定职能使用技能A : ITriggerAction
                     XszRemote.Cmd(role.Key, $"/ac {skillId.GetSpell().Name}");
                 }
             }
-        }
+
         return true;
     }
-
 }

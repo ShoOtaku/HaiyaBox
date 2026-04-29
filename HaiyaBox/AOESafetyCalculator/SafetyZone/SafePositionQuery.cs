@@ -15,7 +15,7 @@ public sealed class SafePositionQuery
     private readonly WPos searchCenter;
     private readonly float searchRadius;
     private readonly DateTime currentTime;
-    private readonly ArenaBounds? arenaBounds;  // 场地边界（可选）
+    private readonly ArenaBounds? arenaBounds; // 场地边界（可选）
 
     // 约束条件
     private WPos? targetPosition;
@@ -23,7 +23,7 @@ public sealed class SafePositionQuery
     private float minDistanceBetweenPoints = 2.0f;
     private WPos? centerPoint;
     private float? minAngleBetweenPoints;
-    private WPos? orderByReference;  // 排序参考点
+    private WPos? orderByReference; // 排序参考点
 
     internal SafePositionQuery(
         SafeZoneCalculator calculator,
@@ -140,28 +140,21 @@ public sealed class SafePositionQuery
 
         // 初始化：优先从目标点附近开始采样，如果没有目标点则从搜索中心开始
         var initialPoint = targetPosition ?? searchCenter;
-        
+
         // 确保初始点在搜索范围内
         if ((initialPoint - searchCenter).Length() > searchRadius)
         {
             // 如果目标点超出搜索范围，将初始点投影到搜索边界上
             var dir = initialPoint - searchCenter;
             if (dir.Length() > 0.001f)
-            {
                 initialPoint = searchCenter + dir.Normalized() * (searchRadius * 0.9f);
-            }
             else
-            {
                 initialPoint = searchCenter;
-            }
         }
-        
+
         // 确保初始点在场地内（如果设置了场地边界）
-        if (arenaBounds != null && !arenaBounds.Contains(initialPoint))
-        {
-            initialPoint = searchCenter;
-        }
-        
+        if (arenaBounds != null && !arenaBounds.Contains(initialPoint)) initialPoint = searchCenter;
+
         candidates.Add(initialPoint);
         activeList.Add(initialPoint);
         var gridX = (int)((initialPoint.X - (searchCenter.X - searchRadius)) / gridSize);
@@ -205,22 +198,17 @@ public sealed class SafePositionQuery
                 // 检查周围格子是否有点
                 var valid = true;
                 for (var dx = -2; dx <= 2 && valid; dx++)
+                for (var dz = -2; dz <= 2 && valid; dz++)
                 {
-                    for (var dz = -2; dz <= 2 && valid; dz++)
+                    var checkX = gridX + dx;
+                    var checkZ = gridZ + dz;
+                    if (checkX >= 0 && checkX < gridWidth && checkZ >= 0 && checkZ < gridWidth)
                     {
-                        var checkX = gridX + dx;
-                        var checkZ = gridZ + dz;
-                        if (checkX >= 0 && checkX < gridWidth && checkZ >= 0 && checkZ < gridWidth)
+                        var cellIndex = grid[checkX, checkZ];
+                        if (cellIndex > 0)
                         {
-                            var cellIndex = grid[checkX, checkZ];
-                            if (cellIndex > 0)
-                            {
-                                var existingPoint = candidates[cellIndex - 1];
-                                if ((newPoint - existingPoint).Length() < minDistanceBetweenPoints)
-                                {
-                                    valid = false;
-                                }
-                            }
+                            var existingPoint = candidates[cellIndex - 1];
+                            if ((newPoint - existingPoint).Length() < minDistanceBetweenPoints) valid = false;
                         }
                     }
                 }
@@ -235,10 +223,7 @@ public sealed class SafePositionQuery
                 }
             }
 
-            if (!found)
-            {
-                activeList.RemoveAt(index);
-            }
+            if (!found) activeList.RemoveAt(index);
         }
 
         return candidates;

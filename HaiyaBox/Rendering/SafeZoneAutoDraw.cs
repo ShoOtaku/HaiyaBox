@@ -40,10 +40,7 @@ public static class SafeZoneAutoDraw
 
     public static void Dispose()
     {
-        if (_renderer != null && _callback != null)
-        {
-            _renderer.UnregisterTempObjectCallback(_callback);
-        }
+        if (_renderer != null && _callback != null) _renderer.UnregisterTempObjectCallback(_callback);
         _renderer = null;
         _callback = null;
         UnbindEvents();
@@ -53,13 +50,8 @@ public static class SafeZoneAutoDraw
     {
         var inDuty = IsInDuty();
         if (_wasInDuty && !inDuty)
-        {
             ClearAll();
-        }
-        else if (!_wasInDuty && inDuty)
-        {
-            ClearAll();
-        }
+        else if (!_wasInDuty && inDuty) ClearAll();
         _wasInDuty = inDuty;
 
         var now = DateTime.UtcNow;
@@ -73,10 +65,7 @@ public static class SafeZoneAutoDraw
             else if (!inCombat && _wasInCombat && _combatStartTime.HasValue)
             {
                 var combatSeconds = (now - _combatStartTime.Value).TotalSeconds;
-                if (combatSeconds >= BattleResetThreshold)
-                {
-                    ClearAll();
-                }
+                if (combatSeconds >= BattleResetThreshold) ClearAll();
                 _combatStartTime = null;
             }
         }
@@ -84,6 +73,7 @@ public static class SafeZoneAutoDraw
         {
             _combatStartTime = null;
         }
+
         _wasInCombat = inCombat;
     }
 
@@ -102,23 +92,13 @@ public static class SafeZoneAutoDraw
         foreach (var calculator in SafeZoneDrawRegistry.GetLiveCalculators())
         {
             var arena = calculator.GetArenaBounds();
-            if (arena != null)
-            {
-                arenaCount++;
-            }
+            if (arena != null) arenaCount++;
 
             foreach (var zone in calculator.GetZones())
-            {
                 if (zone.IsActive(now))
-                {
                     zoneCount++;
-                }
-            }
 
-            if (SafeZoneDrawRegistry.TryGetSafePoints(calculator, out var points))
-            {
-                safePointCount += points.Count;
-            }
+            if (SafeZoneDrawRegistry.TryGetSafePoints(calculator, out var points)) safePointCount += points.Count;
         }
 
         return new SafeZoneDrawStats(arenaCount, zoneCount, safePointCount);
@@ -141,7 +121,6 @@ public static class SafeZoneAutoDraw
             var radius = MathF.Max(arena?.ApproximateRadius ?? DefaultFallbackRadius, 1f);
 
             if (arena != null)
-            {
                 result.AddRange(DistanceFieldContourBuilder.Build(
                     p => -arena.DistanceToBorder(p),
                     center,
@@ -150,7 +129,6 @@ public static class SafeZoneAutoDraw
                     height,
                     ArenaColor,
                     OutlineThickness));
-            }
 
             foreach (var zone in calculator.GetZones())
             {
@@ -166,16 +144,15 @@ public static class SafeZoneAutoDraw
             }
 
             if (SafeZoneDrawRegistry.TryGetSafePoints(calculator, out var points))
-            {
                 for (var i = 0; i < points.Count; i++)
                 {
                     var p = points[i];
                     var pos = new System.Numerics.Vector3(p.X, height, p.Z);
                     result.Add(new DisplayObjectDot(pos, SafePointRadius, SafePointColor));
                     var labelPos = pos + new System.Numerics.Vector3(0f, SafePointLabelHeight, 0f);
-                    result.Add(new DisplayObjectText(labelPos, (i + 1).ToString(), LabelBackgroundColor, LabelTextColor, 1f));
+                    result.Add(new DisplayObjectText(labelPos, (i + 1).ToString(), LabelBackgroundColor, LabelTextColor,
+                        1f));
                 }
-            }
         }
 
         return result;
@@ -190,12 +167,9 @@ public static class SafeZoneAutoDraw
             Svc.DutyState.DutyCompleted += OnDutyCompleted;
             Svc.DutyState.DutyWiped += OnDutyWiped;
         }
-        if (Svc.ClientState != null)
-        {
-            Svc.ClientState.TerritoryChanged += OnTerritoryChanged;
-        }
-    }
 
+        if (Svc.ClientState != null) Svc.ClientState.TerritoryChanged += OnTerritoryChanged;
+    }
 
 
     private static void UnbindEvents()
@@ -207,17 +181,25 @@ public static class SafeZoneAutoDraw
             Svc.DutyState.DutyCompleted -= OnDutyCompleted;
             Svc.DutyState.DutyWiped -= OnDutyWiped;
         }
-        if (Svc.ClientState != null)
-        {
-            Svc.ClientState.TerritoryChanged -= OnTerritoryChanged;
-        }
+
+        if (Svc.ClientState != null) Svc.ClientState.TerritoryChanged -= OnTerritoryChanged;
     }
 
 
+    private static void OnDutyCompleted(IDutyStateEventArgs args)
+    {
+        ClearAll();
+    }
 
-    private static void OnDutyCompleted(IDutyStateEventArgs args) => ClearAll();
-    private static void OnDutyWiped(IDutyStateEventArgs args) => ClearAll();
-    private static void OnTerritoryChanged(uint obj) => ClearAll();
+    private static void OnDutyWiped(IDutyStateEventArgs args)
+    {
+        ClearAll();
+    }
+
+    private static void OnTerritoryChanged(uint obj)
+    {
+        ClearAll();
+    }
 
     private static bool IsInDuty()
     {

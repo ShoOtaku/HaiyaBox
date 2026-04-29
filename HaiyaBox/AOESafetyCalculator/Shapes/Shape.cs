@@ -46,10 +46,14 @@ public sealed record class Circle(WPos Center, float Radius) : Shape
             var (sin, cos) = ((float, float))Math.SinCos(angle);
             vertices.Add(new WDir(Radius * sin, Radius * cos) + offset);
         }
+
         return vertices;
     }
 
-    public override string ToString() => $"Circle:{Center},{Radius}";
+    public override string ToString()
+    {
+        return $"Circle:{Center},{Radius}";
+    }
 }
 
 /// <summary>
@@ -64,10 +68,7 @@ public sealed record class PolygonCustom(WPos[] Vertices) : Shape
         var vertices = Vertices;
         var len = vertices.Length;
         var result = new List<WDir>(len);
-        for (var i = 0; i < len; ++i)
-        {
-            result.Add(vertices[i] - center);
-        }
+        for (var i = 0; i < len; ++i) result.Add(vertices[i] - center);
         return result;
     }
 
@@ -76,10 +77,7 @@ public sealed record class PolygonCustom(WPos[] Vertices) : Shape
         var vertices = Vertices;
         var len = vertices.Length;
         var sb = new StringBuilder("PolygonCustom:", 14 + len * 9);
-        for (var i = 0; i < len; ++i)
-        {
-            sb.Append(vertices[i]).Append(';');
-        }
+        for (var i = 0; i < len; ++i) sb.Append(vertices[i]).Append(';');
         --sb.Length;
         return sb.ToString();
     }
@@ -92,17 +90,17 @@ public sealed record class PolygonCustom(WPos[] Vertices) : Shape
 [SkipLocalsInit]
 public sealed record class PolygonCustomRel(WDir[] Vertices) : Shape
 {
-    public override List<WDir> Contour(WPos center) => [.. Vertices];
+    public override List<WDir> Contour(WPos center)
+    {
+        return [.. Vertices];
+    }
 
     public override string ToString()
     {
         var vertices = Vertices;
         var len = vertices.Length;
         var sb = new StringBuilder("PolygonCustomRel:", 17 + len * 9);
-        for (var i = 0; i < len; ++i)
-        {
-            sb.Append(vertices[i]).Append(';');
-        }
+        for (var i = 0; i < len; ++i) sb.Append(vertices[i]).Append(';');
         --sb.Length;
         return sb.ToString();
     }
@@ -143,7 +141,10 @@ public sealed record class Donut(WPos Center, float InnerRadius, float OuterRadi
         return vertices;
     }
 
-    public override string ToString() => $"Donut:{Center},{InnerRadius},{OuterRadius}";
+    public override string ToString()
+    {
+        return $"Donut:{Center},{InnerRadius},{OuterRadius}";
+    }
 }
 
 /// <summary>
@@ -158,7 +159,7 @@ public record class Rectangle(WPos Center, float HalfWidth, float HalfHeight, An
 {
     public override List<WDir> Contour(WPos center)
     {
-        var dir = Rotation != default ? Rotation.ToDirection() : new(default, 1f);
+        var dir = Rotation != default ? Rotation.ToDirection() : new WDir(default, 1f);
         var dx = dir.OrthoL() * HalfWidth;
         var dz = dir * HalfHeight;
 
@@ -172,14 +173,14 @@ public record class Rectangle(WPos Center, float HalfWidth, float HalfHeight, An
 
         var offset = Center - center;
         var result = new List<WDir>(4);
-        for (var i = 0; i < 4; ++i)
-        {
-            result.Add(vertices[i] + offset);
-        }
+        for (var i = 0; i < 4; ++i) result.Add(vertices[i] + offset);
         return result;
     }
 
-    public override string ToString() => $"Rectangle:{Center},{HalfWidth},{HalfHeight},{Rotation}";
+    public override string ToString()
+    {
+        return $"Rectangle:{Center},{HalfWidth},{HalfHeight},{Rotation}";
+    }
 }
 
 /// <summary>
@@ -189,7 +190,8 @@ public record class Rectangle(WPos Center, float HalfWidth, float HalfHeight, An
 /// <param name="HalfSize">半边长</param>
 /// <param name="Rotation">旋转角度</param>
 [SkipLocalsInit]
-public sealed record class Square(WPos Center, float HalfSize, Angle Rotation = default) : Rectangle(Center, HalfSize, HalfSize, Rotation);
+public sealed record class Square(WPos Center, float HalfSize, Angle Rotation = default)
+    : Rectangle(Center, HalfSize, HalfSize, Rotation);
 
 /// <summary>
 /// 正多边形
@@ -214,12 +216,16 @@ public sealed record class Polygon(WPos Center, float Radius, int Edges, Angle R
         for (var i = 0; i < edges; ++i)
         {
             var (sin, cos) = ((float, float))Math.SinCos(i * angleIncrement + initialRotation);
-            vertices.Add(new(radius * sin + offsetX, radius * cos + offsetZ));
+            vertices.Add(new WDir(radius * sin + offsetX, radius * cos + offsetZ));
         }
+
         return vertices;
     }
 
-    public override string ToString() => $"Polygon:{Center},{Radius},{Edges},{Rotation}";
+    public override string ToString()
+    {
+        return $"Polygon:{Center},{Radius},{Edges},{Rotation}";
+    }
 }
 
 /// <summary>
@@ -255,7 +261,10 @@ public record class Cone(WPos Center, float Radius, Angle StartAngle, Angle EndA
         return vertices;
     }
 
-    public override string ToString() => $"Cone:{Center},{Radius},{StartAngle},{EndAngle}";
+    public override string ToString()
+    {
+        return $"Cone:{Center},{Radius},{StartAngle},{EndAngle}";
+    }
 }
 
 /// <summary>
@@ -266,4 +275,5 @@ public record class Cone(WPos Center, float Radius, Angle StartAngle, Angle EndA
 /// <param name="CenterDir">中心方向角</param>
 /// <param name="HalfAngle">半角</param>
 [SkipLocalsInit]
-public sealed record class ConeHA(WPos Center, float Radius, Angle CenterDir, Angle HalfAngle) : Cone(Center, Radius, CenterDir - HalfAngle, CenterDir + HalfAngle);
+public sealed record class ConeHA(WPos Center, float Radius, Angle CenterDir, Angle HalfAngle)
+    : Cone(Center, Radius, CenterDir - HalfAngle, CenterDir + HalfAngle);

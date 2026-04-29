@@ -33,10 +33,7 @@ public static class ConstrainedSafetyExample
             .Execute();
 
         Console.WriteLine($"找到 {safePoints.Count} 个安全点:");
-        foreach (var point in safePoints)
-        {
-            Console.WriteLine($"  ({point.X:F1}, {point.Z:F1})");
-        }
+        foreach (var point in safePoints) Console.WriteLine($"  ({point.X:F1}, {point.Z:F1})");
     }
 
     /// <summary>
@@ -52,15 +49,15 @@ public static class ConstrainedSafetyExample
         // Boss周围的危险区域
         calculator.AddForbiddenZone(new ForbiddenZone
         {
-            Shape = new SDCircle(bossPos, 8f)  // Boss脚下8米危险
+            Shape = new SDCircle(bossPos, 8f) // Boss脚下8米危险
         });
 
         var currentTime = DateTime.Now;
 
         // 查找靠近Boss的安全点（最远不超过20米）
         var safePoints = calculator.FindSafePositions(5, bossPos, 40f, currentTime)
-            .NearTarget(bossPos, maxDistance: 20f)  // 限制最大距离20米
-            .Execute();  // 结果已按距离Boss的距离排序（近的在前）
+            .NearTarget(bossPos, 20f) // 限制最大距离20米
+            .Execute(); // 结果已按距离Boss的距离排序（近的在前）
 
         Console.WriteLine("靠近Boss的安全点（按距离排序）:");
         foreach (var point in safePoints)
@@ -93,14 +90,11 @@ public static class ConstrainedSafetyExample
 
         // 查找8个分散的安全点（玩家之间至少相距5米）
         var safePoints = calculator.FindSafePositions(8, arenaCenter, 40f, currentTime)
-            .MinDistanceBetween(5f)  // 点之间最小距离5米
+            .MinDistanceBetween(5f) // 点之间最小距离5米
             .Execute();
 
         Console.WriteLine($"找到 {safePoints.Count} 个分散的安全点:");
-        foreach (var point in safePoints)
-        {
-            Console.WriteLine($"  ({point.X:F1}, {point.Z:F1})");
-        }
+        foreach (var point in safePoints) Console.WriteLine($"  ({point.X:F1}, {point.Z:F1})");
     }
 
     /// <summary>
@@ -121,7 +115,7 @@ public static class ConstrainedSafetyExample
 
         // 查找8个安全点，相对于中心点的角度至少相差45度
         var safePoints = calculator.FindSafePositions(8, arenaCenter, 40f, currentTime)
-            .WithMinAngle(arenaCenter, 45f.Degrees())  // 最小角度间隔45度
+            .WithMinAngle(arenaCenter, 45f.Degrees()) // 最小角度间隔45度
             .MinDistanceBetween(3f)
             .Execute();
 
@@ -140,10 +134,10 @@ public static class ConstrainedSafetyExample
     {
         var calculator = new SafeZoneCalculator();
         var bossPos = new WPos(0, 0);
-        var tankPos = new WPos(15, 0);  // 坦克位置
+        var tankPos = new WPos(15, 0); // 坦克位置
 
         // 模拟40个危险区域
-        for (int i = 0; i < 40; i++)
+        for (var i = 0; i < 40; i++)
         {
             var angle = i * (360f / 40f);
             var pos = bossPos + new WDir(
@@ -160,12 +154,12 @@ public static class ConstrainedSafetyExample
 
         // 查找8个安全点：靠近坦克，彼此分散，按距离坦克排序
         var safePoints = calculator.FindSafePositions(8, bossPos, 40f, currentTime)
-            .NearTarget(tankPos, maxDistance: 20f)  // 距离坦克不超过20米
-            .MinDistanceBetween(4f)                  // 玩家之间至少4米
-            .Execute();                              // 自动按距离坦克排序
+            .NearTarget(tankPos, 20f) // 距离坦克不超过20米
+            .MinDistanceBetween(4f) // 玩家之间至少4米
+            .Execute(); // 自动按距离坦克排序
 
         Console.WriteLine($"找到 {safePoints.Count} 个安全点（按距离坦克排序）:");
-        for (int i = 0; i < safePoints.Count; i++)
+        for (var i = 0; i < safePoints.Count; i++)
         {
             var point = safePoints[i];
             var distToTank = (point - tankPos).Length();

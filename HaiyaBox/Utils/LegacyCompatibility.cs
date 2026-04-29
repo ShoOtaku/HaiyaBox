@@ -1,9 +1,7 @@
 using System.Numerics;
-using AEAssist;
 using AEAssist.CombatRoutine;
 using AEAssist.CombatRoutine.Module;
 using AEAssist.Extension;
-using AEAssist.Helper;
 using Dalamud.Game.ClientState.Objects.Types;
 
 namespace HaiyaBox.Utils;
@@ -15,24 +13,26 @@ public static class IBattleCharaExtensions
         Jobs.Bard, Jobs.BlackMage, Jobs.Archer, Jobs.Dancer, Jobs.Dragoon, Jobs.Lancer, Jobs.Machinist, Jobs.Ninja,
         Jobs.Pictomancer, Jobs.Monk, Jobs.Reaper, Jobs.RedMage, Jobs.Summoner, Jobs.Viper, Jobs.Samurai
     ];
+
     public static bool IsDps(this IGameObject battleChara)
     {
         var job = ((IBattleChara)battleChara).CurrentJob();
         return Dps.Contains(job);
     }
 }
+
 public static class 坐标计算
 {
     public static int PositionTo8Dir(Vector3 point, Vector3 centre)
     {
         return GeometryUtilsXZ.PositionTo8Dir(point, centre);
     }
-    
+
     public static Vector3 RotatePoint(Vector3 point, Vector3 centre, float radian)
     {
         return GeometryUtilsXZ.RotatePoint(point, centre, radian);
     }
-    
+
     public static Vector3 CalculatePointOnLine(Vector3 start, Vector3 end, float distance)
     {
         return GeometryUtilsXZ.CalculatePointOnLine(start, end, distance);
@@ -46,7 +46,6 @@ public static class 位移
         RemoteControl.SetPos(AI.Instance.PartyRole, pos);
     }
 }
-
 
 public static class Vector3Extensions
 {

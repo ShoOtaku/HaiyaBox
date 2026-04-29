@@ -1,257 +1,249 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
-namespace HaiyaBox.Utils
+namespace HaiyaBox.Utils;
+
+// 限制范围类型枚举（新增）
+public enum LimitRangeType
 {
-    // 限制范围类型枚举（新增）
-    public enum LimitRangeType
+    Rectangle, // 矩形范围
+    Circle // 圆形范围
+}
+
+public abstract class DangerArea
+{
+    public abstract bool IsPointInDanger(Point point);
+}
+
+public class CircleDangerArea : DangerArea
+{
+    public Point Center { get; set; }
+    public double Radius { get; set; }
+
+    public override bool IsPointInDanger(Point point)
     {
-        Rectangle, // 矩形范围
-        Circle     // 圆形范围
+        var distance = Math.Sqrt(Math.Pow(point.X - Center.X, 2) + Math.Pow(point.Y - Center.Y, 2));
+        return distance <= Radius;
     }
-    public abstract class DangerArea
+}
+
+public class RectangleDangerArea : DangerArea
+{
+    public Point Center { get; set; }
+    public double Width { get; set; }
+    public double Height { get; set; }
+    public double Rotation { get; set; } = 0.0; // 旋转角度（度数），默认为0
+
+    public override bool IsPointInDanger(Point point)
     {
-        public abstract bool IsPointInDanger(Point point);
+        // 使用逆向旋转变换来检测点是否在旋转后的矩形内
+        // 1. 计算点相对矩形中心的偏移
+        var dx = point.X - Center.X;
+        var dy = point.Y - Center.Y;
+
+        // 2. 应用逆旋转变换（将点转换到矩形的局部坐标系）
+        var angleRad = -Rotation * Math.PI / 180.0; // 转换为弧度，取负值进行逆旋转
+        var cosAngle = Math.Cos(angleRad);
+        var sinAngle = Math.Sin(angleRad);
+
+        // 旋转变换公式
+        var localX = dx * cosAngle - dy * sinAngle;
+        var localY = dx * sinAngle + dy * cosAngle;
+
+        // 3. 在局部坐标系中检测点是否在矩形边界内
+        var halfWidth = Width / 2.0;
+        var halfHeight = Height / 2.0;
+
+        return Math.Abs(localX) <= halfWidth && Math.Abs(localY) <= halfHeight;
     }
+}
 
-    public class CircleDangerArea : DangerArea
+public class Point
+{
+    public double X { get; set; }
+    public double Y { get; set; }
+
+    public Point(double x, double y)
     {
-        public Point Center { get; set; }
-        public double Radius { get; set; }
-
-        public override bool IsPointInDanger(Point point)
-        {
-            double distance = Math.Sqrt(Math.Pow(point.X - Center.X, 2) + Math.Pow(point.Y - Center.Y, 2));
-            return distance <= Radius;
-        }
-    }
-
-    public class RectangleDangerArea : DangerArea
-    {
-        public Point Center { get; set; }
-        public double Width { get; set; }
-        public double Height { get; set; }
-        public double Rotation { get; set; } = 0.0; // 旋转角度（度数），默认为0
-
-        public override bool IsPointInDanger(Point point)
-        {
-            // 使用逆向旋转变换来检测点是否在旋转后的矩形内
-            // 1. 计算点相对矩形中心的偏移
-            double dx = point.X - Center.X;
-            double dy = point.Y - Center.Y;
-
-            // 2. 应用逆旋转变换（将点转换到矩形的局部坐标系）
-            double angleRad = -Rotation * Math.PI / 180.0; // 转换为弧度，取负值进行逆旋转
-            double cosAngle = Math.Cos(angleRad);
-            double sinAngle = Math.Sin(angleRad);
-
-            // 旋转变换公式
-            double localX = dx * cosAngle - dy * sinAngle;
-            double localY = dx * sinAngle + dy * cosAngle;
-
-            // 3. 在局部坐标系中检测点是否在矩形边界内
-            double halfWidth = Width / 2.0;
-            double halfHeight = Height / 2.0;
-
-            return Math.Abs(localX) <= halfWidth && Math.Abs(localY) <= halfHeight;
-        }
-    }
-
-    public class Point
-    {
-        public double X { get; set; }
-        public double Y { get; set; }
-
-        public Point(double x, double y)
-        {
-            X = x;
-            Y = y;
-        }
-
-        public double GetDistanceTo(Point other)
-        {
-            return Math.Sqrt(Math.Pow(X - other.X, 2) + Math.Pow(Y - other.Y, 2));
-        }
-
-        public override string ToString()
-        {
-            return $"({X:F1}, {Y:F1})";
-        }
-
-        // Vector3 坐标转换方法
-        public static Point FromVector3(Vector3 v3)
-        {
-            return new Point(v3.X, v3.Z);
-        }
-
-        public static Vector3 ToVector3(Point point)
-        {
-            return new Vector3((float)point.X, 0, (float)point.Y);
-        }
+        X = x;
+        Y = y;
     }
 
-    public class SafePointCalculator
+    public double GetDistanceTo(Point other)
     {
-        /// <summary>
-        /// 查找安全点（支持矩形/圆形限制范围）
-        /// </summary>
-        /// <param name="limitType">限制范围类型（矩形/圆形）</param>
-        /// <param name="rectLimitParams">矩形范围参数（minX, maxX, minY, maxY）</param>
-        /// <param name="circleLimitParams">圆形范围参数（圆心, 半径）</param>
-        /// <param name="dangerAreas">危险区域列表</param>
-        /// <param name="referencePoint">参考点</param>
-        /// <param name="minSafePointDistance">安全点之间最小间距</param>
-        /// <param name="closeToRefCount">需要贴近参考点的数量</param>
-        /// <param name="maxFarDistance">自由分布组的最大远离距离</param>
-        /// <param name="sampleStep">采样步长</param>
-        /// <param name="totalSafePointCount">总安全点数量</param>
-        /// <returns>分组合并后的安全点列表</returns>
-        public List<Point> FindSafePoints(
-            LimitRangeType limitType,
-            Tuple<Point, double, double> rectLimitParams = null, // 矩形参数：(中心, 长度, 宽度)
-            Tuple<Point, double> circleLimitParams = null, // 圆形参数：(圆心, 半径)
-            List<DangerArea> dangerAreas = null,
-            Point referencePoint = null,
-            double minSafePointDistance = 3.0,
-            int closeToRefCount = 3,
-            double maxFarDistance = 25.0,
-            double sampleStep = 0.5,
-            int totalSafePointCount = 8)
-        {
-            // 校验参数合法性
-            if (limitType == LimitRangeType.Rectangle && rectLimitParams == null)
-                throw new ArgumentNullException(nameof(rectLimitParams), "矩形范围需传入rectLimitParams");
-            if (limitType == LimitRangeType.Circle && circleLimitParams == null)
-                throw new ArgumentNullException(nameof(circleLimitParams), "圆形范围需传入circleLimitParams");
-            dangerAreas ??= new List<DangerArea>();
-            referencePoint ??= new Point(0, 0);
+        return Math.Sqrt(Math.Pow(X - other.X, 2) + Math.Pow(Y - other.Y, 2));
+    }
 
-            // 1. 网格采样（根据限制范围动态计算采样边界，避免无效采样）
-            (double sampleMinX, double sampleMaxX, double sampleMinY, double sampleMaxY) =
-                GetSampleBounds(limitType, rectLimitParams, circleLimitParams);
-            List<Point> allSamplePoints = new List<Point>();
-            for (double x = sampleMinX; x <= sampleMaxX; x += sampleStep)
+    public override string ToString()
+    {
+        return $"({X:F1}, {Y:F1})";
+    }
+
+    // Vector3 坐标转换方法
+    public static Point FromVector3(Vector3 v3)
+    {
+        return new Point(v3.X, v3.Z);
+    }
+
+    public static Vector3 ToVector3(Point point)
+    {
+        return new Vector3((float)point.X, 0, (float)point.Y);
+    }
+}
+
+public class SafePointCalculator
+{
+    /// <summary>
+    /// 查找安全点（支持矩形/圆形限制范围）
+    /// </summary>
+    /// <param name="limitType">限制范围类型（矩形/圆形）</param>
+    /// <param name="rectLimitParams">矩形范围参数（minX, maxX, minY, maxY）</param>
+    /// <param name="circleLimitParams">圆形范围参数（圆心, 半径）</param>
+    /// <param name="dangerAreas">危险区域列表</param>
+    /// <param name="referencePoint">参考点</param>
+    /// <param name="minSafePointDistance">安全点之间最小间距</param>
+    /// <param name="closeToRefCount">需要贴近参考点的数量</param>
+    /// <param name="maxFarDistance">自由分布组的最大远离距离</param>
+    /// <param name="sampleStep">采样步长</param>
+    /// <param name="totalSafePointCount">总安全点数量</param>
+    /// <returns>分组合并后的安全点列表</returns>
+    public List<Point> FindSafePoints(
+        LimitRangeType limitType,
+        Tuple<Point, double, double> rectLimitParams = null, // 矩形参数：(中心, 长度, 宽度)
+        Tuple<Point, double> circleLimitParams = null, // 圆形参数：(圆心, 半径)
+        List<DangerArea> dangerAreas = null,
+        Point referencePoint = null,
+        double minSafePointDistance = 3.0,
+        int closeToRefCount = 3,
+        double maxFarDistance = 25.0,
+        double sampleStep = 0.5,
+        int totalSafePointCount = 8)
+    {
+        // 校验参数合法性
+        if (limitType == LimitRangeType.Rectangle && rectLimitParams == null)
+            throw new ArgumentNullException(nameof(rectLimitParams), "矩形范围需传入rectLimitParams");
+        if (limitType == LimitRangeType.Circle && circleLimitParams == null)
+            throw new ArgumentNullException(nameof(circleLimitParams), "圆形范围需传入circleLimitParams");
+        dangerAreas ??= new List<DangerArea>();
+        referencePoint ??= new Point(0, 0);
+
+        // 1. 网格采样（根据限制范围动态计算采样边界，避免无效采样）
+        var (sampleMinX, sampleMaxX, sampleMinY, sampleMaxY) =
+            GetSampleBounds(limitType, rectLimitParams, circleLimitParams);
+        var allSamplePoints = new List<Point>();
+        for (var x = sampleMinX; x <= sampleMaxX; x += sampleStep)
+        for (var y = sampleMinY; y <= sampleMaxY; y += sampleStep)
+            allSamplePoints.Add(new Point(x, y));
+
+        // 2. 筛选基础安全点：① 在限制范围内 ② 不在任何危险区
+        var baseSafePoints = allSamplePoints
+            .Where(p => IsPointInLimitRange(p, limitType, rectLimitParams, circleLimitParams)) // 新增：限制范围判定
+            .Where(p => !dangerAreas.Any(area => area.IsPointInDanger(p)))
+            .ToList();
+
+        if (baseSafePoints.Count == 0)
+            throw new Exception("无可用安全点，请调整参数（如扩大范围、缩小危险区、减小采样步长）");
+
+        // 3. 第一组：优先贴近参考点的安全点
+        var closeToRefPoints = new List<Point>();
+        var sortedByRefDistance = baseSafePoints.OrderBy(p => p.GetDistanceTo(referencePoint)).ToList();
+        foreach (var point in sortedByRefDistance)
+            if (closeToRefPoints.All(p => p.GetDistanceTo(point) >= minSafePointDistance))
             {
-                for (double y = sampleMinY; y <= sampleMaxY; y += sampleStep)
-                {
-                    allSamplePoints.Add(new Point(x, y));
-                }
+                closeToRefPoints.Add(point);
+                if (closeToRefPoints.Count == closeToRefCount)
+                    break;
             }
 
-            // 2. 筛选基础安全点：① 在限制范围内 ② 不在任何危险区
-            List<Point> baseSafePoints = allSamplePoints
-                .Where(p => IsPointInLimitRange(p, limitType, rectLimitParams, circleLimitParams)) // 新增：限制范围判定
-                .Where(p => !dangerAreas.Any(area => area.IsPointInDanger(p)))
-                .ToList();
+        // 4. 第二组：自由分布安全点
+        var freePoints = new List<Point>();
+        var candidateFreePoints = baseSafePoints
+            .Where(p => p.GetDistanceTo(referencePoint) <= maxFarDistance)
+            .Except(closeToRefPoints)
+            .OrderBy(_ => Guid.NewGuid()) // 随机排序，自由分布
+            .ToList();
 
-            if (baseSafePoints.Count == 0)
-                throw new Exception("无可用安全点，请调整参数（如扩大范围、缩小危险区、减小采样步长）");
-
-            // 3. 第一组：优先贴近参考点的安全点
-            List<Point> closeToRefPoints = new List<Point>();
-            var sortedByRefDistance = baseSafePoints.OrderBy(p => p.GetDistanceTo(referencePoint)).ToList();
-            foreach (var point in sortedByRefDistance)
-            {
-                if (closeToRefPoints.All(p => p.GetDistanceTo(point) >= minSafePointDistance))
-                {
-                    closeToRefPoints.Add(point);
-                    if (closeToRefPoints.Count == closeToRefCount)
-                        break;
-                }
-            }
-
-            // 4. 第二组：自由分布安全点
-            List<Point> freePoints = new List<Point>();
-            var candidateFreePoints = baseSafePoints
-                .Where(p => p.GetDistanceTo(referencePoint) <= maxFarDistance)
-                .Except(closeToRefPoints)
-                .OrderBy(_ => Guid.NewGuid()) // 随机排序，自由分布
-                .ToList();
-
-            foreach (var point in candidateFreePoints)
-            {
-                bool isFarEnough = closeToRefPoints.All(p => p.GetDistanceTo(point) >= minSafePointDistance)
-                                   && freePoints.All(p => p.GetDistanceTo(point) >= minSafePointDistance);
-                if (isFarEnough)
-                {
-                    freePoints.Add(point);
-                    if (closeToRefPoints.Count + freePoints.Count == totalSafePointCount)
-                        break;
-                }
-            }
-
-            // 5. 合并结果
-            var result = closeToRefPoints.Concat(freePoints).ToList();
-            if (result.Count < totalSafePointCount)
-                Console.WriteLine($"警告：仅找到{result.Count}个符合要求的安全点（需{totalSafePointCount}个），可缩小最小间距或调整maxFarDistance");
-
-            return result;
-        }
-
-        /// <summary>
-        /// 辅助方法：判断点是否在限制范围内（矩形/圆形）
-        /// </summary>
-        private bool IsPointInLimitRange(
-            Point point,
-            LimitRangeType limitType,
-            Tuple<Point, double, double> rectParams,
-            Tuple<Point, double> circleParams)
+        foreach (var point in candidateFreePoints)
         {
-            switch (limitType)
+            var isFarEnough = closeToRefPoints.All(p => p.GetDistanceTo(point) >= minSafePointDistance)
+                              && freePoints.All(p => p.GetDistanceTo(point) >= minSafePointDistance);
+            if (isFarEnough)
             {
-                case LimitRangeType.Rectangle:
-                    {
-                        var center = rectParams.Item1;
-                        var length = rectParams.Item2; // 长度 (X方向)
-                        var width = rectParams.Item3; // 宽度 (Y方向)
-
-                        var minX = center.X - length / 2.0;
-                        var maxX = center.X + length / 2.0;
-                        var minY = center.Y - width / 2.0;
-                        var maxY = center.Y + width / 2.0;
-
-                        return point.X >= minX && point.X <= maxX && point.Y >= minY && point.Y <= maxY;
-                    }
-                case LimitRangeType.Circle:
-                    return point.GetDistanceTo(circleParams.Item1) <= circleParams.Item2;
-                default:
-                    return false;
+                freePoints.Add(point);
+                if (closeToRefPoints.Count + freePoints.Count == totalSafePointCount)
+                    break;
             }
         }
 
-        /// <summary>
-        /// 辅助方法：计算采样边界（避免超出限制范围的无效采样）
-        /// </summary>
-        private (double minX, double maxX, double minY, double maxY) GetSampleBounds(
-            LimitRangeType limitType,
-            Tuple<Point, double, double> rectParams,
-            Tuple<Point, double> circleParams)
+        // 5. 合并结果
+        var result = closeToRefPoints.Concat(freePoints).ToList();
+        if (result.Count < totalSafePointCount)
+            Console.WriteLine($"警告：仅找到{result.Count}个符合要求的安全点（需{totalSafePointCount}个），可缩小最小间距或调整maxFarDistance");
+
+        return result;
+    }
+
+    /// <summary>
+    /// 辅助方法：判断点是否在限制范围内（矩形/圆形）
+    /// </summary>
+    private bool IsPointInLimitRange(
+        Point point,
+        LimitRangeType limitType,
+        Tuple<Point, double, double> rectParams,
+        Tuple<Point, double> circleParams)
+    {
+        switch (limitType)
         {
-            switch (limitType)
+            case LimitRangeType.Rectangle:
             {
-                case LimitRangeType.Rectangle:
-                    {
-                        var center = rectParams.Item1;
-                        var length = rectParams.Item2;
-                        var width = rectParams.Item3;
+                var center = rectParams.Item1;
+                var length = rectParams.Item2; // 长度 (X方向)
+                var width = rectParams.Item3; // 宽度 (Y方向)
 
-                        var minX = center.X - length / 2.0;
-                        var maxX = center.X + length / 2.0;
-                        var minY = center.Y - width / 2.0;
-                        var maxY = center.Y + width / 2.0;
+                var minX = center.X - length / 2.0;
+                var maxX = center.X + length / 2.0;
+                var minY = center.Y - width / 2.0;
+                var maxY = center.Y + width / 2.0;
 
-                        return (minX, maxX, minY, maxY);
-                    }
-                case LimitRangeType.Circle:
-                    return (circleParams.Item1.X - circleParams.Item2, circleParams.Item1.X + circleParams.Item2,
-                        circleParams.Item1.Y - circleParams.Item2, circleParams.Item1.Y + circleParams.Item2);
-                default:
-                    return (0, 0, 0, 0);
+                return point.X >= minX && point.X <= maxX && point.Y >= minY && point.Y <= maxY;
             }
+            case LimitRangeType.Circle:
+                return point.GetDistanceTo(circleParams.Item1) <= circleParams.Item2;
+            default:
+                return false;
         }
     }
+
+    /// <summary>
+    /// 辅助方法：计算采样边界（避免超出限制范围的无效采样）
+    /// </summary>
+    private (double minX, double maxX, double minY, double maxY) GetSampleBounds(
+        LimitRangeType limitType,
+        Tuple<Point, double, double> rectParams,
+        Tuple<Point, double> circleParams)
+    {
+        switch (limitType)
+        {
+            case LimitRangeType.Rectangle:
+            {
+                var center = rectParams.Item1;
+                var length = rectParams.Item2;
+                var width = rectParams.Item3;
+
+                var minX = center.X - length / 2.0;
+                var maxX = center.X + length / 2.0;
+                var minY = center.Y - width / 2.0;
+                var maxY = center.Y + width / 2.0;
+
+                return (minX, maxX, minY, maxY);
+            }
+            case LimitRangeType.Circle:
+                return (circleParams.Item1.X - circleParams.Item2, circleParams.Item1.X + circleParams.Item2,
+                    circleParams.Item1.Y - circleParams.Item2, circleParams.Item1.Y + circleParams.Item2);
+            default:
+                return (0, 0, 0, 0);
+        }
+    }
+}
 
 /*// 示例调用（圆形限制范围+35×35等效场景）
     class Program
@@ -306,4 +298,3 @@ namespace HaiyaBox.Utils
             Console.ReadKey();
         }
     }*/
-}

@@ -1,12 +1,7 @@
-using System;
-using System.Numerics;
-using AEAssist;
 using AEAssist.CombatRoutine.Trigger;
-using AEAssist.Extension;
 using AEAssist.Helper;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Objects.Types;
-using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 using HaiyaBox.Utils;
 
@@ -60,7 +55,13 @@ public enum PartyRole
 
 public enum SkillType
 {
-    群减, 雪仇, T特殊减, T小单减, T40减, T铁壁, 无
+    群减,
+    雪仇,
+    T特殊减,
+    T小单减,
+    T40减,
+    T铁壁,
+    无
 }
 
 /// <summary>
@@ -107,18 +108,21 @@ public class 使用技能动作A : ITriggerAction
             TargetRole = PartyRole.MT;
             changed = true;
         }
+
         ImGui.SameLine();
         if (ImGui.RadioButton("ST", TargetRole == PartyRole.ST))
         {
             TargetRole = PartyRole.ST;
             changed = true;
         }
+
         ImGui.SameLine();
         if (ImGui.RadioButton("H1", TargetRole == PartyRole.H1))
         {
             TargetRole = PartyRole.H1;
             changed = true;
         }
+
         ImGui.SameLine();
         if (ImGui.RadioButton("H2", TargetRole == PartyRole.H2))
         {
@@ -132,18 +136,21 @@ public class 使用技能动作A : ITriggerAction
             TargetRole = PartyRole.D1;
             changed = true;
         }
+
         ImGui.SameLine();
         if (ImGui.RadioButton("D2", TargetRole == PartyRole.D2))
         {
             TargetRole = PartyRole.D2;
             changed = true;
         }
+
         ImGui.SameLine();
         if (ImGui.RadioButton("D3", TargetRole == PartyRole.D3))
         {
             TargetRole = PartyRole.D3;
             changed = true;
         }
+
         ImGui.SameLine();
         if (ImGui.RadioButton("D4", TargetRole == PartyRole.D4))
         {
@@ -168,12 +175,14 @@ public class 使用技能动作A : ITriggerAction
                 skillType = SkillType.群减;
                 changed = true;
             }
+
             ImGui.SameLine();
             if (ImGui.RadioButton("雪仇", skillType == SkillType.雪仇))
             {
                 skillType = SkillType.雪仇;
                 changed = true;
             }
+
             ImGui.SameLine();
             if (ImGui.RadioButton("T特殊减", skillType == SkillType.T特殊减))
             {
@@ -186,6 +195,7 @@ public class 使用技能动作A : ITriggerAction
                 skillType = SkillType.T小单减;
                 changed = true;
             }
+
             ImGui.SameLine();
 
             if (ImGui.RadioButton("T40减", skillType == SkillType.T40减))
@@ -193,6 +203,7 @@ public class 使用技能动作A : ITriggerAction
                 skillType = SkillType.T40减;
                 changed = true;
             }
+
             ImGui.SameLine();
             if (ImGui.RadioButton("T铁壁", skillType == SkillType.T铁壁))
             {
@@ -265,7 +276,6 @@ public class 使用技能动作A : ITriggerAction
                 }
 
                 if (skillType == SkillType.T特殊减)
-                {
                     switch ((Job)player.ClassJob.RowId)
                     {
                         case Job.DRK:
@@ -287,12 +297,10 @@ public class 使用技能动作A : ITriggerAction
                             RemoteControl.UseSkill(roleStr, 25857);
                             return true;
                     }
-                }
 
                 if (TargetRole is PartyRole.MT or PartyRole.ST)
                 {
                     if (skillType == SkillType.群减)
-                    {
                         switch ((Job)player.ClassJob.RowId)
                         {
                             case Job.DRK:
@@ -308,10 +316,8 @@ public class 使用技能动作A : ITriggerAction
                                 RemoteControl.UseSkill(roleStr, 7388);
                                 return true;
                         }
-                    }
 
                     if (skillType == SkillType.T小单减)
-                    {
                         switch ((Job)player.ClassJob.RowId)
                         {
                             case Job.DRK:
@@ -327,10 +333,8 @@ public class 使用技能动作A : ITriggerAction
                                 RemoteControl.UseSkill(roleStr, 25751);
                                 return true;
                         }
-                    }
 
                     if (skillType == SkillType.T40减)
-                    {
                         switch ((Job)player.ClassJob.RowId)
                         {
                             case Job.DRK:
@@ -346,7 +350,6 @@ public class 使用技能动作A : ITriggerAction
                                 RemoteControl.UseSkill(roleStr, 36923);
                                 return true;
                         }
-                    }
 
                     if (skillType == SkillType.T铁壁)
                     {
@@ -362,7 +365,6 @@ public class 使用技能动作A : ITriggerAction
                 }
 
                 if (TargetRole is PartyRole.D1 or PartyRole.D2 or PartyRole.D3 or PartyRole.D4)
-                {
                     if (skillType == SkillType.群减)
                     {
                         switch (player.ClassJob.Value.JobType)
@@ -388,7 +390,6 @@ public class 使用技能动作A : ITriggerAction
                                 return true;
                         }
                     }
-                }
             }
 
             // 如果指定了技能ID，直接使用
@@ -421,7 +422,7 @@ public class 使用技能动作A : ITriggerAction
 
 
             // 匹配职能
-            if (!string.IsNullOrEmpty(role) && role.Equals(targetRole, System.StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(role) && role.Equals(targetRole, StringComparison.OrdinalIgnoreCase))
                 return member;
         }
 

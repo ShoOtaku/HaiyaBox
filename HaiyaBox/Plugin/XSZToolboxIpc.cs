@@ -1,7 +1,6 @@
-﻿using AEAssist.AEPlugin;
-using Dalamud.Plugin;
+﻿using System.Numerics;
 using Dalamud.Plugin.Ipc;
-using System.Numerics;
+using Dalamud.Plugin.Ipc.Exceptions;
 using ECommons.DalamudServices;
 
 namespace HaiyaBox.Plugin;
@@ -147,7 +146,7 @@ public class XSZToolboxIpc : IDisposable
     /// 滑动移动超时订阅者
     /// </summary>
     private ICallGateSubscriber<string, Vector3, long, object> _slideMoveTimeoutSubscriber;
-    
+
     private ICallGateSubscriber<string, string?> _getNameByRoleSubscriber;
 
     /// <summary>
@@ -228,7 +227,7 @@ public class XSZToolboxIpc : IDisposable
         {
             return _roomIdSubscriber?.InvokeFunc();
         }
-        catch (Dalamud.Plugin.Ipc.Exceptions.IpcNotReadyError)
+        catch (IpcNotReadyError)
         {
             return null;
         }
@@ -244,7 +243,7 @@ public class XSZToolboxIpc : IDisposable
         {
             return _isConnectedSubscriber?.InvokeFunc() ?? false;
         }
-        catch (Dalamud.Plugin.Ipc.Exceptions.IpcNotReadyError)
+        catch (IpcNotReadyError)
         {
             return false;
         }

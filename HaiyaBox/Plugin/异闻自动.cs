@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.Loader;
 using System.Text.RegularExpressions;
@@ -10,11 +9,10 @@ using AEAssist.Extension;
 using AEAssist.Helper;
 using AEAssist.MemoryApi;
 using Dalamud.Bindings.ImGui;
-using Dalamud.Game.Command;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Game.Command;
 using ECommons.DalamudServices;
-using FFXIVClientStructs.FFXIV.Client.Game.UI;
 using HaiyaBox.Settings;
 using HaiyaBox.Utils;
 
@@ -39,7 +37,7 @@ public class 异闻自动
     private bool 副本结束tp = false;
     private DateTime 流程结束时间 = DateTime.Now;
     private bool 结束指令已发送 = false;
-    
+
     private DateTime 跟随时间 = DateTime.Now;
     private bool 是否遥控位 = false;
     private bool 开始头标 = false;
@@ -63,6 +61,7 @@ public class 异闻自动
     private bool 上一帧在战斗中 = false;
 
     private readonly uint[] 敌人ID列表 = { 19097, 19226, 19056 };
+
     /// <summary>
     /// 在模块加载时调用
     /// </summary>
@@ -88,6 +87,7 @@ public class 异闻自动
     }
 
     private string _addonName = "VVDVoteRoute";
+
     /// <summary>
     /// 绘制事件记录Tab的UI界面
     /// </summary>
@@ -107,10 +107,7 @@ public class 异闻自动
         ImGui.Checkbox("启动功能", ref 功能启动);
         ImGui.Checkbox("遥控位", ref 是否遥控位);
         var 无敌 = 无敌挂机;
-        if (ImGui.Checkbox("无敌人", ref 无敌))
-        {
-            无敌挂机 = 无敌;
-        }
+        if (ImGui.Checkbox("无敌人", ref 无敌)) 无敌挂机 = 无敌;
 
         ImGui.Text($"当前角色坐标: X={当前角色坐标.X:F1}, Y={当前角色坐标.Y:F1}, Z={当前角色坐标.Z:F1}");
         ImGui.Text($"默认重生点: X={默认重生点.X:F1}, Y={默认重生点.Y:F1}, Z={默认重生点.Z:F1}");
@@ -122,20 +119,17 @@ public class 异闻自动
         }
 
         if (当前目标 != null)
-        {
-            ImGui.Text($"当前目标: {当前目标.Name.TextValue} BaseId={当前目标.BaseId} 坐标=({当前目标.Position.X:F1}, {当前目标.Position.Y:F1}, {当前目标.Position.Z:F1})");
-        }
+            ImGui.Text(
+                $"当前目标: {当前目标.Name.TextValue} BaseId={当前目标.BaseId} 坐标=({当前目标.Position.X:F1}, {当前目标.Position.Y:F1}, {当前目标.Position.Z:F1})");
         else
-        {
             ImGui.Text("当前目标: 无");
-        }
 
         DrawBossConfig("老一", 0, 老一Id, 老一坐标, 当前目标);
         DrawBossConfig("老二", 1, 老二Id, 老二坐标, 当前目标);
         DrawBossConfig("老三", 2, 老三Id, 老三坐标, 当前目标);
-        
+
         ImGui.Text("DEBUG");
-        
+
         ImGui.Text($"进度:{进度}");
         ImGui.Text($"商客异变阶段:{商客异变.进度}");
         ImGui.Text($"当前BossId:{商客异变.当前bossId}");
@@ -173,6 +167,7 @@ public class 异闻自动
         {
             LogHelper.Error($"[商客异闻] Update异常: {e}");
         }
+
         商客异变.更新交互对象();
     }
 
@@ -208,7 +203,7 @@ public class 异闻自动
     private void 处理商客异变地图状态()
     {
         var 当前地图ID = Core.Resolve<MemApiMap>().GetCurrTerrId();
-        
+
         if (当前地图ID != 商客异变地图ID)
         {
             if (上次地图ID == 商客异变地图ID)
@@ -236,7 +231,7 @@ public class 异闻自动
 
         上次地图ID = 当前地图ID;
     }
-    
+
 
     private bool 敌人可选中(uint 敌人ID)
     {
@@ -246,10 +241,7 @@ public class 异闻自动
     private void OnRouteCommand(string command, string args)
     {
         var pattern = string.IsNullOrWhiteSpace(args) ? null : args.Trim();
-        if (!商客异变.手动提交路线投票(pattern))
-        {
-            LogHelper.Print($"[商客异闻] 路线命令执行失败。命令: {路线命令名} 参数: {(pattern ?? "<当前阶段默认>")}");
-        }
+        if (!商客异变.手动提交路线投票(pattern)) LogHelper.Print($"[商客异闻] 路线命令执行失败。命令: {路线命令名} 参数: {pattern ?? "<当前阶段默认>"}");
     }
 
     private List<Vector3> GetBossPoints()
@@ -271,6 +263,7 @@ public class 异闻自动
             Settings.GetOccultBossId(2)
         ];
     }
+
     /// <summary>
     /// 事件回调：处理条件参数创建事件（这里主要用于同步事件记录器）
     /// </summary>
@@ -279,13 +272,9 @@ public class 异闻自动
     {
         if (!事件启动)
             return;
-        if (condParams is TargetIconEffectTestCondParams iconEffect )
-        {
-            if (iconEffect.Target == Core.Me && (iconEffect.IconId == 499 || iconEffect.IconId == 185) )
-            {
-                RemoteControl.SetPos("D1|D2|D3",new Vector3(374.3f, -29.6f, 558.9f));
-            }
-        }
+        if (condParams is TargetIconEffectTestCondParams iconEffect)
+            if (iconEffect.Target == Core.Me && (iconEffect.IconId == 499 || iconEffect.IconId == 185))
+                RemoteControl.SetPos("D1|D2|D3", new Vector3(374.3f, -29.6f, 558.9f));
     }
 }
 
@@ -313,6 +302,7 @@ public class 商客异变
     private static readonly TimeSpan 退本等待时间 = TimeSpan.FromSeconds(10);
     private static readonly float 检测点触发距离 = 3f;
     private static readonly float 检敌距离 = 30f;
+
     private static readonly string[] 阶段名称 =
     [
         "初始化",
@@ -325,6 +315,7 @@ public class 商客异变
         "等待退本",
         "流程结束"
     ];
+
     private static readonly List<uint> BossId列表 = [];
     private static readonly List<Vector3> Boss检测点列表 = [];
     private static readonly Dictionary<string, (DateTime Time, string Message)> 限频日志状态 = [];
@@ -394,10 +385,7 @@ public class 商客异变
     public static void 设置默认重生点(Vector3 point)
     {
         默认重生点 = point;
-        if (!战斗中)
-        {
-            重生点 = point;
-        }
+        if (!战斗中) 重生点 = point;
     }
 
     public static bool 手动提交路线投票(string? pattern)
@@ -421,6 +409,7 @@ public class 商客异变
             LogHelper.PrintError("[商客异变] 当前阶段未配置默认路线，请传入关键字或正则");
             return false;
         }
+
         var 目标索引 = 按正则匹配路线索引(路线文本);
         if (!目标索引.HasValue)
             return false;
@@ -440,7 +429,7 @@ public class 商客异变
     {
         var mapid = Core.Resolve<MemApiMap>().GetCurrTerrId();
         if (mapid != 地图ID || !已初始化) return;
-        if (Svc.Condition[ConditionFlag.BetweenAreas])return;
+        if (Svc.Condition[ConditionFlag.BetweenAreas]) return;
         BattleUpdate();
         进度更新();
     }
@@ -455,34 +444,19 @@ public class 商客异变
                 进入下一阶段();
                 break;
             case 1:
-                if (执行交互流程())
-                {
-                    进入下一阶段();
-                }
+                if (执行交互流程()) 进入下一阶段();
                 break;
             case 2:
-                if (执行战斗流程(0))
-                {
-                    进入下一阶段();
-                }
+                if (执行战斗流程(0)) 进入下一阶段();
                 break;
             case 3:
-                if (执行交互流程())
-                {
-                    进入下一阶段();
-                }
+                if (执行交互流程()) 进入下一阶段();
                 break;
             case 4:
-                if (执行战斗流程(1))
-                {
-                    进入下一阶段();
-                }
+                if (执行战斗流程(1)) 进入下一阶段();
                 break;
             case 5:
-                if (执行交互流程())
-                {
-                    进入下一阶段();
-                }
+                if (执行交互流程()) 进入下一阶段();
                 break;
             case 6:
                 if (执行战斗流程(2))
@@ -490,6 +464,7 @@ public class 商客异变
                     战斗结束等待开始 = DateTime.Now;
                     进入下一阶段();
                 }
+
                 break;
             case 7:
                 if (!已发送退本指令 && 战斗结束等待开始 != DateTime.MinValue &&
@@ -499,6 +474,7 @@ public class 商客异变
                     已发送退本指令 = true;
                     进入下一阶段();
                 }
+
                 break;
         }
     }
@@ -515,7 +491,7 @@ public class 商客异变
         if (玩家在战斗中 && !上一帧在战斗中)
         {
             重生点 = 获取当前检测点();
-            RemoteControl.Cmd("",$"/xsz-respawn set {重生点.X:f2} {重生点.Y:f2} {重生点.Z:f2}");
+            RemoteControl.Cmd("", $"/xsz-respawn set {重生点.X:f2} {重生点.Y:f2} {重生点.Z:f2}");
             LogHelper.Print($"[商客异变] 进入战斗，更新重生点为 {重生点}，当前BossId={当前bossId}");
         }
 
@@ -658,10 +634,7 @@ public class 商客异变
             return false;
         }
 
-        if (boss已死亡 || 战斗刚结束)
-        {
-            LogHelper.Print($"[商客异变] 战斗流程{序号 + 1} 完成，boss已死亡={boss已死亡}，战斗刚结束={战斗刚结束}");
-        }
+        if (boss已死亡 || 战斗刚结束) LogHelper.Print($"[商客异变] 战斗流程{序号 + 1} 完成，boss已死亡={boss已死亡}，战斗刚结束={战斗刚结束}");
         return boss已死亡 || 战斗刚结束;
     }
 
@@ -709,10 +682,8 @@ public class 商客异变
     {
         var now = DateTime.Now;
         if (限频日志状态.TryGetValue(key, out var state))
-        {
             if (state.Message == message && (now - state.Time).TotalSeconds < intervalSeconds)
                 return;
-        }
 
         限频日志状态[key] = (now, message);
         LogHelper.Print(message);
@@ -754,10 +725,7 @@ public class 商客异变
 
         {
             var 目标索引 = 按正则匹配路线索引(路线文本);
-            if (!目标索引.HasValue)
-            {
-                return;
-            }
+            if (!目标索引.HasValue) return;
 
             if (应跳过本次路线选择(目标索引.Value))
                 return;
@@ -782,12 +750,8 @@ public class 商客异变
             var regex = new Regex(pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
             var entries = VVDVoteRouteHelper.GetEntries();
             for (var i = 0; i < entries.Count; i++)
-            {
                 if (regex.IsMatch(entries[i].Text))
-                {
                     return entries[i].Index;
-                }
-            }
 
             LogHelper.PrintError($"[商客异变] 未找到正则匹配路线: {pattern}");
             return null;
@@ -824,7 +788,7 @@ public class 商客异变
 
     private static bool 当前路线文本已匹配目标(string patterns)
     {
-        if (patterns==""|| string.IsNullOrWhiteSpace(路线窗口文本))
+        if (patterns == "" || string.IsNullOrWhiteSpace(路线窗口文本))
             return false;
         try
         {
@@ -868,16 +832,13 @@ public class 商客异变
             return;
 
         LogHelper.Print($"[商客异变] 传送到位置 {位置}");
-        RemoteControl.Cmd("",$"/xsz-smarttp {位置.X} {位置.Y} {位置.Z}");
+        RemoteControl.Cmd("", $"/xsz-smarttp {位置.X} {位置.Y} {位置.Z}");
         移动等待结束时间 = DateTime.Now.AddMilliseconds(500);
     }
 
     private static void 前往重生点()
     {
-        if (重生点 != default)
-        {
-            前往位置(重生点);
-        }
+        if (重生点 != default) 前往位置(重生点);
     }
 
     private static bool 移动后等待中()

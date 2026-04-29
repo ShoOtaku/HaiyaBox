@@ -19,7 +19,7 @@ public class AutoSelectEntry
     public string MatchText { get; set; } = "";
     public bool UseRegex { get; set; } = false;
     public int DelayMs { get; set; } = 0;
-    
+
     [JsonIgnore]
     public string Name => SelectMode switch
     {
@@ -28,7 +28,7 @@ public class AutoSelectEntry
         AutoSelectMode.RegexMatch => $"[{AddonName}] 正则:{MatchText}",
         _ => $"[{AddonName}]"
     };
-    
+
     [JsonIgnore]
     public Regex? MatchRegex
     {
@@ -50,20 +50,20 @@ public class AutoSelectEntry
 public class AutoSelectSettings
 {
     public bool AutoSelectEnabled { get; set; } = false;
-    public System.Collections.Generic.List<AutoSelectEntry> Entries { get; set; } = new();
-    
+    public List<AutoSelectEntry> Entries { get; set; } = new();
+
     public void UpdateAutoSelectEnabled(bool enabled)
     {
         AutoSelectEnabled = enabled;
         FullAutoSettings.Instance.Save();
     }
-    
+
     public void AddEntry(AutoSelectEntry entry)
     {
         Entries.Add(entry);
         FullAutoSettings.Instance.Save();
     }
-    
+
     public void RemoveEntry(int index)
     {
         if (index >= 0 && index < Entries.Count)
@@ -72,7 +72,7 @@ public class AutoSelectSettings
             FullAutoSettings.Instance.Save();
         }
     }
-    
+
     public void ClearEntries()
     {
         Entries.Clear();

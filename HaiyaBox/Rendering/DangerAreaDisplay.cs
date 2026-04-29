@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Numerics;
 using HaiyaBox.Settings;
 using HaiyaBox.Utils;
@@ -124,52 +122,51 @@ public static class DangerAreaDisplayBuilder
     public static List<DisplayObject> Build(BattleData battleData, DangerAreaRenderConfig config)
     {
         var result = new List<DisplayObject>();
-        if(battleData == null || config == null)
-        {
-            return result;
-        }
+        if (battleData == null || config == null) return result;
 
         var height = battleData.ReferencePoint?.Y ?? 0f;
         var heightOffset = new Vector3(0f, height, 0f);
 
-        foreach(var area in battleData.TempDangerAreas)
-        {
-            switch(area)
+        foreach (var area in battleData.TempDangerAreas)
+            switch (area)
             {
                 case CircleDangerArea circle:
                     var center = Point.ToVector3(circle.Center) + heightOffset;
-                    result.Add(new DisplayObjectCircle(center, (float)circle.Radius, config.CircleColor, config.OutlineThickness, false));
+                    result.Add(new DisplayObjectCircle(center, (float)circle.Radius, config.CircleColor,
+                        config.OutlineThickness, false));
                     break;
                 case RectangleDangerArea rectangle:
                     result.Add(BuildRectangle(rectangle, config, height));
                     break;
             }
-        }
 
-        if(battleData.ReferencePoint.HasValue)
+        if (battleData.ReferencePoint.HasValue)
         {
             var reference = battleData.ReferencePoint.Value;
             result.Add(new DisplayObjectDot(reference, config.ReferencePointRadius, config.ReferencePointColor));
-            result.Add(new DisplayObjectText(reference + new Vector3(0f, config.LabelHeightOffset, 0f), config.ReferenceLabel, config.LabelBackgroundColor, config.LabelTextColor, config.LabelScale));
+            result.Add(new DisplayObjectText(reference + new Vector3(0f, config.LabelHeightOffset, 0f),
+                config.ReferenceLabel, config.LabelBackgroundColor, config.LabelTextColor, config.LabelScale));
         }
 
         var closeCount = Math.Clamp(battleData.CloseToRefCount, 0, battleData.SafePoints.Count);
-        for(var i = 0; i < battleData.SafePoints.Count; i++)
+        for (var i = 0; i < battleData.SafePoints.Count; i++)
         {
             var point = Point.ToVector3(battleData.SafePoints[i]) + heightOffset;
             var color = i < closeCount ? config.SafePointPrimaryColor : config.SafePointSecondaryColor;
             result.Add(new DisplayObjectDot(point, config.SafePointRadius, color));
-            if(config.ShowSafePointLabels)
+            if (config.ShowSafePointLabels)
             {
                 var labelPos = point + new Vector3(0f, config.LabelHeightOffset, 0f);
-                result.Add(new DisplayObjectText(labelPos, (i + 1).ToString(), config.LabelBackgroundColor, config.LabelTextColor, config.LabelScale));
+                result.Add(new DisplayObjectText(labelPos, (i + 1).ToString(), config.LabelBackgroundColor,
+                    config.LabelTextColor, config.LabelScale));
             }
         }
 
         return result;
     }
 
-    private static DisplayObjectPolygon BuildRectangle(RectangleDangerArea rectangle, DangerAreaRenderConfig config, float height)
+    private static DisplayObjectPolygon BuildRectangle(RectangleDangerArea rectangle, DangerAreaRenderConfig config,
+        float height)
     {
         var center = Point.ToVector3(rectangle.Center);
         center.Y = height;
@@ -193,5 +190,8 @@ public static class DangerAreaDisplayBuilder
         return new DisplayObjectPolygon([a, b, c, d], config.RectangleColor, config.OutlineThickness);
     }
 
-    private static Vector3 CreateWorldPosition(double x, double z, float height) => new((float)x, height, (float)z);
+    private static Vector3 CreateWorldPosition(double x, double z, float height)
+    {
+        return new Vector3((float)x, height, (float)z);
+    }
 }

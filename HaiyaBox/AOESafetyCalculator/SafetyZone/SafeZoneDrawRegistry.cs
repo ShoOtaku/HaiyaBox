@@ -28,7 +28,7 @@ internal static class SafeZoneDrawRegistry
             var state = States.GetOrCreateValue(calculator);
             state.Generation = Generation;
 
-            for (int i = Calculators.Count - 1; i >= 0; i--)
+            for (var i = Calculators.Count - 1; i >= 0; i--)
             {
                 if (!Calculators[i].TryGetTarget(out var existing))
                 {
@@ -36,29 +36,27 @@ internal static class SafeZoneDrawRegistry
                     continue;
                 }
 
-                if (ReferenceEquals(existing, calculator))
-                {
-                    return;
-                }
+                if (ReferenceEquals(existing, calculator)) return;
             }
 
             Calculators.Add(new WeakReference<SafeZoneCalculator>(calculator));
         }
     }
 
-    internal static void Touch(SafeZoneCalculator calculator) => Register(calculator);
+    internal static void Touch(SafeZoneCalculator calculator)
+    {
+        Register(calculator);
+    }
 
-    internal static void ReportSafePoints(SafeZoneCalculator calculator, IReadOnlyList<WPos> points, DateTime currentTime)
+    internal static void ReportSafePoints(SafeZoneCalculator calculator, IReadOnlyList<WPos> points,
+        DateTime currentTime)
     {
         if (calculator == null) return;
         Register(calculator);
 
         var state = States.GetOrCreateValue(calculator);
         state.SafePoints.Clear();
-        if (points != null && points.Count > 0)
-        {
-            state.SafePoints.AddRange(points);
-        }
+        if (points != null && points.Count > 0) state.SafePoints.AddRange(points);
         state.SafePointGeneration = Generation;
         state.SafePointTime = currentTime;
     }
@@ -80,7 +78,7 @@ internal static class SafeZoneDrawRegistry
         var result = new List<SafeZoneCalculator>();
         lock (Sync)
         {
-            for (int i = Calculators.Count - 1; i >= 0; i--)
+            for (var i = Calculators.Count - 1; i >= 0; i--)
             {
                 if (!Calculators[i].TryGetTarget(out var calculator))
                 {
@@ -89,9 +87,7 @@ internal static class SafeZoneDrawRegistry
                 }
 
                 if (States.TryGetValue(calculator, out var state) && state.Generation == Generation)
-                {
                     result.Add(calculator);
-                }
             }
         }
 

@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Numerics;
 using Dalamud.Bindings.ImGui;
 using HaiyaBox.Rendering;
-using HaiyaBox.Settings;
 using HaiyaBox.UI;
 
 namespace HaiyaBox.Utils;
@@ -29,15 +26,15 @@ public static class DebugPoint
 
     public static void Dispose()
     {
-        if (_renderer != null && _callback != null)
-        {
-            _renderer.UnregisterTempObjectCallback(_callback);
-        }
+        if (_renderer != null && _callback != null) _renderer.UnregisterTempObjectCallback(_callback);
         _renderer = null;
         _callback = null;
     }
 
-    public static void Add(Vector3 pos) => Point.Add(pos);
+    public static void Add(Vector3 pos)
+    {
+        Point.Add(pos);
+    }
 
     public static void Clear()
     {
@@ -49,26 +46,19 @@ public static class DebugPoint
     {
         var result = new List<DisplayObject>();
 
-        if (!DangerAreaTab.DebugPointEnabled)
-        {
-            return result;
-        }
+        if (!DangerAreaTab.DebugPointEnabled) return result;
 
-        uint red = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 0f, 0f, 1f));
-        uint yellow = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 0f, 1f));
-        uint green = ImGui.ColorConvertFloat4ToU32(new Vector4(0.2f, 1f, 0.2f, 1f));
+        var red = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 0f, 0f, 1f));
+        var yellow = ImGui.ColorConvertFloat4ToU32(new Vector4(1f, 1f, 0f, 1f));
+        var green = ImGui.ColorConvertFloat4ToU32(new Vector4(0.2f, 1f, 0.2f, 1f));
 
         // Draw lines between points
         if (Point.Count > 1)
-        {
-            for (int i = 0; i < Point.Count - 1; i++)
-            {
+            for (var i = 0; i < Point.Count - 1; i++)
                 result.Add(new DisplayObjectLine(Point[i], Point[i + 1], red, LineThickness));
-            }
-        }
 
         // Draw points with indices
-        for (int i = 0; i < Point.Count; i++)
+        for (var i = 0; i < Point.Count; i++)
         {
             var pos = Point[i];
             result.Add(new DisplayObjectDot(pos, Radius, red));
@@ -79,11 +69,8 @@ public static class DebugPoint
         // Draw labeled points
         foreach (var entry in DebugPointWithText)
         {
-            string label = entry.Key is null ? string.Empty : entry.Key.ToString();
-            if (string.IsNullOrWhiteSpace(label))
-            {
-                continue;
-            }
+            var label = entry.Key is null ? string.Empty : entry.Key.ToString();
+            if (string.IsNullOrWhiteSpace(label)) continue;
 
             result.Add(new DisplayObjectDot(entry.Value, Radius, green));
             var labelPos = entry.Value + new Vector3(0f, 0.5f, 0f);

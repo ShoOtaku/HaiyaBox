@@ -1,5 +1,4 @@
 ﻿using System.Numerics;
-using AEAssist;
 using AEAssist.CombatRoutine.Module;
 using AEAssist.Helper;
 using HaiyaBox.Settings;
@@ -8,11 +7,16 @@ namespace HaiyaBox.Utils;
 
 public static class RemoteControl
 {
-    public static string GetRoomId => FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled ? XszRemote.GetRoomId() : RemoteControlHelper.RoomId;
-    
-    public static bool IsConnected() => !FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled || XszRemote.IsConnected();
-    
-    public static void SetPos(string role, Vector3 pos) 
+    public static string GetRoomId => FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled
+        ? XszRemote.GetRoomId()
+        : RemoteControlHelper.RoomId;
+
+    public static bool IsConnected()
+    {
+        return !FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled || XszRemote.IsConnected();
+    }
+
+    public static void SetPos(string role, Vector3 pos)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.SetPos(role, pos);
@@ -20,62 +24,62 @@ public static class RemoteControl
             RemoteControlHelper.SetPos(role, pos);
         DebugPoint.Add(pos);
     }
-    
-    public static void LockPos(string role, Vector3 pos, int duration) 
+
+    public static void LockPos(string role, Vector3 pos, int duration)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.LockPos(role, pos, duration);
         else
             RemoteControlHelper.LockPos(role, pos, duration);
     }
-    
-    public static void SlideTp(string role, Vector3 pos, long time) 
+
+    public static void SlideTp(string role, Vector3 pos, long time)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.SlideTp(role, pos, time);
-        else 
+        else
             RemoteControlHelper.SlideTp(role, pos, time);
     }
-    
-    public static void SetRot(string role, float rot) 
+
+    public static void SetRot(string role, float rot)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.SetRot(role, rot);
-        else 
+        else
             RemoteControlHelper.SetRot(role, rot);
     }
-    
-    public static void MoveTo(string role, Vector3 pos) 
+
+    public static void MoveTo(string role, Vector3 pos)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.MoveTo(role, pos);
         else
             RemoteControlHelper.MoveTo(role, pos);
     }
-    
-    public static void MoveStop(string role) 
+
+    public static void MoveStop(string role)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.MoveStop(role);
     }
-    
-    public static void Stop(string role, bool stop) 
+
+    public static void Stop(string role, bool stop)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.Stop(role, stop);
         else
             RemoteControlHelper.Stop(role, stop);
     }
-    
-    public static void Jump(string role, bool jump) 
+
+    public static void Jump(string role, bool jump)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.Jump(role, jump);
-        else 
+        else
             RemoteControlHelper.Jump(role, jump);
     }
-    
-    public static void UseSkill(string role, uint skillId) 
+
+    public static void UseSkill(string role, uint skillId)
     {
         if (skillId == 0)
             return;
@@ -90,65 +94,65 @@ public static class RemoteControl
             ChatHelper.SendMessage($"/p {role}使用技能{skillId.GetSpell().Name}:{skillId}");
         }
     }
-    
-    public static void UseSkillWithTarget(string role, uint skillId, uint targetId) 
+
+    public static void UseSkillWithTarget(string role, uint skillId, uint targetId)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.UseSkillWithTarget(role, skillId, targetId);
     }
-    
-    public static void SetTarget(string role, uint targetId) 
+
+    public static void SetTarget(string role, uint targetId)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.SetTarget(role, targetId);
-        else 
+        else
             RemoteControlHelper.SetTarget(role, targetId);
     }
-    
-    public static void Echo(string role, string msg) 
+
+    public static void Echo(string role, string msg)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.Echo(role, msg);
         else RemoteControlHelper.Echo(role, msg);
     }
-    
-    public static void Cmd(string role, string cmd) 
+
+    public static void Cmd(string role, string cmd)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.Cmd(role, cmd);
         else
             RemoteControlHelper.Cmd(role, cmd);
     }
-    
-    public static void Kick(string role) 
+
+    public static void Kick(string role)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.Kick(role);
-        else 
+        else
             RemoteControlHelper.Kick(role);
     }
-    
-    public static void SetRole(string role, string newRole) 
+
+    public static void SetRole(string role, string newRole)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             XszRemote.SetRole(role, newRole);
-        else 
+        else
             RemoteControlHelper.SetRole(role, newRole);
     }
-    
-    public static string? GetRoleByPlayerName(string playerName) 
+
+    public static string? GetRoleByPlayerName(string playerName)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             return XszRemote.GetRoleByPlayerName(playerName);
         else
             return RemoteControlHelper.GetRoleByPlayerName(playerName);
     }
-    
-    public static string? GetRoleByPlayerCID(string playerCid) 
+
+    public static string? GetRoleByPlayerCID(string playerCid)
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             return XszRemote.GetRoleByPlayerCID(playerCid);
-        else 
+        else
             return RemoteControlHelper.GetRoleByPlayerCID(playerCid);
     }
 
@@ -156,16 +160,16 @@ public static class RemoteControl
     {
         return XszRemote.GetNameByRole(role);
     }
-    
-    public static int GetMemberCount() 
+
+    public static int GetMemberCount()
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             return XszRemote.GetMemberCount();
         // RemoteControlHelper doesn't seem to have GetMemberCount, so we'll just use XszRemote when enabled
         return 0;
     }
-    
-    public static int GetOnlineMemberCount() 
+
+    public static int GetOnlineMemberCount()
     {
         if (FullAutoSettings.Instance.AutomationSettings.XszRemoteEnabled)
             return XszRemote.GetOnlineMemberCount();
@@ -177,6 +181,6 @@ public static class RemoteControl
     {
         var 当前战斗时间 = AI.Instance.BattleData.CurrBattleTimeInMs;
         await Task.Delay((int)(战斗时间 - 当前战斗时间));
-        XszRemote.SetPos(s,pos);
+        XszRemote.SetPos(s, pos);
     }
 }

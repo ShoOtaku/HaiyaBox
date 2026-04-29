@@ -12,12 +12,18 @@ public static class Vector3Extensions
     /// </summary>
     /// <param name="v">三维向量</param>
     /// <returns>世界位置（X, Z）</returns>
-    public static WPos ToWPos(this Vector3 v) => WPos.FromVec3(v);
+    public static WPos ToWPos(this Vector3 v)
+    {
+        return WPos.FromVec3(v);
+    }
 
     /// <summary>
     /// 转换为世界方向（忽略 Y 坐标）
     /// </summary>
     /// <param name="v">三维向量</param>
     /// <returns>世界方向（X, Z）</returns>
-    public static WDir ToWDir(this Vector3 v) => WDir.FromVec3(v);
+    public static WDir ToWDir(this Vector3 v)
+    {
+        return WDir.FromVec3(v);
+    }
 }

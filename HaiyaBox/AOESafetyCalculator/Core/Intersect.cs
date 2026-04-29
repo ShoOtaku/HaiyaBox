@@ -30,7 +30,9 @@ public static class Intersect
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float RayCircle(in WPos rayOrigin, in WDir rayDir, in WPos circleCenter, float circleRadius)
-        => RayCircle(rayOrigin - circleCenter, rayDir, circleRadius);
+    {
+        return RayCircle(rayOrigin - circleCenter, rayDir, circleRadius);
+    }
 
     /// <summary>
     /// 检测射线段是否与圆形相交
@@ -65,8 +67,15 @@ public static class Intersect
         var tz1 = (-halfHeight - offsetZ) * invZ;
         var tz2 = (+halfHeight - offsetZ) * invZ;
 
-        static float min(float x, float y) => x < y ? x : y;
-        static float max(float x, float y) => x > y ? x : y;
+        static float min(float x, float y)
+        {
+            return x < y ? x : y;
+        }
+
+        static float max(float x, float y)
+        {
+            return x > y ? x : y;
+        }
 
         tmin = min(max(tx1, tmin), max(tx2, tmin));
         tmax = max(min(tx1, tmax), min(tx2, tmax));
@@ -81,25 +90,31 @@ public static class Intersect
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float RayAABB(in WPos rayOrigin, in WDir rayDir, in WPos boxCenter, float halfWidth, float halfHeight)
-        => RayAABB(rayOrigin - boxCenter, rayDir, halfWidth, halfHeight);
+    {
+        return RayAABB(rayOrigin - boxCenter, rayDir, halfWidth, halfHeight);
+    }
 
     /// <summary>
     /// 计算射线与旋转矩形的交点（使用相对于矩形中心的偏移）
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float RayRect(in WDir rayOriginOffset, in WDir rayDir, in WDir rectRotation, float halfWidth, float halfHeight)
+    public static float RayRect(in WDir rayOriginOffset, in WDir rayDir, in WDir rectRotation, float halfWidth,
+        float halfHeight)
     {
         var rectX = rectRotation.OrthoL();
-        return RayAABB(new(rayOriginOffset.Dot(rectX), rayOriginOffset.Dot(rectRotation)),
-                      new(rayDir.Dot(rectX), rayDir.Dot(rectRotation)), halfWidth, halfHeight);
+        return RayAABB(new WDir(rayOriginOffset.Dot(rectX), rayOriginOffset.Dot(rectRotation)),
+            new WDir(rayDir.Dot(rectX), rayDir.Dot(rectRotation)), halfWidth, halfHeight);
     }
 
     /// <summary>
     /// 计算射线与旋转矩形的交点（使用世界坐标）
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float RayRect(in WPos rayOrigin, in WDir rayDir, in WPos rectCenter, in WDir rectRotation, float halfWidth, float halfHeight)
-        => RayRect(rayOrigin - rectCenter, rayDir, rectRotation, halfWidth, halfHeight);
+    public static float RayRect(in WPos rayOrigin, in WDir rayDir, in WPos rectCenter, in WDir rectRotation,
+        float halfWidth, float halfHeight)
+    {
+        return RayRect(rayOrigin - rectCenter, rayDir, rectRotation, halfWidth, halfHeight);
+    }
 
     #endregion
 
@@ -124,7 +139,9 @@ public static class Intersect
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static float RayLine(in WPos rayOrigin, in WDir rayDir, in WPos lineOrigin, in WDir line)
-        => RayLine(rayOrigin - lineOrigin, rayDir, line);
+    {
+        return RayLine(rayOrigin - lineOrigin, rayDir, line);
+    }
 
     /// <summary>
     /// 计算射线与线段的交点（使用相对于某参考点的偏移）
@@ -175,12 +192,15 @@ public static class Intersect
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool CircleCircle(in WPos circleCenter, float circleRadius, in WPos center, float radius)
-        => CircleCircle(circleCenter - center, circleRadius, radius);
+    {
+        return CircleCircle(circleCenter - center, circleRadius, radius);
+    }
 
     /// <summary>
     /// 检测圆形与扇形是否相交
     /// </summary>
-    public static bool CircleCone(in WDir circleOffset, float circleRadius, float coneRadius, in WDir coneDir, Angle halfAngle)
+    public static bool CircleCone(in WDir circleOffset, float circleRadius, float coneRadius, in WDir coneDir,
+        Angle halfAngle)
     {
         var lsq = circleOffset.LengthSq();
         var rsq = circleRadius * circleRadius;
@@ -204,7 +224,7 @@ public static class Intersect
         {
             < 0 => correctSide && distFromAxis * distFromAxis <= lsq * sin * sin,
             > 0 => correctSide || distFromAxis * distFromAxis >= lsq * sin * sin,
-            _ => correctSide,
+            _ => correctSide
         };
         if (originInCone)
             return true;
@@ -230,8 +250,11 @@ public static class Intersect
     /// 检测圆形与扇形是否相交（使用世界坐标）
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool CircleCone(in WPos circleCenter, float circleRadius, in WPos coneCenter, float coneRadius, in WDir coneDir, Angle halfAngle)
-        => CircleCone(circleCenter - coneCenter, circleRadius, coneRadius, coneDir, halfAngle);
+    public static bool CircleCone(in WPos circleCenter, float circleRadius, in WPos coneCenter, float coneRadius,
+        in WDir coneDir, Angle halfAngle)
+    {
+        return CircleCone(circleCenter - coneCenter, circleRadius, coneRadius, coneDir, halfAngle);
+    }
 
     /// <summary>
     /// 检测圆形与轴对齐矩形是否相交
@@ -254,27 +277,37 @@ public static class Intersect
     /// 检测圆形与轴对齐矩形是否相交（使用世界坐标）
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool CircleAARect(in WPos circleCenter, float circleRadius, in WPos rectCenter, float halfExtentX, float halfExtentZ)
-        => CircleAARect(circleCenter - rectCenter, circleRadius, halfExtentX, halfExtentZ);
+    public static bool CircleAARect(in WPos circleCenter, float circleRadius, in WPos rectCenter, float halfExtentX,
+        float halfExtentZ)
+    {
+        return CircleAARect(circleCenter - rectCenter, circleRadius, halfExtentX, halfExtentZ);
+    }
 
     /// <summary>
     /// 检测圆形与旋转矩形是否相交（使用相对于矩形中心的偏移）
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool CircleRect(in WDir circleOffset, float circleRadius, in WDir rectZDir, float halfExtentX, float halfExtentZ)
-        => CircleAARect(circleOffset.Rotate(rectZDir.MirrorX()), circleRadius, halfExtentX, halfExtentZ);
+    public static bool CircleRect(in WDir circleOffset, float circleRadius, in WDir rectZDir, float halfExtentX,
+        float halfExtentZ)
+    {
+        return CircleAARect(circleOffset.Rotate(rectZDir.MirrorX()), circleRadius, halfExtentX, halfExtentZ);
+    }
 
     /// <summary>
     /// 检测圆形与旋转矩形是否相交（使用世界坐标）
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool CircleRect(in WPos circleCenter, float circleRadius, in WPos rectCenter, in WDir rectZDir, float halfExtentX, float halfExtentZ)
-        => CircleRect(circleCenter - rectCenter, circleRadius, rectZDir, halfExtentX, halfExtentZ);
+    public static bool CircleRect(in WPos circleCenter, float circleRadius, in WPos rectCenter, in WDir rectZDir,
+        float halfExtentX, float halfExtentZ)
+    {
+        return CircleRect(circleCenter - rectCenter, circleRadius, rectZDir, halfExtentX, halfExtentZ);
+    }
 
     /// <summary>
     /// 检测圆形与扇形环（Donut Sector）是否相交
     /// </summary>
-    public static bool CircleDonutSector(in WDir circleOffset, float circleRadius, float innerRadius, float outerRadius, WDir sectorDir, Angle halfAngle)
+    public static bool CircleDonutSector(in WDir circleOffset, float circleRadius, float innerRadius, float outerRadius,
+        WDir sectorDir, Angle halfAngle)
     {
         var distSq = circleOffset.LengthSq();
         var maxR = outerRadius + circleRadius;
@@ -295,15 +328,18 @@ public static class Intersect
         var sideDirL = sectorDir.Rotate(halfAngle);
         var sideDirR = sectorDir.Rotate(-halfAngle);
 
-        static float DistToRay(WDir dir, WDir pt) => Math.Abs(pt.Cross(dir));
+        static float DistToRay(WDir dir, WDir pt)
+        {
+            return Math.Abs(pt.Cross(dir));
+        }
 
         var dL = DistToRay(sideDirL, circleOffset);
         var dR = DistToRay(sideDirR, circleOffset);
         var projL = circleOffset.Dot(sideDirL);
         var projR = circleOffset.Dot(sideDirR);
 
-        if (projL >= 0 && projL <= outerRadius && dL <= circleRadius ||
-            projR >= 0 && projR <= outerRadius && dR <= circleRadius)
+        if ((projL >= 0 && projL <= outerRadius && dL <= circleRadius) ||
+            (projR >= 0 && projR <= outerRadius && dR <= circleRadius))
             return true;
 
         var cornerL = sideDirL * outerRadius;
@@ -317,8 +353,12 @@ public static class Intersect
     /// 检测圆形与扇形环是否相交（使用世界坐标）
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool CircleDonutSector(in WPos circleCenter, float circleRadius, in WPos sectorCenter, float innerRadius, float outerRadius, in WDir sectorDir, Angle halfAngle)
-        => CircleDonutSector(circleCenter - sectorCenter, circleRadius, innerRadius, outerRadius, sectorDir, halfAngle);
+    public static bool CircleDonutSector(in WPos circleCenter, float circleRadius, in WPos sectorCenter,
+        float innerRadius, float outerRadius, in WDir sectorDir, Angle halfAngle)
+    {
+        return CircleDonutSector(circleCenter - sectorCenter, circleRadius, innerRadius, outerRadius, sectorDir,
+            halfAngle);
+    }
 
     #endregion
 
@@ -327,7 +367,8 @@ public static class Intersect
     /// <summary>
     /// 计算射线与圆形的交点角度（以度为单位）
     /// </summary>
-    public static int RayCircleAnglesDeg(WPos centerC, float radius, WPos rayOriginO, WDir rayDirD, out float degEnter, out float degExit)
+    public static int RayCircleAnglesDeg(WPos centerC, float radius, WPos rayOriginO, WDir rayDirD, out float degEnter,
+        out float degExit)
     {
         degEnter = degExit = default;
 

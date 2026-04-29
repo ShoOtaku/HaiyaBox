@@ -1,6 +1,5 @@
 ﻿using System.Numerics;
 using HaiyaBox.Utils;
-using System.Collections.Generic;
 
 namespace HaiyaBox.Settings;
 
@@ -24,15 +23,10 @@ public sealed class BattleData
         get
         {
             if (_instance is null)
-            {
                 lock (_lock)
                 {
-                    if (_instance is null)
-                    {
-                        _instance = new BattleData();
-                    }
+                    if (_instance is null) _instance = new BattleData();
                 }
-            }
 
             return _instance;
         }

@@ -67,12 +67,14 @@ public readonly struct Angle(float rad)
     /// <summary>
     /// 四个斜角方向（东北、东南、西南、西北）
     /// </summary>
-    public static readonly Angle[] AnglesIntercardinals = [-45.003f.Degrees(), 44.998f.Degrees(), 134.999f.Degrees(), -135.005f.Degrees()];
+    public static readonly Angle[] AnglesIntercardinals =
+        [-45.003f.Degrees(), 44.998f.Degrees(), 134.999f.Degrees(), -135.005f.Degrees()];
 
     /// <summary>
     /// 四个正方向（东、南、西、北）
     /// </summary>
-    public static readonly Angle[] AnglesCardinals = [-90.004f.Degrees(), -0.003f.Degrees(), 180f.Degrees(), 89.999f.Degrees()];
+    public static readonly Angle[] AnglesCardinals =
+        [-90.004f.Degrees(), -0.003f.Degrees(), 180f.Degrees(), 89.999f.Degrees()];
 
     #endregion
 
@@ -90,7 +92,10 @@ public readonly struct Angle(float rad)
     /// <summary>
     /// 从方向向量创建角度
     /// </summary>
-    public static Angle FromDirection(WDir dir) => new(MathF.Atan2(dir.X, dir.Z));
+    public static Angle FromDirection(WDir dir)
+    {
+        return new Angle(MathF.Atan2(dir.X, dir.Z));
+    }
 
     /// <summary>
     /// 将角度转换为单位方向向量
@@ -98,38 +103,116 @@ public readonly struct Angle(float rad)
     public readonly WDir ToDirection()
     {
         var (sin, cos) = ((float, float))Math.SinCos(Rad);
-        return new(sin, cos);
+        return new WDir(sin, cos);
     }
 
     #endregion
 
     #region 运算符重载
 
-    public static bool operator ==(Angle left, Angle right) => left.Rad == right.Rad;
-    public static bool operator !=(Angle left, Angle right) => left.Rad != right.Rad;
-    public static Angle operator +(Angle a, Angle b) => new(a.Rad + b.Rad);
-    public static Angle operator -(Angle a, Angle b) => new(a.Rad - b.Rad);
-    public static Angle operator -(Angle a) => new(-a.Rad);
-    public static Angle operator *(Angle a, float b) => new(a.Rad * b);
-    public static Angle operator *(float a, Angle b) => new(a * b.Rad);
-    public static Angle operator /(Angle a, float b) => new(a.Rad / b);
-    public static bool operator >(Angle a, Angle b) => a.Rad > b.Rad;
-    public static bool operator <(Angle a, Angle b) => a.Rad < b.Rad;
-    public static bool operator >=(Angle a, Angle b) => a.Rad >= b.Rad;
-    public static bool operator <=(Angle a, Angle b) => a.Rad <= b.Rad;
+    public static bool operator ==(Angle left, Angle right)
+    {
+        return left.Rad == right.Rad;
+    }
+
+    public static bool operator !=(Angle left, Angle right)
+    {
+        return left.Rad != right.Rad;
+    }
+
+    public static Angle operator +(Angle a, Angle b)
+    {
+        return new Angle(a.Rad + b.Rad);
+    }
+
+    public static Angle operator -(Angle a, Angle b)
+    {
+        return new Angle(a.Rad - b.Rad);
+    }
+
+    public static Angle operator -(Angle a)
+    {
+        return new Angle(-a.Rad);
+    }
+
+    public static Angle operator *(Angle a, float b)
+    {
+        return new Angle(a.Rad * b);
+    }
+
+    public static Angle operator *(float a, Angle b)
+    {
+        return new Angle(a * b.Rad);
+    }
+
+    public static Angle operator /(Angle a, float b)
+    {
+        return new Angle(a.Rad / b);
+    }
+
+    public static bool operator >(Angle a, Angle b)
+    {
+        return a.Rad > b.Rad;
+    }
+
+    public static bool operator <(Angle a, Angle b)
+    {
+        return a.Rad < b.Rad;
+    }
+
+    public static bool operator >=(Angle a, Angle b)
+    {
+        return a.Rad >= b.Rad;
+    }
+
+    public static bool operator <=(Angle a, Angle b)
+    {
+        return a.Rad <= b.Rad;
+    }
 
     #endregion
 
     #region 数学运算方法
 
-    public readonly Angle Abs() => new(Math.Abs(Rad));
-    public readonly float Sin() => (float)Math.Sin(Rad);
-    public readonly float Cos() => (float)Math.Cos(Rad);
-    public readonly float Tan() => (float)Math.Tan(Rad);
-    public static Angle Atan2(float y, float x) => new(MathF.Atan2(y, x));
-    public static Angle Asin(float x) => new((float)Math.Asin(x));
-    public static Angle Acos(float x) => new((float)Math.Acos(x));
-    public readonly Angle Round(float roundToNearestDeg) => (MathF.Round(Deg / roundToNearestDeg) * roundToNearestDeg).Degrees();
+    public readonly Angle Abs()
+    {
+        return new Angle(Math.Abs(Rad));
+    }
+
+    public readonly float Sin()
+    {
+        return (float)Math.Sin(Rad);
+    }
+
+    public readonly float Cos()
+    {
+        return (float)Math.Cos(Rad);
+    }
+
+    public readonly float Tan()
+    {
+        return (float)Math.Tan(Rad);
+    }
+
+    public static Angle Atan2(float y, float x)
+    {
+        return new Angle(MathF.Atan2(y, x));
+    }
+
+    public static Angle Asin(float x)
+    {
+        return new Angle((float)Math.Asin(x));
+    }
+
+    public static Angle Acos(float x)
+    {
+        return new Angle((float)Math.Acos(x));
+    }
+
+    public readonly Angle Round(float roundToNearestDeg)
+    {
+        return (MathF.Round(Deg / roundToNearestDeg) * roundToNearestDeg).Degrees();
+    }
 
     #endregion
 
@@ -142,12 +225,18 @@ public readonly struct Angle(float rad)
             r += DoublePI;
         while (r > MathF.PI)
             r -= DoublePI;
-        return new(r);
+        return new Angle(r);
     }
 
-    public readonly bool AlmostEqual(Angle other, float epsRad) => Math.Abs((this - other).Normalized().Rad) <= epsRad;
+    public readonly bool AlmostEqual(Angle other, float epsRad)
+    {
+        return Math.Abs((this - other).Normalized().Rad) <= epsRad;
+    }
 
-    public readonly Angle DistanceToAngle(Angle other) => (other - this).Normalized();
+    public readonly Angle DistanceToAngle(Angle other)
+    {
+        return (other - this).Normalized();
+    }
 
     public readonly Angle DistanceToRange(Angle min, Angle max)
     {
@@ -167,10 +256,25 @@ public readonly struct Angle(float rad)
 
     #region Object 重写
 
-    public override readonly string ToString() => Deg.ToString("f3", System.Globalization.CultureInfo.InvariantCulture);
-    public readonly bool Equals(Angle other) => Rad == other.Rad;
-    public override readonly bool Equals(object? obj) => obj is Angle other && Equals(other);
-    public override readonly int GetHashCode() => Rad.GetHashCode();
+    public readonly override string ToString()
+    {
+        return Deg.ToString("f3", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    public readonly bool Equals(Angle other)
+    {
+        return Rad == other.Rad;
+    }
+
+    public readonly override bool Equals(object? obj)
+    {
+        return obj is Angle other && Equals(other);
+    }
+
+    public readonly override int GetHashCode()
+    {
+        return Rad.GetHashCode();
+    }
 
     #endregion
 }
@@ -182,9 +286,20 @@ public readonly struct Angle(float rad)
 [SkipLocalsInit]
 public static class AngleExtensions
 {
-    public static Angle Radians(this float radians) => new(radians);
-    public static Angle Degrees(this float degrees) => new(degrees * Angle.DegToRad);
-    public static Angle Degrees(this int degrees) => new(degrees * Angle.DegToRad);
+    public static Angle Radians(this float radians)
+    {
+        return new Angle(radians);
+    }
+
+    public static Angle Degrees(this float degrees)
+    {
+        return new Angle(degrees * Angle.DegToRad);
+    }
+
+    public static Angle Degrees(this int degrees)
+    {
+        return new Angle(degrees * Angle.DegToRad);
+    }
 }
 
 /// <summary>

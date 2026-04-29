@@ -28,10 +28,8 @@ public static class MathUtils
         if (number == 2u)
             return true;
         for (var i = 2u; i <= Math.Sqrt(number); ++i)
-        {
             if (number % i == default)
                 return false;
-        }
         return true;
     }
 

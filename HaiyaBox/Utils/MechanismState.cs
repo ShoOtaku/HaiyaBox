@@ -1,14 +1,13 @@
-using System;
 using System.Collections;
-using System.Reflection;
-using System.Linq;
 
 namespace HaiyaBox.Utils;
 
 /// <summary>
 /// 机制状态标记接口，实现此接口的状态类可使用 Clear 扩展方法
 /// </summary>
-public interface IMechanismState { }
+public interface IMechanismState
+{
+}
 
 /// <summary>
 /// 机制状态扩展方法，提供自动清理功能

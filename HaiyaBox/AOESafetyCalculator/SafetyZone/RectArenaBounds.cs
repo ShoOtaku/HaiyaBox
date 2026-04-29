@@ -10,7 +10,7 @@ namespace AOESafetyCalculator.SafetyZone;
 public sealed class RectArenaBounds : ArenaBounds
 {
     private readonly float centerX, centerZ;
-    private readonly float dirX, dirZ;  // 方向向量（单位向量）
+    private readonly float dirX, dirZ; // 方向向量（单位向量）
     private readonly float halfWidth, halfLength;
 
     /// <summary>
@@ -53,8 +53,8 @@ public sealed class RectArenaBounds : ArenaBounds
         var dx = position.X - centerX;
         var dz = position.Z - centerZ;
 
-        var localX = dx * dirX + dz * dirZ;      // 沿长边方向
-        var localZ = -dx * dirZ + dz * dirX;     // 沿短边方向
+        var localX = dx * dirX + dz * dirZ; // 沿长边方向
+        var localZ = -dx * dirZ + dz * dirX; // 沿短边方向
 
         return MathF.Abs(localX) <= halfLength && MathF.Abs(localZ) <= halfWidth;
     }
@@ -75,24 +75,16 @@ public sealed class RectArenaBounds : ArenaBounds
 
         // 返回到最近边界的距离
         if (distX > 0 && distZ > 0)
-        {
             // 在矩形内部，返回到最近边的距离
             return MathF.Min(distX, distZ);
-        }
         else if (distX > 0)
-        {
             // 在矩形外部，Z方向超出
             return distZ;
-        }
         else if (distZ > 0)
-        {
             // 在矩形外部，X方向超出
             return distX;
-        }
         else
-        {
             // 在矩形外部，两个方向都超出（角落外）
             return -MathF.Sqrt(distX * distX + distZ * distZ);
-        }
     }
 }

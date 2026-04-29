@@ -176,7 +176,8 @@ public sealed class SafeZoneCalculator
     /// <code>// 朝北的90度扇形，半径20米
     /// calculator.AddCone(origin, 20f, 0f.Degrees(), 45f.Degrees());</code>
     /// </example>
-    public SafeZoneCalculator AddCone(WPos origin, float radius, Angle centerDir, Angle halfAngle, DateTime? activation = null)
+    public SafeZoneCalculator AddCone(WPos origin, float radius, Angle centerDir, Angle halfAngle,
+        DateTime? activation = null)
     {
         AddForbiddenZone(new ForbiddenZone
         {
@@ -196,7 +197,8 @@ public sealed class SafeZoneCalculator
     /// <param name="halfAngle">扇形半角</param>
     /// <param name="activation">激活时间（null 表示立即激活）</param>
     /// <returns>返回 this 以支持链式调用</returns>
-    public SafeZoneCalculator AddDonutSector(WPos origin, float innerRadius, float outerRadius, Angle centerDir, Angle halfAngle, DateTime? activation = null)
+    public SafeZoneCalculator AddDonutSector(WPos origin, float innerRadius, float outerRadius, Angle centerDir,
+        Angle halfAngle, DateTime? activation = null)
     {
         AddForbiddenZone(new ForbiddenZone
         {
@@ -220,7 +222,8 @@ public sealed class SafeZoneCalculator
     /// <code>// 朝南的矩形：前方40米，后方0米，宽40米
     /// calculator.AddRect(origin, 180f.Degrees(), 40f, 0f, 20f);</code>
     /// </example>
-    public SafeZoneCalculator AddRect(WPos origin, Angle direction, float lenFront, float lenBack, float halfWidth, DateTime? activation = null)
+    public SafeZoneCalculator AddRect(WPos origin, Angle direction, float lenFront, float lenBack, float halfWidth,
+        DateTime? activation = null)
     {
         AddForbiddenZone(new ForbiddenZone
         {
@@ -240,7 +243,8 @@ public sealed class SafeZoneCalculator
     /// <param name="halfWidth">半宽（米）</param>
     /// <param name="activation">激活时间（null 表示立即激活）</param>
     /// <returns>返回 this 以支持链式调用</returns>
-    public SafeZoneCalculator AddRect(WPos origin, WDir direction, float lenFront, float lenBack, float halfWidth, DateTime? activation = null)
+    public SafeZoneCalculator AddRect(WPos origin, WDir direction, float lenFront, float lenBack, float halfWidth,
+        DateTime? activation = null)
     {
         AddForbiddenZone(new ForbiddenZone
         {
@@ -281,7 +285,8 @@ public sealed class SafeZoneCalculator
     /// <param name="halfWidth">臂的半宽（米）</param>
     /// <param name="activation">激活时间（null 表示立即激活）</param>
     /// <returns>返回 this 以支持链式调用</returns>
-    public SafeZoneCalculator AddCross(WPos origin, Angle direction, float length, float halfWidth, DateTime? activation = null)
+    public SafeZoneCalculator AddCross(WPos origin, Angle direction, float length, float halfWidth,
+        DateTime? activation = null)
     {
         AddForbiddenZone(new ForbiddenZone
         {
@@ -300,7 +305,8 @@ public sealed class SafeZoneCalculator
     /// <param name="radius">胶囊端点半径（米）</param>
     /// <param name="activation">激活时间（null 表示立即激活）</param>
     /// <returns>返回 this 以支持链式调用</returns>
-    public SafeZoneCalculator AddCapsule(WPos origin, Angle direction, float length, float radius, DateTime? activation = null)
+    public SafeZoneCalculator AddCapsule(WPos origin, Angle direction, float length, float radius,
+        DateTime? activation = null)
     {
         AddForbiddenZone(new ForbiddenZone
         {
@@ -319,7 +325,8 @@ public sealed class SafeZoneCalculator
     /// <param name="radius">胶囊端点半径（米）</param>
     /// <param name="activation">激活时间（null 表示立即激活）</param>
     /// <returns>返回 this 以支持链式调用</returns>
-    public SafeZoneCalculator AddCapsule(WPos origin, WDir direction, float length, float radius, DateTime? activation = null)
+    public SafeZoneCalculator AddCapsule(WPos origin, WDir direction, float length, float radius,
+        DateTime? activation = null)
     {
         AddForbiddenZone(new ForbiddenZone
         {
@@ -338,7 +345,8 @@ public sealed class SafeZoneCalculator
     /// <param name="tubeRadius">管道半径（米）</param>
     /// <param name="activation">激活时间（null 表示立即激活）</param>
     /// <returns>返回 this 以支持链式调用</returns>
-    public SafeZoneCalculator AddArcCapsule(WPos start, WPos orbitCenter, Angle angularLength, float tubeRadius, DateTime? activation = null)
+    public SafeZoneCalculator AddArcCapsule(WPos start, WPos orbitCenter, Angle angularLength, float tubeRadius,
+        DateTime? activation = null)
     {
         AddForbiddenZone(new ForbiddenZone
         {
@@ -403,7 +411,7 @@ public sealed class SafeZoneCalculator
     /// calculator.AddAOEShape(new AOEShapeCircle(8f, invertForbiddenZone: true), safePos);
     /// </code>
     /// </example>
-    public SafeZoneCalculator AddAOEShape(AOEShape shape, WPos origin, string name = "",DateTime? activation = null)
+    public SafeZoneCalculator AddAOEShape(AOEShape shape, WPos origin, string name = "", DateTime? activation = null)
     {
         var distance = shape.InvertForbiddenZone
             ? shape.InvertedDistance(origin)
@@ -417,6 +425,7 @@ public sealed class SafeZoneCalculator
         });
         return this;
     }
+
     // 静态自增数，保证同一进程内的唯一性
     private static int _sequence = 0;
 
@@ -427,16 +436,17 @@ public sealed class SafeZoneCalculator
     public static string GenerateShortUniqueId()
     {
         // 1. 获取时间戳（毫秒级，保证时间维度唯一）
-        long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         // 2. 生成随机数（3位）
-        Random random = new Random();
-        int randomNum = random.Next(100, 999);
+        var random = new Random();
+        var randomNum = random.Next(100, 999);
         // 3. 自增数（避免同一毫秒内重复）
-        int seq = Interlocked.Increment(ref _sequence) % 1000; // 取模防止溢出
+        var seq = Interlocked.Increment(ref _sequence) % 1000; // 取模防止溢出
 
         // 拼接并返回（可根据需要调整格式）
         return $"{timestamp}{randomNum}{seq:D3}";
     }
+
     #endregion
 
     #region 原有方法
@@ -455,7 +465,10 @@ public sealed class SafeZoneCalculator
     /// 获取当前场地边界
     /// </summary>
     /// <returns>当前场地边界，未设置时返回 null</returns>
-    public ArenaBounds? GetArenaBounds() => arenaBounds;
+    public ArenaBounds? GetArenaBounds()
+    {
+        return arenaBounds;
+    }
 
     /// <summary>
     /// 添加禁止区域
@@ -498,7 +511,6 @@ public sealed class SafeZoneCalculator
             throw new ArgumentException("Zone name must be provided", nameof(name));
 
         for (var i = zones.Count - 1; i >= 0; i--)
-        {
             if (zones[i].Name == name)
             {
                 zones.RemoveAt(i);
@@ -506,7 +518,6 @@ public sealed class SafeZoneCalculator
                 SafeZoneDrawRegistry.Touch(this);
                 return true;
             }
-        }
 
         return false;
     }
@@ -520,17 +531,11 @@ public sealed class SafeZoneCalculator
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool IsSafe(WPos position, DateTime currentTime)
     {
-        if (arenaBounds != null && !arenaBounds.Contains(position))
-        {
-            return false;
-        }
+        if (arenaBounds != null && !arenaBounds.Contains(position)) return false;
         foreach (var zone in zones)
-        {
             if (zone.IsActive(currentTime) && zone.Contains(position))
-            {
                 return false;
-            }
-        }
+
         return true;
     }
 
@@ -553,16 +558,11 @@ public sealed class SafeZoneCalculator
         var minDistance = float.MaxValue;
 
         foreach (var zone in zones)
-        {
             if (zone.IsActive(currentTime))
             {
                 var distance = zone.Distance(position);
-                if (distance < minDistance)
-                {
-                    minDistance = distance;
-                }
+                if (distance < minDistance) minDistance = distance;
             }
-        }
 
         return minDistance;
     }
@@ -619,21 +619,19 @@ public sealed class SafeZoneCalculator
 
         var steps = (int)(radius / gridResolution);
         for (var x = -steps; x <= steps; x++)
+        for (var z = -steps; z <= steps; z++)
         {
-            for (var z = -steps; z <= steps; z++)
+            var offset = new WDir(x * gridResolution, z * gridResolution);
+            if (offset.LengthSq() > radius * radius)
+                continue;
+
+            var testPosition = center + offset;
+            var distance = DistanceToNearestDanger(testPosition, currentTime);
+
+            if (distance > bestDistance)
             {
-                var offset = new WDir(x * gridResolution, z * gridResolution);
-                if (offset.LengthSq() > radius * radius)
-                    continue;
-
-                var testPosition = center + offset;
-                var distance = DistanceToNearestDanger(testPosition, currentTime);
-
-                if (distance > bestDistance)
-                {
-                    bestDistance = distance;
-                    bestPosition = testPosition;
-                }
+                bestDistance = distance;
+                bestPosition = testPosition;
             }
         }
 
@@ -650,12 +648,9 @@ public sealed class SafeZoneCalculator
     {
         var count = 0;
         foreach (var zone in zones)
-        {
             if (zone.IsActive(currentTime))
-            {
                 count++;
-            }
-        }
+
         return count;
     }
 
@@ -667,12 +662,8 @@ public sealed class SafeZoneCalculator
     public IEnumerable<ForbiddenZone> GetActiveZones(DateTime currentTime)
     {
         foreach (var zone in zones)
-        {
             if (zone.IsActive(currentTime))
-            {
                 yield return zone;
-            }
-        }
     }
 
     /// <summary>
@@ -695,7 +686,8 @@ public sealed class SafeZoneCalculator
         if (arenaBounds == null)
             throw new InvalidOperationException("必须先调用 SetArenaBounds 或 SetCircleArena/SetRectArena 设置场地边界");
 
-        return new SafePositionQuery(this, count, arenaBounds.Center, arenaBounds.ApproximateRadius, currentTime, arenaBounds);
+        return new SafePositionQuery(this, count, arenaBounds.Center, arenaBounds.ApproximateRadius, currentTime,
+            arenaBounds);
     }
 
     /// <summary>
@@ -711,7 +703,10 @@ public sealed class SafeZoneCalculator
         return new SafePositionQuery(this, count, searchCenter, searchRadius, currentTime);
     }
 
-    internal IReadOnlyList<ForbiddenZone> GetZones() => zones;
+    internal IReadOnlyList<ForbiddenZone> GetZones()
+    {
+        return zones;
+    }
 
     #endregion
 }

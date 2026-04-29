@@ -19,15 +19,15 @@ public static class GeometryUtilsXZ
     {
         return MathF.Atan2(vector.X - centre.X, vector.Z - centre.Z);
     }
-    
+
     public static Vector3 RotatePoint(Vector3 point, Vector3 centre, float radian)
     {
         Vector2 v2 = new(point.X - centre.X, point.Z - centre.Z);
-        var rot = (MathF.PI - MathF.Atan2(v2.X, v2.Y) + radian);
+        var rot = MathF.PI - MathF.Atan2(v2.X, v2.Y) + radian;
         var lenth = v2.Length();
-        return new(centre.X + MathF.Sin(rot) * lenth, centre.Y, centre.Z - MathF.Cos(rot) * lenth);
+        return new Vector3(centre.X + MathF.Sin(rot) * lenth, centre.Y, centre.Z - MathF.Cos(rot) * lenth);
     }
-    
+
     public static Vector3 CalculatePointOnLine(Vector3 start, Vector3 end, float distance)
     {
         var direction = Vector3.Normalize(end - start);
@@ -52,48 +52,47 @@ public static class GeometryUtilsXZ
         // E: 45°-135° (包含东)
         // S: 135°-225° (包含南)
         // W: 225°-315° (包含西)
-        if (angle >= 315 || angle < 45) return 0;  // N
-        if (angle >= 45 && angle < 135) return 1;  // E
+        if (angle >= 315 || angle < 45) return 0; // N
+        if (angle >= 45 && angle < 135) return 1; // E
         if (angle >= 135 && angle < 225) return 2; // S
-        return 3;  // W (225°-315°)
+        return 3; // W (225°-315°)
     }
+
     public static Vector3 ExtendPoint(Vector3 centerPoint, Vector3 referencePoint, float distanceToExtend)
     {
         // 将Vector3转换为Vector2进行平面计算
         // 转换规则: Vector3.x = Vector2.x, Vector3.z = Vector2.y
-        Vector2 center2D = new Vector2(centerPoint.X, centerPoint.Z);
-        Vector2 reference2D = new Vector2(referencePoint.X, referencePoint.Z);
-        
+        var center2D = new Vector2(centerPoint.X, centerPoint.Z);
+        var reference2D = new Vector2(referencePoint.X, referencePoint.Z);
+
         // 计算从中心点到参考点的方向向量
-        Vector2 direction = reference2D - center2D;
-        
+        var direction = reference2D - center2D;
+
         // 计算方向向量的单位向量（避免零向量情况）
         Vector2 unitDirection;
         if (direction.LengthSquared() < float.Epsilon)
-        {
             // 如果参考点与中心点重合，默认沿X轴方向
-            unitDirection =new Vector2(1, 0);
-        }
+            unitDirection = new Vector2(1, 0);
         else
-        {
             unitDirection = Normalized(direction);
-        }
-        
+
         // 计算延长后的2D点
-        Vector2 extended2D = reference2D + unitDirection * distanceToExtend;
-        
+        var extended2D = reference2D + unitDirection * distanceToExtend;
+
         // 将计算结果转换回Vector3，保留原始Y值
         return new Vector3(extended2D.X, referencePoint.Y, extended2D.Y);
     }
+
     // 标准化向量
-    public static Vector2 Normalized( Vector2 vector)
+    public static Vector2 Normalized(Vector2 vector)
     {
-        float magnitude = (float)Math.Sqrt(vector.LengthSquared());
+        var magnitude = (float)Math.Sqrt(vector.LengthSquared());
         if (magnitude < float.Epsilon)
             return new Vector2(0, 0);
-            
+
         return new Vector2(vector.X / magnitude, vector.Y / magnitude);
     }
+
     /// <summary>
     /// 计算目标前向点
     /// </summary>
@@ -103,8 +102,8 @@ public static class GeometryUtilsXZ
     /// <returns></returns>
     public static Vector3 Forward(Vector3 forwardOrigin, float rot, float distance)
     {
-        float sinRot = MathF.Sin(rot);
-        float cosRot = MathF.Cos(rot);
+        var sinRot = MathF.Sin(rot);
+        var cosRot = MathF.Cos(rot);
         return new Vector3(
             forwardOrigin.X + distance * sinRot,
             forwardOrigin.Y,
@@ -115,8 +114,8 @@ public static class GeometryUtilsXZ
     /// <summary>
     /// 向量绕指定点旋转（逆时针为正方向）
     /// </summary>
-    /// <param name="originalVector">原始向量（或点坐标）</param>
-    /// <param name="rotationCenter">旋转中心</param>
+    /// <param name="originalVector3">原始向量（或点坐标）</param>
+    /// <param name="rotationCenter3">旋转中心</param>
     /// <param name="degrees">旋转角度（度）</param>
     /// <returns>旋转后的向量</returns>
     public static Vector3 RotateAroundPoint(Vector3 originalVector3, Vector3 rotationCenter3, float degrees)
@@ -124,17 +123,17 @@ public static class GeometryUtilsXZ
         var originalVector = new Vector2(originalVector3.X, originalVector3.Z);
         var rotationCenter = new Vector2(rotationCenter3.X, rotationCenter3.Z);
         // 1. 角度转换：度 → 弧度（Math.Cos/Sin接收弧度参数）
-        float radians = degrees * (float)(Math.PI / 180);
-        float cos = (float)Math.Cos(radians);
-        float sin = (float)Math.Sin(radians);
+        var radians = degrees * (float)(Math.PI / 180);
+        var cos = (float)Math.Cos(radians);
+        var sin = (float)Math.Sin(radians);
 
         // 2. 平移向量到原点（减去旋转中心）
-        float offsetX = originalVector.X - rotationCenter.X;
-        float offsetY = originalVector.Y - rotationCenter.Y;
+        var offsetX = originalVector.X - rotationCenter.X;
+        var offsetY = originalVector.Y - rotationCenter.Y;
 
         // 3. 应用旋转矩阵（绕原点旋转）
-        float rotatedOffsetX = offsetX * cos - offsetY * sin;
-        float rotatedOffsetY = offsetX * sin + offsetY * cos;
+        var rotatedOffsetX = offsetX * cos - offsetY * sin;
+        var rotatedOffsetY = offsetX * sin + offsetY * cos;
 
         // 4. 平移回原坐标系（加上旋转中心）
         return new Vector3(
@@ -251,27 +250,27 @@ public static class GeometryUtilsXZ
         Vector3 stageCenter)
     {
         // 计算前进方向：从场地中心指向 apexPos（忽略 Y 轴）。
-        Vector3 dir = apexPos - stageCenter;
+        var dir = apexPos - stageCenter;
         dir.Y = 0;
 
         if (dir.LengthSquared() < 1e-6f)
         {
-            float fallbackX = point.X - apexPos.X;
-            float fallbackZ = point.Z - apexPos.Z;
+            var fallbackX = point.X - apexPos.X;
+            var fallbackZ = point.Z - apexPos.Z;
             return (fallbackX, fallbackZ);
         }
 
         dir = Vector3.Normalize(dir);
 
         // 计算右侧方向：将前进方向顺时针旋转 90°。
-        Vector3 perpendicular = new Vector3(-dir.Z, 0, dir.X);
+        var perpendicular = new Vector3(-dir.Z, 0, dir.X);
 
         // 计算从场地中心到目标点的向量（忽略 Y 轴）。
-        Vector3 diff = point - stageCenter;
+        var diff = point - stageCenter;
         diff.Y = 0;
 
-        float offsetZ = Vector3.Dot(diff, dir);
-        float offsetX = Vector3.Dot(diff, perpendicular);
+        var offsetZ = Vector3.Dot(diff, dir);
+        var offsetX = Vector3.Dot(diff, perpendicular);
 
         return (offsetX, offsetZ);
     }
@@ -292,10 +291,10 @@ public static class GeometryUtilsXZ
         var list = new List<Vector3>();
         if (count <= 0)
             return list;
-        float stepDeg = 360f / count;
-        for (int i = 0; i < count; i++)
+        var stepDeg = 360f / count;
+        for (var i = 0; i < count; i++)
         {
-            float currentAngle = clockwise ? firstOffsetAngle + i * stepDeg : firstOffsetAngle - i * stepDeg;
+            var currentAngle = clockwise ? firstOffsetAngle + i * stepDeg : firstOffsetAngle - i * stepDeg;
             list.Add(CalcPosition(center, radius, currentAngle));
         }
 
@@ -322,11 +321,11 @@ public static class GeometryUtilsXZ
             return list;
         if (spacing > 2 * radius)
             return list;
-        float deltaRad = 2f * MathF.Asin(spacing / (2f * radius));
-        float stepDeg = deltaRad * (180f / MathF.PI);
-        for (int i = 0; i < count; i++)
+        var deltaRad = 2f * MathF.Asin(spacing / (2f * radius));
+        var stepDeg = deltaRad * (180f / MathF.PI);
+        for (var i = 0; i < count; i++)
         {
-            float currentAngle = clockwise ? firstOffsetAngle + i * stepDeg : firstOffsetAngle - i * stepDeg;
+            var currentAngle = clockwise ? firstOffsetAngle + i * stepDeg : firstOffsetAngle - i * stepDeg;
             list.Add(CalcPosition(center, radius, currentAngle));
         }
 
@@ -351,9 +350,9 @@ public static class GeometryUtilsXZ
         if (count <= 0)
             return list;
 
-        for (int i = 0; i < count; i++)
+        for (var i = 0; i < count; i++)
         {
-            float currentAngle = clockwise ? firstOffsetAngle + i * fixedAngle : firstOffsetAngle - i * fixedAngle;
+            var currentAngle = clockwise ? firstOffsetAngle + i * fixedAngle : firstOffsetAngle - i * fixedAngle;
             list.Add(CalcPosition(center, radius, currentAngle));
         }
 
@@ -383,10 +382,10 @@ public static class GeometryUtilsXZ
         }
         else
         {
-            float stepDeg = totalAngle / (count - 1);
-            for (int i = 0; i < count; i++)
+            var stepDeg = totalAngle / (count - 1);
+            for (var i = 0; i < count; i++)
             {
-                float currentAngle = clockwise ? firstOffsetAngle + i * stepDeg : firstOffsetAngle - i * stepDeg;
+                var currentAngle = clockwise ? firstOffsetAngle + i * stepDeg : firstOffsetAngle - i * stepDeg;
                 list.Add(CalcPosition(center, radius, currentAngle));
             }
         }
@@ -404,9 +403,9 @@ public static class GeometryUtilsXZ
     /// <returns>计算得到的点坐标，y 值固定为 center.Y。</returns>
     private static Vector3 CalcPosition(Vector3 center, float radius, float angleDeg)
     {
-        float rad = angleDeg * ((float)Math.PI / 180f);
-        float x = center.X + radius * MathF.Sin(rad);
-        float z = center.Z - radius * MathF.Cos(rad);
+        var rad = angleDeg * ((float)Math.PI / 180f);
+        var x = center.X + radius * MathF.Sin(rad);
+        var z = center.Z - radius * MathF.Cos(rad);
         return new Vector3(x, center.Y, z);
     }
 }

@@ -49,6 +49,7 @@ Distance(P) < 0  → P 在形状内部（负值 = 深入内部的深度）
 ```
 
 **示例：圆形距离场**
+
 ```
 圆心 (0, 0)，半径 10
 
@@ -60,6 +61,7 @@ Distance(P) < 0  → P 在形状内部（负值 = 深入内部的深度）
 ### 2. 禁止区域（ForbiddenZone）
 
 禁止区域是一个危险区域的抽象，包含：
+
 - **Shape**：形状距离场（ShapeDistance）
 - **Activation**：激活时间（DateTime）
 
@@ -84,6 +86,7 @@ var zone = new ForbiddenZone
 场地边界（Arena Bounds）定义了战斗场地的可活动范围。在实际游戏中，场地通常有明确的边界（如圆形竞技场、矩形房间），玩家不能超出这些边界。
 
 **为什么需要场地边界？**
+
 - 确保计算的安全点在场地内
 - 避免推荐玩家移动到场地外
 - 支持动态变化的场地（如场地缩小）
@@ -164,6 +167,7 @@ var points = calculator.FindSafePositions(8, currentTime)
 ```
 
 **优点：**
+
 - API更简洁
 - 自动限制在场地内
 - 支持场地动态变化
@@ -178,6 +182,7 @@ var points = calculator.FindSafePositions(8, searchCenter, searchRadius, current
 ```
 
 **优点：**
+
 - 无需预先设置场地
 - 适合临时查询
 - 向后兼容旧代码
@@ -248,6 +253,7 @@ ArenaBounds? GetArenaBounds();
 ```
 
 **示例：**
+
 ```csharp
 // 设置圆形场地
 calculator.SetArenaBounds(new CircleArenaBounds(new WPos(0, 0), 40f));
@@ -347,14 +353,17 @@ SafePositionQuery NearTarget(WPos target, float? maxDistance = null)
 ```
 
 **参数：**
+
 - `target`：目标点位置
 - `maxDistance`：最大距离限制（可选，单位：米）
 
 **效果：**
+
 - 过滤掉距离目标点超过 `maxDistance` 的点
 - 结果自动按距离目标点排序（近的在前）
 
 **示例：**
+
 ```csharp
 // 查找靠近Boss的5个安全点，最远不超过20米
 var points = calculator.FindSafePositions(5, arenaCenter, 40f, currentTime)
@@ -374,20 +383,22 @@ SafePositionQuery MinDistanceBetween(float minDistance)
 ```
 
 **参数：**
+
 - `minDistance`：最小距离（单位：米）
 
 **效果：**
+
 - 使用泊松圆盘采样生成候选点
 - 选择点时确保与已选点的距离 ≥ `minDistance`
 
 **示例：**
+
 ```csharp
 // 8个玩家站位，彼此至少相距5米
 var points = calculator.FindSafePositions(8, center, 40f, currentTime)
     .MinDistanceBetween(5f)
     .Execute();
 ```
-
 
 #### WithMinAngle - 角度约束
 
@@ -398,14 +409,17 @@ SafePositionQuery WithMinAngle(WPos center, Angle minAngle)
 ```
 
 **参数：**
+
 - `center`：中心点（角度计算的参考点）
 - `minAngle`：最小角度间隔
 
 **效果：**
+
 - 计算每个点相对于中心点的角度
 - 确保任意两个点的角度差 ≥ `minAngle`
 
 **示例：**
+
 ```csharp
 // 8个方向分散站位，相对于Boss的角度至少相差45度
 var points = calculator.FindSafePositions(8, arenaCenter, 40f, currentTime)
@@ -424,12 +438,15 @@ SafePositionQuery OrderByDistanceTo(WPos reference)
 ```
 
 **参数：**
+
 - `reference`：排序参考点
 
 **效果：**
+
 - 结果按距离参考点的距离排序（近的在前）
 
 **示例：**
+
 ```csharp
 // 查找安全点，按距离治疗位置排序
 var points = calculator.FindSafePositions(5, center, 40f, currentTime)
@@ -448,7 +465,6 @@ var points = calculator.FindSafePositions(8, arenaCenter, 40f, currentTime)
     .WithMinAngle(bossPos, 30f.Degrees())   // 相对Boss角度至少30度
     .Execute();                              // 自动按距离坦克排序
 ```
-
 
 ---
 
@@ -536,7 +552,6 @@ for (int i = 0; i < spreadPositions.Count; i++)
     Console.WriteLine($"玩家{i + 1}站位: {spreadPositions[i]}");
 }
 ```
-
 
 ### 场景4：坦克+治疗组队站位
 
@@ -688,12 +703,14 @@ if (!calculator.IsSafe(playerPos, futureTime))
 ### 时间复杂度
 
 **单点查询：**
+
 ```
 IsSafe(position)              → O(zones)
 DistanceToNearestDanger(pos)  → O(zones)
 ```
 
 **多点查询（链式API）：**
+
 ```
 FindSafePositions(count)      → O(candidates × zones)
 
@@ -707,24 +724,28 @@ FindSafePositions(count)      → O(candidates × zones)
 ### 性能优化建议
 
 **1. 减少候选点数量**
+
 ```csharp
 // 增大最小距离，减少候选点
 .MinDistanceBetween(3f)  // 而不是 1f
 ```
 
 **2. 限制搜索范围**
+
 ```csharp
 // 缩小搜索半径
 calculator.FindSafePositions(8, center, 30f, currentTime)  // 而不是 40f
 ```
 
 **3. 使用距离限制**
+
 ```csharp
 // 提前过滤远距离点
 .NearTarget(targetPos, maxDistance: 20f)
 ```
 
 **4. 缓存计算器实例**
+
 ```csharp
 // 避免频繁创建计算器
 private readonly SafeZoneCalculator _calculator = new();
@@ -750,7 +771,6 @@ _calculator.AddForbiddenZones(newZones);
 - 总耗时: 6ms
 ```
 
-
 ---
 
 ## 常见问题
@@ -758,11 +778,13 @@ _calculator.AddForbiddenZones(newZones);
 ### Q1: 为什么找不到足够的安全点？
 
 **可能原因：**
+
 1. 危险区域太多，安全空间不足
 2. 约束条件太严格（如 `minDistance` 太大）
 3. 搜索范围太小
 
 **解决方案：**
+
 ```csharp
 // 检查实际找到的点数
 var points = calculator.FindSafePositions(8, center, 40f, currentTime)
@@ -800,6 +822,7 @@ var safePoints = calculator.FindSafePositions(8, center, 40f, DateTime.Now)
 ### Q3: 结果的排序规则是什么？
 
 **排序规则：**
+
 - 使用 `.NearTarget(pos)` 时，自动按距离 `pos` 排序
 - 使用 `.OrderByDistanceTo(pos)` 时，按距离 `pos` 排序
 - 不使用排序方法时，按评分排序（安全距离优先）
@@ -815,6 +838,7 @@ var points = calculator.FindSafePositions(5, center, 40f, currentTime)
 ### Q4: 如何自定义评分规则？
 
 **当前版本不支持自定义评分。** 内置评分规则：
+
 - 安全距离（距离危险越远越好）× 10
 - 目标距离（距离目标越近越好）× -5
 
@@ -841,11 +865,13 @@ var topPoints = points.Take(8).ToList();
 **泊松圆盘采样** 是一种生成均匀分布点的算法，确保任意两点之间的距离不小于指定值。
 
 **优势：**
+
 - 避免点聚集
 - 覆盖范围均匀
 - 生成速度快
 
 **效果对比：**
+
 ```
 随机采样:        泊松圆盘采样:
   ●  ●●           ●   ●   ●
@@ -859,12 +885,14 @@ var topPoints = points.Take(8).ToList();
 **不是必须的。** 有两种使用方式：
 
 **方式1：使用场地边界（推荐）**
+
 ```csharp
 calculator.SetArenaBounds(new CircleArenaBounds(center, 40f));
 var points = calculator.FindSafePositions(8, currentTime).Execute();
 ```
 
 **方式2：手动指定搜索范围**
+
 ```csharp
 var points = calculator.FindSafePositions(8, center, 40f, currentTime).Execute();
 ```
@@ -892,81 +920,98 @@ var phase2Points = calculator.FindSafePositions(8, currentTime).Execute();
 ### 基础形状
 
 #### 圆形（SDCircle）
+
 ```csharp
 new SDCircle(WPos origin, float radius)
 ```
+
 - **origin**: 圆心位置
 - **radius**: 半径
 
 #### 反转圆形（SDInvertedCircle）
+
 ```csharp
 new SDInvertedCircle(WPos origin, float radius)
 ```
+
 - 圆形外部是危险区域，内部是安全区域
 
 #### 矩形（SDRect）
+
 ```csharp
 new SDRect(WPos origin, WDir direction, float halfWidth, float halfLength, float maxDistance)
 ```
+
 - **origin**: 矩形中心
 - **direction**: 矩形朝向
 - **halfWidth**: 半宽
 - **halfLength**: 半长
 
 #### 扇形（SDCone）
+
 ```csharp
 new SDCone(WPos origin, float radius, Angle centerDir, Angle halfAngle)
 ```
+
 - **origin**: 扇形顶点
 - **radius**: 扇形半径
 - **centerDir**: 中心方向
 - **halfAngle**: 半角（扇形总角度 = halfAngle × 2）
 
 #### 环形（SDDonut）
+
 ```csharp
 new SDDonut(WPos origin, float innerRadius, float outerRadius)
 ```
+
 - **innerRadius**: 内圈半径
 - **outerRadius**: 外圈半径
 - 环形区域（内圈和外圈之间）是危险区域
 
 #### 胶囊体（SDCapsule）
+
 ```csharp
 new SDCapsule(WPos origin, WDir direction, float halfLength, float radius)
 ```
+
 - 两端是半圆，中间是矩形的组合形状
 
 ### 布尔运算
 
 #### 并集（SDUnion）
+
 ```csharp
 new SDUnion(ShapeDistance[] shapes)
 ```
+
 - 多个形状的并集（任意一个形状内部都是危险区域）
 
 #### 交集（SDIntersection）
+
 ```csharp
 new SDIntersection(ShapeDistance[] shapes)
 ```
+
 - 多个形状的交集（所有形状都重叠的区域是危险区域）
 
 #### 反转并集（SDInvertedUnion）
+
 ```csharp
 new SDInvertedUnion(ShapeDistance[] shapes)
 ```
+
 - 所有形状外部的区域是危险区域
 
 ### 形状选择建议
 
-| 场景 | 推荐形状 | 说明 |
-|------|---------|------|
-| Boss脚下AOE | SDCircle | 简单圆形 |
-| 直线AOE | SDRect | 矩形 |
-| 扇形AOE | SDCone | 扇形 |
-| 环形AOE | SDDonut | 环形（击退后安全） |
-| 多个重叠AOE | SDUnion | 并集 |
-| 安全区域 | SDInvertedCircle | 反转圆形 |
-
+| 场景        | 推荐形状             | 说明        |
+|-----------|------------------|-----------|
+| Boss脚下AOE | SDCircle         | 简单圆形      |
+| 直线AOE     | SDRect           | 矩形        |
+| 扇形AOE     | SDCone           | 扇形        |
+| 环形AOE     | SDDonut          | 环形（击退后安全） |
+| 多个重叠AOE   | SDUnion          | 并集        |
+| 安全区域      | SDInvertedCircle | 反转圆形      |
 
 ---
 
@@ -1115,14 +1160,14 @@ calculator.FindSafePositions(count, center, radius, time)
 ### 相关资源
 
 - **示例代码**:
-  - `Examples/BasicUsage.cs` - 基础用法示例
-  - `Examples/ConstrainedSafetyExample.cs` - 约束查询示例
-  - `Examples/ArenaBoundsExample.cs` - 场地边界示例
+    - `Examples/BasicUsage.cs` - 基础用法示例
+    - `Examples/ConstrainedSafetyExample.cs` - 约束查询示例
+    - `Examples/ArenaBoundsExample.cs` - 场地边界示例
 - **源代码**:
-  - `SafetyZone/SafeZoneCalculator.cs` - 安全区计算器
-  - `SafetyZone/SafePositionQuery.cs` - 链式查询构建器
-  - `SafetyZone/ArenaBounds.cs` - 场地边界抽象类
-  - `SafetyZone/RectArenaBounds.cs` - 矩形场地边界
+    - `SafetyZone/SafeZoneCalculator.cs` - 安全区计算器
+    - `SafetyZone/SafePositionQuery.cs` - 链式查询构建器
+    - `SafetyZone/ArenaBounds.cs` - 场地边界抽象类
+    - `SafetyZone/RectArenaBounds.cs` - 矩形场地边界
 
 ---
 

@@ -33,10 +33,7 @@ public static class ArenaBoundsExample
             .Execute();
 
         Console.WriteLine($"圆形场地内找到 {safePoints.Count} 个安全点");
-        foreach (var point in safePoints)
-        {
-            Console.WriteLine($"  ({point.X:F1}, {point.Z:F1})");
-        }
+        foreach (var point in safePoints) Console.WriteLine($"  ({point.X:F1}, {point.Z:F1})");
     }
 
     /// <summary>
@@ -48,10 +45,10 @@ public static class ArenaBoundsExample
 
         // 设置矩形场地（中心 (0,0)，朝向东，40米×30米）
         calculator.SetArenaBounds(new RectArenaBounds(
-            center: new WPos(0, 0),
-            direction: new WDir(1, 0),  // 朝向东
-            halfWidth: 15f,              // 半宽 15米（总宽30米）
-            halfLength: 20f              // 半长 20米（总长40米）
+            new WPos(0, 0),
+            new WDir(1, 0), // 朝向东
+            15f, // 半宽 15米（总宽30米）
+            20f // 半长 20米（总长40米）
         ));
 
         // 添加危险区域
@@ -108,14 +105,14 @@ public static class ArenaBoundsExample
 
         // 设置矩形竞技场
         calculator.SetArenaBounds(new RectArenaBounds(
-            center: new WPos(0, 0),
-            direction: new WDir(1, 0),
-            halfWidth: 20f,
-            halfLength: 20f
+            new WPos(0, 0),
+            new WDir(1, 0),
+            20f,
+            20f
         ));
 
         // 添加40个危险区域
-        for (int i = 0; i < 40; i++)
+        for (var i = 0; i < 40; i++)
         {
             var angle = i * (360f / 40f) * Angle.DegToRad;
             var pos = bossPos + new WDir(
@@ -132,12 +129,12 @@ public static class ArenaBoundsExample
 
         // 查找8个安全点：靠近坦克，彼此分散
         var safePoints = calculator.FindSafePositions(8, currentTime)
-            .NearTarget(tankPos, maxDistance: 20f)
+            .NearTarget(tankPos, 20f)
             .MinDistanceBetween(4f)
             .Execute();
 
         Console.WriteLine($"找到 {safePoints.Count} 个安全点（矩形场地内）");
-        for (int i = 0; i < safePoints.Count; i++)
+        for (var i = 0; i < safePoints.Count; i++)
         {
             var point = safePoints[i];
             var distToTank = (point - tankPos).Length();

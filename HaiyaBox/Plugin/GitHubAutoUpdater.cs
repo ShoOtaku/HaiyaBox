@@ -180,10 +180,7 @@ public sealed class GitHubAutoUpdater : IDisposable
         var updateDir = GetUpdateDirectory(tagName);
         var extractDir = Path.Combine(updateDir, "extract");
 
-        if (Directory.Exists(extractDir))
-        {
-            Directory.Delete(extractDir, true);
-        }
+        if (Directory.Exists(extractDir)) Directory.Delete(extractDir, true);
 
         ZipFile.ExtractToDirectory(packagePath, extractDir);
         var dllPath = Directory.GetFiles(extractDir, "HaiyaBox.dll", SearchOption.AllDirectories).FirstOrDefault();
@@ -196,16 +193,14 @@ public sealed class GitHubAutoUpdater : IDisposable
 
         try
         {
-            foreach (var sourcePath in Directory.GetFiles(Path.GetDirectoryName(dllPath)!, "*", SearchOption.TopDirectoryOnly))
+            foreach (var sourcePath in Directory.GetFiles(Path.GetDirectoryName(dllPath)!, "*",
+                         SearchOption.TopDirectoryOnly))
             {
                 var fileName = Path.GetFileName(sourcePath);
                 var targetPath = Path.Combine(pluginDir, fileName);
                 var backupPath = Path.Combine(updateDir, $"{fileName}.bak");
 
-                if (File.Exists(targetPath))
-                {
-                    File.Copy(targetPath, backupPath, true);
-                }
+                if (File.Exists(targetPath)) File.Copy(targetPath, backupPath, true);
 
                 File.Copy(sourcePath, targetPath, true);
             }
@@ -239,17 +234,15 @@ public sealed class GitHubAutoUpdater : IDisposable
     {
         var assemblyLocation = Assembly.GetExecutingAssembly().Location;
         var pluginDir = Path.GetDirectoryName(assemblyLocation);
-        if (!string.IsNullOrWhiteSpace(pluginDir))
-        {
-            return pluginDir;
-        }
+        if (!string.IsNullOrWhiteSpace(pluginDir)) return pluginDir;
 
         return Share.CurrentDirectory;
     }
 
     private static string GetUpdateDirectory(string tagName)
     {
-        var safeTag = string.Join("_", tagName.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
+        var safeTag = string.Join("_",
+            tagName.Split(Path.GetInvalidFileNameChars(), StringSplitOptions.RemoveEmptyEntries));
         return Path.Combine(GetPluginDirectory(), "updates", safeTag);
     }
 
@@ -308,10 +301,7 @@ public sealed class GitHubAutoUpdater : IDisposable
             if (!string.IsNullOrWhiteSpace(location))
             {
                 var version = FileVersionInfo.GetVersionInfo(location).FileVersion;
-                if (!string.IsNullOrWhiteSpace(version))
-                {
-                    return version;
-                }
+                if (!string.IsNullOrWhiteSpace(version)) return version;
             }
         }
         catch
@@ -329,18 +319,15 @@ public sealed class GitHubAutoUpdater : IDisposable
 
     private sealed class GitHubRelease
     {
-        [JsonPropertyName("tag_name")]
-        public string TagName { get; set; } = "";
+        [JsonPropertyName("tag_name")] public string TagName { get; set; } = "";
 
         public bool Draft { get; set; }
 
         public bool Prerelease { get; set; }
 
-        [JsonPropertyName("created_at")]
-        public DateTimeOffset? CreatedAt { get; set; }
+        [JsonPropertyName("created_at")] public DateTimeOffset? CreatedAt { get; set; }
 
-        [JsonPropertyName("published_at")]
-        public DateTimeOffset? PublishedAt { get; set; }
+        [JsonPropertyName("published_at")] public DateTimeOffset? PublishedAt { get; set; }
 
         public List<GitHubAsset> Assets { get; set; } = [];
     }

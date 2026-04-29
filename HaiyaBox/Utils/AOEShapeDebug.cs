@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Numerics;
 using AOESafetyCalculator.Core;
 using AOESafetyCalculator.Shapes;
@@ -18,10 +16,10 @@ public static class AOEShapeDebug
     private static readonly uint[] Palette =
     [
         PackColor(0.95f, 0.25f, 0.25f, 0.85f), // red
-        PackColor(0.25f, 0.9f, 0.35f, 0.85f),  // green
-        PackColor(0.2f, 0.6f, 1f, 0.85f),      // blue
-        PackColor(0.95f, 0.85f, 0.2f, 0.85f),  // yellow
-        PackColor(0.85f, 0.35f, 0.95f, 0.85f)  // magenta
+        PackColor(0.25f, 0.9f, 0.35f, 0.85f), // green
+        PackColor(0.2f, 0.6f, 1f, 0.85f), // blue
+        PackColor(0.95f, 0.85f, 0.2f, 0.85f), // yellow
+        PackColor(0.85f, 0.35f, 0.95f, 0.85f) // magenta
     ];
 
     private sealed class Entry
@@ -47,10 +45,7 @@ public static class AOEShapeDebug
 
     public static void Dispose()
     {
-        if (_renderer != null && _callback != null)
-        {
-            _renderer.UnregisterTempObjectCallback(_callback);
-        }
+        if (_renderer != null && _callback != null) _renderer.UnregisterTempObjectCallback(_callback);
         _renderer = null;
         _callback = null;
         lock (Sync)
@@ -69,10 +64,7 @@ public static class AOEShapeDebug
 
     public static void Draw(AOEShape shape, WPos origin, float durationSeconds)
     {
-        if (shape == null)
-        {
-            return;
-        }
+        if (shape == null) return;
 
         var now = DateTime.UtcNow;
         var height = Svc.Objects?.LocalPlayer?.Position.Y ?? 0f;
@@ -141,7 +133,8 @@ public static class AOEShapeDebug
         return (int)hash;
     }
 
-    internal static IReadOnlyList<DisplayObject> BuildDisplayObjectsFor(AOEShape shape, WPos origin, float height, uint color)
+    internal static IReadOnlyList<DisplayObject> BuildDisplayObjectsFor(AOEShape shape, WPos origin, float height,
+        uint color)
     {
         var result = new List<DisplayObject>();
         switch (shape)
@@ -151,10 +144,7 @@ public static class AOEShapeDebug
                 break;
             case AOEShapeDonut donut:
                 result.Add(BuildCircle(origin, height, donut.OuterRadius, color));
-                if (donut.InnerRadius > 0f)
-                {
-                    result.Add(BuildCircle(origin, height, donut.InnerRadius, color));
-                }
+                if (donut.InnerRadius > 0f) result.Add(BuildCircle(origin, height, donut.InnerRadius, color));
                 break;
             case AOEShapeCone cone:
                 result.AddRange(BuildCone(cone, origin, height, color));
@@ -189,20 +179,15 @@ public static class AOEShapeDebug
         lock (Sync)
         {
             for (var i = Entries.Count - 1; i >= 0; --i)
-            {
                 if (Entries[i].ExpiresAt <= now)
-                {
                     Entries.RemoveAt(i);
-                }
-            }
+
             snapshot = new List<Entry>(Entries);
         }
 
         var result = new List<DisplayObject>();
         foreach (var entry in snapshot)
-        {
             result.AddRange(BuildDisplayObjectsFor(entry.Shape, entry.Origin, entry.Height, entry.Color));
-        }
 
         return result;
     }
@@ -224,7 +209,8 @@ public static class AOEShapeDebug
         return BuildLineLoop(points, color);
     }
 
-    private static IEnumerable<DisplayObject> BuildDonutSector(AOEShapeDonutSector sector, WPos origin, float height, uint color)
+    private static IEnumerable<DisplayObject> BuildDonutSector(AOEShapeDonutSector sector, WPos origin, float height,
+        uint color)
     {
         var dir = sector.Direction;
         var start = dir - sector.HalfAngle;
@@ -233,13 +219,9 @@ public static class AOEShapeDebug
         AppendArc(points, origin, sector.OuterRadius, start.Rad, end.Rad, height, false);
         var innerRadius = MathF.Max(0f, sector.InnerRadius);
         if (innerRadius > 0f)
-        {
             AppendArc(points, origin, innerRadius, end.Rad, start.Rad, height, true);
-        }
         else
-        {
             points.Add(ToVector3(origin, height));
-        }
         return BuildLineLoop(points, color);
     }
 
@@ -309,7 +291,8 @@ public static class AOEShapeDebug
         return BuildLineLoop(points, color);
     }
 
-    private static IEnumerable<DisplayObject> BuildCapsule(AOEShapeCapsule capsule, WPos origin, float height, uint color)
+    private static IEnumerable<DisplayObject> BuildCapsule(AOEShapeCapsule capsule, WPos origin, float height,
+        uint color)
     {
         var dir = capsule.Direction.ToDirection();
         var angle = capsule.Direction.Rad;
@@ -323,16 +306,14 @@ public static class AOEShapeDebug
         return BuildLineLoop(points, color);
     }
 
-    private static IEnumerable<DisplayObject> BuildArcCapsule(AOEShapeArcCapsule arc, WPos origin, float height, uint color)
+    private static IEnumerable<DisplayObject> BuildArcCapsule(AOEShapeArcCapsule arc, WPos origin, float height,
+        uint color)
     {
         var tube = arc.Radius;
         var orbit = arc.OrbitCenter;
         var r0 = origin - orbit;
         var R = r0.Length();
-        if (R <= 0f)
-        {
-            return BuildLineLoop(BuildCircleLoop(origin, height, tube), color);
-        }
+        if (R <= 0f) return BuildLineLoop(BuildCircleLoop(origin, height, tube), color);
 
         var theta0 = Angle.FromDirection(r0).Rad;
         var theta1 = theta0 + arc.AngularLength.Rad;
@@ -345,13 +326,9 @@ public static class AOEShapeDebug
         AppendArc(points, orbit, outerR, theta0, theta1, height, false);
         AppendArc(points, endCenter, tube, theta1, theta1 + sign * MathF.PI, height, true);
         if (innerR > 0f)
-        {
             AppendArc(points, orbit, innerR, theta1, theta0, height, true);
-        }
         else
-        {
             points.Add(ToVector3(orbit, height));
-        }
         AppendArc(points, origin, tube, theta0 + sign * MathF.PI, theta0, height, true);
 
         return BuildLineLoop(points, color);
@@ -366,10 +343,7 @@ public static class AOEShapeDebug
 
     private static IEnumerable<DisplayObject> BuildLineLoop(IReadOnlyList<Vector3> points, uint color)
     {
-        if (points.Count < 2)
-        {
-            yield break;
-        }
+        if (points.Count < 2) yield break;
         for (var i = 0; i < points.Count; i++)
         {
             var a = points[i];
@@ -378,16 +352,15 @@ public static class AOEShapeDebug
         }
     }
 
-    private static void AppendArc(List<Vector3> points, WPos center, float radius, float start, float end, float height, bool skipFirst)
+    private static void AppendArc(List<Vector3> points, WPos center, float radius, float start, float end, float height,
+        bool skipFirst)
     {
         var span = end - start;
-        var segments = Math.Clamp((int)MathF.Ceiling(MathF.Abs(span) / MathF.Tau * CircleSegments), MinArcSegments, CircleSegments);
+        var segments = Math.Clamp((int)MathF.Ceiling(MathF.Abs(span) / MathF.Tau * CircleSegments), MinArcSegments,
+            CircleSegments);
         for (var i = 0; i <= segments; i++)
         {
-            if (skipFirst && i == 0)
-            {
-                continue;
-            }
+            if (skipFirst && i == 0) continue;
             var t = i / (float)segments;
             var angle = start + span * t;
             points.Add(new Vector3(
@@ -397,7 +370,10 @@ public static class AOEShapeDebug
         }
     }
 
-    private static Vector3 ToVector3(WPos pos, float height) => new(pos.X, height, pos.Z);
+    private static Vector3 ToVector3(WPos pos, float height)
+    {
+        return new Vector3(pos.X, height, pos.Z);
+    }
 
     private static uint PackColor(float r, float g, float b, float a)
     {
@@ -415,6 +391,7 @@ public static class AOEShapeDebug
             hash ^= c;
             hash *= 16777619u;
         }
+
         return hash;
     }
 

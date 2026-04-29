@@ -51,7 +51,10 @@ public abstract class ShapeDistance
     /// 子类可以重写此方法以提供更精确的相交检测
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public virtual bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default) => true;
+    public virtual bool RowIntersectsShape(WPos rowStart, WDir dx, float width, float cushion = default)
+    {
+        return true;
+    }
 
     /// <summary>
     /// 检查点是否在形状内
@@ -62,7 +65,10 @@ public abstract class ShapeDistance
     /// 默认实现：距离 <= 0 表示在形状内
     /// </remarks>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public virtual bool Contains(in WPos p) => Distance(p) <= 0f;
+    public virtual bool Contains(in WPos p)
+    {
+        return Distance(p) <= 0f;
+    }
 
     /// <summary>
     /// 检查浮点数是否接近零
@@ -70,5 +76,8 @@ public abstract class ShapeDistance
     /// <param name="v">要检查的值</param>
     /// <returns>true 表示值在 [-Epsilon, Epsilon] 范围内</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool NearlyZero(float v) => Math.Abs(v) <= Epsilon;
+    public static bool NearlyZero(float v)
+    {
+        return Math.Abs(v) <= Epsilon;
+    }
 }

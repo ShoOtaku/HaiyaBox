@@ -30,8 +30,8 @@ public static class BasicUsage
 
         // 检查不同位置是否安全
         var currentTime = DateTime.Now;
-        var pos1 = new WPos(5, 0);   // 在危险区域内
-        var pos2 = new WPos(15, 0);  // 在危险区域外
+        var pos1 = new WPos(5, 0); // 在危险区域内
+        var pos2 = new WPos(15, 0); // 在危险区域外
 
         Console.WriteLine($"位置 (5, 0) 是否安全: {calculator.IsSafe(pos1, currentTime)}");
         Console.WriteLine($"位置 (15, 0) 是否安全: {calculator.IsSafe(pos2, currentTime)}");
@@ -102,13 +102,13 @@ public static class BasicUsage
         var currentPos = new WPos(5, 0); // 当前在危险区域内
 
         // 查找最安全的方向
-        var safeDirection = calculator.FindSafestDirection(currentPos, currentTime, sampleCount: 16);
+        var safeDirection = calculator.FindSafestDirection(currentPos, currentTime, 16);
         Console.WriteLine($"最安全的方向: ({safeDirection.X:F2}, {safeDirection.Z:F2})");
 
         // 在指定区域内查找最安全的位置
         var searchCenter = new WPos(0, 0);
         var searchRadius = 20f;
-        var safestPos = calculator.FindSafestPosition(searchCenter, searchRadius, currentTime, gridResolution: 1.0f);
+        var safestPos = calculator.FindSafestPosition(searchCenter, searchRadius, currentTime, 1.0f);
         Console.WriteLine($"最安全的位置: ({safestPos.X:F2}, {safestPos.Z:F2})");
     }
 
@@ -206,10 +206,10 @@ public static class BasicUsage
         // 测试不同位置
         var positions = new[]
         {
-            new WPos(0, 0),    // 中心（安全）
-            new WPos(3, 0),    // 内圈内（安全）
-            new WPos(10, 0),   // 环形内（危险）
-            new WPos(20, 0)    // 外圈外（安全）
+            new WPos(0, 0), // 中心（安全）
+            new WPos(3, 0), // 内圈内（安全）
+            new WPos(10, 0), // 环形内（危险）
+            new WPos(20, 0) // 外圈外（安全）
         };
 
         foreach (var pos in positions)

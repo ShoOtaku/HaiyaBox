@@ -45,32 +45,24 @@ public class 指定职能tp指定位置A : ITriggerAction
 
         foreach (var role in roles.Keys.ToList())
         {
-            bool isChecked = roles[role];
-            if (ImGui.Checkbox(role, ref isChecked))
-            {
-                roles[role] = isChecked;
-            }
+            var isChecked = roles[role];
+            if (ImGui.Checkbox(role, ref isChecked)) roles[role] = isChecked;
 
             ImGui.SameLine();
-            string positionString = $"{rolePositions[role].X},{rolePositions[role].Y},{rolePositions[role].Z}";
+            var positionString = $"{rolePositions[role].X},{rolePositions[role].Y},{rolePositions[role].Z}";
             if (ImGui.InputText($"{role} 坐标 (x,y,z)", ref positionString, 100))
             {
                 var parts = positionString.Split(',');
                 if (parts.Length == 3 &&
-                    float.TryParse(parts[0], out float x) &&
-                    float.TryParse(parts[1], out float y) &&
-                    float.TryParse(parts[2], out float z))
-                {
+                    float.TryParse(parts[0], out var x) &&
+                    float.TryParse(parts[1], out var y) &&
+                    float.TryParse(parts[2], out var z))
                     rolePositions[role] = new Vector3(x, y, z);
-                }
             }
         }
 
         ImGui.Checkbox("锁定位置", ref lockPosition);
-        if (lockPosition)
-        {
-            ImGui.InputInt("锁定时间 (毫秒)", ref lockDuration);
-        }
+        if (lockPosition) ImGui.InputInt("锁定时间 (毫秒)", ref lockDuration);
 
         return true;
     }
@@ -79,21 +71,16 @@ public class 指定职能tp指定位置A : ITriggerAction
     {
         Share.DebugPointWithText.Clear();
         foreach (var role in roles)
-        {
             if (role.Value)
             {
-                Vector3 position = rolePositions[role.Key];
+                var position = rolePositions[role.Key];
                 if (lockPosition)
-                {
                     RemoteControlHelper.LockPos(role.Key, position, lockDuration);
-                }
                 else
-                {
                     RemoteControlHelper.SetPos(role.Key, position);
-                }
                 Share.DebugPointWithText.Add(role.Key, position);
             }
-        }
+
         return true;
     }
 }

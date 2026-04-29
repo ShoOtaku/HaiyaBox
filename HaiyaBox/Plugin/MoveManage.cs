@@ -3,7 +3,6 @@ using AEAssist;
 using AEAssist.CombatRoutine.Module;
 using AEAssist.Extension;
 using AEAssist.Helper;
-using AEAssist.MemoryApi;
 using Dalamud.Game.ClientState.Objects.Types;
 using Dalamud.Game.Command;
 using ECommons.DalamudServices;
@@ -16,12 +15,14 @@ public class MoveManage : IDisposable
 {
     public static MoveManage Instance { get; } = new();
 
-    public List<MoveInfoDelay> MoveInfoDelays = new List<MoveInfoDelay>();
-    public List<MoveInfoTimeout> MoveInfoTimeouts = new List<MoveInfoTimeout>();
-    
+    public List<MoveInfoDelay> MoveInfoDelays = new();
+    public List<MoveInfoTimeout> MoveInfoTimeouts = new();
+
     private bool initialized;
+
     private List<Job> jobs =
         [Job.BLM, Job.BLU, Job.PCT, Job.WHM, Job.RDM, Job.ACN, Job.CNJ, Job.SCH, Job.SGE, Job.ACN, Job.SMN, Job.THM];
+
     private const int DefaultMeleeBufferMs = 100;
     private const int DefaultCasterSafeMs = 400;
     private const int DefaultOtherBufferMs = 50;
@@ -40,6 +41,7 @@ public class MoveManage : IDisposable
         MoveInfoTimeouts.Clear();
         return true;
     }
+
     public void Dispose()
     {
         if (!initialized)
@@ -47,6 +49,7 @@ public class MoveManage : IDisposable
         MoveInfoDelays.Clear();
         MoveInfoTimeouts.Clear();
     }
+
     public void Update()
     {
         if (!initialized)
@@ -55,17 +58,17 @@ public class MoveManage : IDisposable
         if (MoveInfoTimeouts.Count > 0)
         {
             var moveInfo = MoveInfoTimeouts[0];
-            if(SetPosTimeout(moveInfo, 当前战斗时间))
+            if (SetPosTimeout(moveInfo, 当前战斗时间))
             {
                 Core.Me.SetPos(moveInfo.Position);
                 MoveInfoTimeouts.RemoveAt(0);
             }
-            
         }
+
         if (MoveInfoDelays.Count > 0)
         {
             var moveInfo = MoveInfoDelays[0];
-            if(SetPosDelay(moveInfo, 当前战斗时间))
+            if (SetPosDelay(moveInfo, 当前战斗时间))
             {
                 Core.Me.SetPos(moveInfo.Position);
                 MoveInfoDelays.RemoveAt(0);
@@ -75,10 +78,7 @@ public class MoveManage : IDisposable
 
     private void OnCommand(string command, string args)
     {
-        if (string.IsNullOrWhiteSpace(args))
-        {
-            return;
-        }
+        if (string.IsNullOrWhiteSpace(args)) return;
 
         var data = args.Split(" ", 3);
         if (data.Length < 3)
@@ -108,6 +108,7 @@ public class MoveManage : IDisposable
             MoveInfoTimeouts.Add(moveInfo);
         }
     }
+
     private bool SetPosDelay(MoveInfoDelay moveInfoDelay, long battleTimeMs)
     {
         if (moveInfoDelay.BattleTimeInMs <= battleTimeMs)
@@ -139,7 +140,9 @@ public class MoveManage : IDisposable
         else
         {
             if (!jobs.Contains(job))
+            {
                 return moveInfoDelay.BattleTimeInMs - battleTimeMs < 300;
+            }
             else
             {
                 var nextSlideStart =
@@ -157,15 +160,15 @@ public class MoveManage : IDisposable
         var (isCasting, castTotalMs, castCurrentMs) = TryGetCastInfo();
         var job = Core.Me.ClassJob.Value.GetJob();
         if (jobs.Contains(job))
-        {
             if (Core.Me.IsCasting)
             {
                 var slideStart = CalculateSlideWindowStartMs(battleTimeMs, castTotalMs, castCurrentMs);
-                return  battleTimeMs >= slideStart;
+                return battleTimeMs >= slideStart;
             }
-        }
+
         return battleTimeMs >= moveInfoTimeout.BattleTimeInMs;
     }
+
     /// <summary>
     /// 计算下一GCD滑步窗口起点（预测读条）。
     /// </summary>
@@ -183,6 +186,7 @@ public class MoveManage : IDisposable
         var start = currentGcdEndMs + safeCastTotalMs - DefaultCasterSafeMs;
         return Math.Max(0, start);
     }
+
     /// <summary>
     /// 计算滑步窗口起点（读条安全起点）。
     /// </summary>
@@ -201,10 +205,12 @@ public class MoveManage : IDisposable
         var start = currentBattleTimeMs - safeCastCurrentMs + safeCastTotalMs - DefaultCasterSafeMs;
         return Math.Max(0, start);
     }
+
     private bool IsCastor(IBattleChara? battleChara)
     {
         return battleChara != null && jobs.Contains(battleChara.ClassJob.Value.GetJob());
     }
+
     private static (int? TotalMs, int? RemainingMs) TryGetGcdInfo()
     {
         unsafe
@@ -226,6 +232,7 @@ public class MoveManage : IDisposable
             return (totalMs, remainingMs);
         }
     }
+
     private (bool IsCasting, int? CastTotalMs, int? CastCurrentMs) TryGetCastInfo()
     {
         var player = Core.Me;
@@ -246,11 +253,13 @@ public class MoveManage : IDisposable
         return (true, totalMs, currentMs);
     }
 }
+
 public class MoveInfoDelay
 {
     public long BattleTimeInMs { get; set; }
     public Vector3 Position { get; set; }
 }
+
 public class MoveInfoTimeout
 {
     public long BattleTimeInMs { get; set; }

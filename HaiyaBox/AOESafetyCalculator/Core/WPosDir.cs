@@ -32,20 +32,28 @@ public readonly struct WDir(float x, float z)
     /// 从 Vector2 构造方向向量
     /// </summary>
     /// <param name="v">二维向量，X 对应 X，Y 对应 Z</param>
-    public WDir(Vector2 v) : this(v.X, v.Y) { }
+    public WDir(Vector2 v) : this(v.X, v.Y)
+    {
+    }
 
     /// <summary>
     /// 转换为 Vector2
     /// </summary>
     /// <returns>二维向量 (X, Z)</returns>
-    public readonly Vector2 ToVec2() => new(X, Z);
+    public readonly Vector2 ToVec2()
+    {
+        return new Vector2(X, Z);
+    }
 
     /// <summary>
     /// 转换为 Vector3
     /// </summary>
     /// <param name="y">Y 坐标（高度），默认为 0</param>
     /// <returns>三维向量 (X, y, Z)</returns>
-    public readonly Vector3 ToVec3(float y = default) => new(X, y, Z);
+    public readonly Vector3 ToVec3(float y = default)
+    {
+        return new Vector3(X, y, Z);
+    }
 
     /// <summary>
     /// 转换为 Vector4
@@ -53,53 +61,86 @@ public readonly struct WDir(float x, float z)
     /// <param name="y">Y 坐标（高度），默认为 0</param>
     /// <param name="w">W 分量，默认为 0</param>
     /// <returns>四维向量 (X, y, Z, w)</returns>
-    public readonly Vector4 ToVec4(float y = default, float w = default) => new(X, y, Z, w);
+    public readonly Vector4 ToVec4(float y = default, float w = default)
+    {
+        return new Vector4(X, y, Z, w);
+    }
 
     /// <summary>
     /// 转换为世界位置（将方向向量视为从原点出发的位置）
     /// </summary>
     /// <returns>世界位置</returns>
-    public readonly WPos ToWPos() => new(X, Z);
+    public readonly WPos ToWPos()
+    {
+        return new WPos(X, Z);
+    }
 
     /// <summary>
     /// 从 Vector3 创建 WDir（忽略 Y 坐标）
     /// </summary>
     /// <param name="v">三维向量</param>
     /// <returns>世界方向（X, Z）</returns>
-    public static WDir FromVec3(Vector3 v) => new(v.X, v.Z);
+    public static WDir FromVec3(Vector3 v)
+    {
+        return new WDir(v.X, v.Z);
+    }
 
     #region 运算符重载
 
     /// <summary>相等比较</summary>
-    public static bool operator ==(WDir left, WDir right) => left.X == right.X && left.Z == right.Z;
+    public static bool operator ==(WDir left, WDir right)
+    {
+        return left.X == right.X && left.Z == right.Z;
+    }
 
     /// <summary>不等比较</summary>
-    public static bool operator !=(WDir left, WDir right) => left.X != right.X || left.Z != right.Z;
+    public static bool operator !=(WDir left, WDir right)
+    {
+        return left.X != right.X || left.Z != right.Z;
+    }
 
     /// <summary>向量加法</summary>
-    public static WDir operator +(WDir a, WDir b) => new(a.X + b.X, a.Z + b.Z);
+    public static WDir operator +(WDir a, WDir b)
+    {
+        return new WDir(a.X + b.X, a.Z + b.Z);
+    }
 
     /// <summary>向量减法</summary>
-    public static WDir operator -(WDir a, WDir b) => new(a.X - b.X, a.Z - b.Z);
+    public static WDir operator -(WDir a, WDir b)
+    {
+        return new WDir(a.X - b.X, a.Z - b.Z);
+    }
 
     /// <summary>向量取反（反方向）</summary>
-    public static WDir operator -(WDir a) => new(-a.X, -a.Z);
+    public static WDir operator -(WDir a)
+    {
+        return new WDir(-a.X, -a.Z);
+    }
 
     /// <summary>方向减去位置（特殊用法）</summary>
-    public static WDir operator -(WDir a, WPos b) => new(a.X - b.X, a.Z - b.Z);
+    public static WDir operator -(WDir a, WPos b)
+    {
+        return new WDir(a.X - b.X, a.Z - b.Z);
+    }
 
     /// <summary>向量标量乘法</summary>
-    public static WDir operator *(WDir a, float b) => new(a.X * b, a.Z * b);
+    public static WDir operator *(WDir a, float b)
+    {
+        return new WDir(a.X * b, a.Z * b);
+    }
 
     /// <summary>标量向量乘法</summary>
-    public static WDir operator *(float a, WDir b) => new(a * b.X, a * b.Z);
+    public static WDir operator *(float a, WDir b)
+    {
+        return new WDir(a * b.X, a * b.Z);
+    }
 
     /// <summary>向量标量除法</summary>
     public static WDir operator /(WDir a, float b)
     {
         // 使用乘法代替除法以提高性能
         var invB = 1f / b;
-        return new(a.X * invB, a.Z * invB);
+        return new WDir(a.X * invB, a.Z * invB);
     }
 
     #endregion
@@ -109,12 +150,18 @@ public readonly struct WDir(float x, float z)
     /// <summary>
     /// 取绝对值（各分量取绝对值）
     /// </summary>
-    public readonly WDir Abs() => new(Math.Abs(X), Math.Abs(Z));
+    public readonly WDir Abs()
+    {
+        return new WDir(Math.Abs(X), Math.Abs(Z));
+    }
 
     /// <summary>
     /// 取符号（各分量取符号：-1、0 或 1）
     /// </summary>
-    public readonly WDir Sign() => new(Math.Sign(X), Math.Sign(Z));
+    public readonly WDir Sign()
+    {
+        return new WDir(Math.Sign(X), Math.Sign(Z));
+    }
 
     /// <summary>
     /// 获取左侧正交向量（逆时针旋转 90 度）
@@ -123,7 +170,10 @@ public readonly struct WDir(float x, float z)
     /// 用于计算垂直于当前方向的左侧方向
     /// 例如：计算 AOE 矩形的宽度方向
     /// </remarks>
-    public readonly WDir OrthoL() => new(Z, -X);
+    public readonly WDir OrthoL()
+    {
+        return new WDir(Z, -X);
+    }
 
     /// <summary>
     /// 获取右侧正交向量（顺时针旋转 90 度）
@@ -131,17 +181,26 @@ public readonly struct WDir(float x, float z)
     /// <remarks>
     /// 用于计算垂直于当前方向的右侧方向
     /// </remarks>
-    public readonly WDir OrthoR() => new(-Z, X);
+    public readonly WDir OrthoR()
+    {
+        return new WDir(-Z, X);
+    }
 
     /// <summary>
     /// X 轴镜像（翻转 X 分量）
     /// </summary>
-    public readonly WDir MirrorX() => new(-X, Z);
+    public readonly WDir MirrorX()
+    {
+        return new WDir(-X, Z);
+    }
 
     /// <summary>
     /// Z 轴镜像（翻转 Z 分量）
     /// </summary>
-    public readonly WDir MirrorZ() => new(X, -Z);
+    public readonly WDir MirrorZ()
+    {
+        return new WDir(X, -Z);
+    }
 
     /// <summary>
     /// 点积（内积）
@@ -155,7 +214,10 @@ public readonly struct WDir(float x, float z)
     /// - 零：垂直
     /// - 负值：夹角大于 90 度
     /// </remarks>
-    public readonly float Dot(WDir a) => X * a.X + Z * a.Z;
+    public readonly float Dot(WDir a)
+    {
+        return X * a.X + Z * a.Z;
+    }
 
     /// <summary>
     /// 叉积（外积）的 Z 分量
@@ -166,7 +228,10 @@ public readonly struct WDir(float x, float z)
     /// 二维叉积结果是标量，表示两向量构成的平行四边形面积
     /// 正值表示 b 在 a 的逆时针方向
     /// </remarks>
-    public readonly float Cross(WDir b) => X * b.Z - Z * b.X;
+    public readonly float Cross(WDir b)
+    {
+        return X * b.Z - Z * b.X;
+    }
 
     /// <summary>
     /// 按指定方向旋转向量
@@ -183,7 +248,7 @@ public readonly struct WDir(float x, float z)
     {
         var dirZ = dir.Z;
         var dirX = dir.X;
-        return new(X * dirZ + Z * dirX, Z * dirZ - X * dirX);
+        return new WDir(X * dirZ + Z * dirX, Z * dirZ - X * dirX);
     }
 
     /// <summary>
@@ -191,7 +256,10 @@ public readonly struct WDir(float x, float z)
     /// </summary>
     /// <param name="dir">旋转角度</param>
     /// <returns>旋转后的向量</returns>
-    public readonly WDir Rotate(Angle dir) => Rotate(dir.ToDirection());
+    public readonly WDir Rotate(Angle dir)
+    {
+        return Rotate(dir.ToDirection());
+    }
 
     /// <summary>
     /// 计算向量长度的平方
@@ -201,13 +269,19 @@ public readonly struct WDir(float x, float z)
     /// 避免开方运算，用于距离比较时更高效
     /// 例如：判断是否在某半径内时，比较 LengthSq() 和 radius*radius
     /// </remarks>
-    public readonly float LengthSq() => X * X + Z * Z;
+    public readonly float LengthSq()
+    {
+        return X * X + Z * Z;
+    }
 
     /// <summary>
     /// 计算向量长度
     /// </summary>
     /// <returns>向量长度</returns>
-    public readonly float Length() => MathF.Sqrt(LengthSq());
+    public readonly float Length()
+    {
+        return MathF.Sqrt(LengthSq());
+    }
 
     /// <summary>
     /// 获取单位向量（归一化）
@@ -228,30 +302,45 @@ public readonly struct WDir(float x, float z)
     /// <param name="b">比较目标</param>
     /// <param name="eps">容差值</param>
     /// <returns>各分量差值都在容差范围内返回 true</returns>
-    public readonly bool AlmostEqual(WDir b, float eps) => Math.Abs(X - b.X) <= eps && Math.Abs(Z - b.Z) <= eps;
+    public readonly bool AlmostEqual(WDir b, float eps)
+    {
+        return Math.Abs(X - b.X) <= eps && Math.Abs(Z - b.Z) <= eps;
+    }
 
     /// <summary>
     /// 缩放向量
     /// </summary>
     /// <param name="multiplier">缩放倍数</param>
     /// <returns>缩放后的向量</returns>
-    public readonly WDir Scaled(float multiplier) => new(X * multiplier, Z * multiplier);
+    public readonly WDir Scaled(float multiplier)
+    {
+        return new WDir(X * multiplier, Z * multiplier);
+    }
 
     /// <summary>
     /// 四舍五入到整数
     /// </summary>
-    public readonly WDir Rounded() => new(MathF.Round(X), MathF.Round(Z));
+    public readonly WDir Rounded()
+    {
+        return new WDir(MathF.Round(X), MathF.Round(Z));
+    }
 
     /// <summary>
     /// 按指定精度四舍五入
     /// </summary>
     /// <param name="precision">精度（如 0.1 表示保留一位小数）</param>
-    public readonly WDir Rounded(float precision) => Scaled(1f / precision).Rounded().Scaled(precision);
+    public readonly WDir Rounded(float precision)
+    {
+        return Scaled(1f / precision).Rounded().Scaled(precision);
+    }
 
     /// <summary>
     /// 向下取整
     /// </summary>
-    public readonly WDir Floor() => new(MathF.Floor(X), MathF.Floor(Z));
+    public readonly WDir Floor()
+    {
+        return new WDir(MathF.Floor(X), MathF.Floor(Z));
+    }
 
     /// <summary>
     /// 转换为角度
@@ -261,16 +350,34 @@ public readonly struct WDir(float x, float z)
     /// 使用 atan2(X, Z) 计算，结果范围 [-π, π]
     /// 0 度指向北（Z 正方向）
     /// </remarks>
-    public readonly Angle ToAngle() => new(MathF.Atan2(X, Z));
+    public readonly Angle ToAngle()
+    {
+        return new Angle(MathF.Atan2(X, Z));
+    }
 
     #endregion
 
     #region Object 重写
 
-    public override readonly string ToString() => $"({X:f3}, {Z:f3})";
-    public readonly bool Equals(WDir other) => this == other;
-    public override readonly bool Equals(object? obj) => obj is WDir other && Equals(other);
-    public override readonly int GetHashCode() => (X, Z).GetHashCode();
+    public readonly override string ToString()
+    {
+        return $"({X:f3}, {Z:f3})";
+    }
+
+    public readonly bool Equals(WDir other)
+    {
+        return this == other;
+    }
+
+    public readonly override bool Equals(object? obj)
+    {
+        return obj is WDir other && Equals(other);
+    }
+
+    public readonly override int GetHashCode()
+    {
+        return (X, Z).GetHashCode();
+    }
 
     #endregion
 
@@ -344,74 +451,112 @@ public readonly struct WPos(float x, float z)
     /// 从 Vector2 构造位置
     /// </summary>
     /// <param name="v">二维向量，X 对应 X，Y 对应 Z</param>
-    public WPos(Vector2 v) : this(v.X, v.Y) { }
+    public WPos(Vector2 v) : this(v.X, v.Y)
+    {
+    }
 
     /// <summary>
     /// 转换为 Vector2
     /// </summary>
-    public readonly Vector2 ToVec2() => new(X, Z);
+    public readonly Vector2 ToVec2()
+    {
+        return new Vector2(X, Z);
+    }
 
     /// <summary>
     /// 转换为 Vector3
     /// </summary>
     /// <param name="y">Y 坐标（高度），默认为 0</param>
-    public readonly Vector3 ToVec3(float y = 0) => new(X, y, Z);
+    public readonly Vector3 ToVec3(float y = 0)
+    {
+        return new Vector3(X, y, Z);
+    }
 
     /// <summary>
     /// 转换为 Vector4
     /// </summary>
     /// <param name="y">Y 坐标（高度），默认为 0</param>
     /// <param name="w">W 分量，默认为 0</param>
-    public readonly Vector4 ToVec4(float y = 0, float w = 0) => new(X, y, Z, w);
+    public readonly Vector4 ToVec4(float y = 0, float w = 0)
+    {
+        return new Vector4(X, y, Z, w);
+    }
 
     /// <summary>
     /// 转换为方向向量（将位置视为从原点出发的方向）
     /// </summary>
-    public readonly WDir ToWDir() => new(X, Z);
+    public readonly WDir ToWDir()
+    {
+        return new WDir(X, Z);
+    }
 
     /// <summary>
     /// 从 Vector3 创建 WPos（忽略 Y 坐标）
     /// </summary>
     /// <param name="v">三维向量</param>
     /// <returns>世界位置（X, Z）</returns>
-    public static WPos FromVec3(Vector3 v) => new(v.X, v.Z);
+    public static WPos FromVec3(Vector3 v)
+    {
+        return new WPos(v.X, v.Z);
+    }
 
     #region 运算符重载
 
     /// <summary>相等比较</summary>
-    public static bool operator ==(WPos left, WPos right) => left.X == right.X && left.Z == right.Z;
+    public static bool operator ==(WPos left, WPos right)
+    {
+        return left.X == right.X && left.Z == right.Z;
+    }
 
     /// <summary>不等比较</summary>
-    public static bool operator !=(WPos left, WPos right) => left.X != right.X || left.Z != right.Z;
+    public static bool operator !=(WPos left, WPos right)
+    {
+        return left.X != right.X || left.Z != right.Z;
+    }
 
     /// <summary>位置标量乘法</summary>
-    public static WPos operator *(WPos a, float b) => new(a.X * b, a.Z * b);
+    public static WPos operator *(WPos a, float b)
+    {
+        return new WPos(a.X * b, a.Z * b);
+    }
 
     /// <summary>位置标量加法（各分量加同一值）</summary>
-    public static WPos operator +(WPos a, float b) => new(a.X + b, a.Z + b);
+    public static WPos operator +(WPos a, float b)
+    {
+        return new WPos(a.X + b, a.Z + b);
+    }
 
     /// <summary>位置整数除法</summary>
     public static WPos operator /(WPos a, int b)
     {
         var invB = 1f / b;
-        return new(a.X * invB, a.Z * invB);
+        return new WPos(a.X * invB, a.Z * invB);
     }
 
     /// <summary>位置浮点除法</summary>
     public static WPos operator /(WPos a, float b)
     {
         var invB = 1f / b;
-        return new(a.X * invB, a.Z * invB);
+        return new WPos(a.X * invB, a.Z * invB);
     }
 
     /// <summary>位置加方向（移动位置）</summary>
-    public static WPos operator +(WPos a, WDir b) => new(a.X + b.X, a.Z + b.Z);
+    public static WPos operator +(WPos a, WDir b)
+    {
+        return new WPos(a.X + b.X, a.Z + b.Z);
+    }
 
     /// <summary>方向加位置（移动位置）</summary>
-    public static WPos operator +(WDir a, WPos b) => new(a.X + b.X, a.Z + b.Z);
+    public static WPos operator +(WDir a, WPos b)
+    {
+        return new WPos(a.X + b.X, a.Z + b.Z);
+    }
 
     /// <summary>位置减方向（反向移动位置）</summary>
-    public static WPos operator -(WPos a, WDir b) => new(a.X - b.X, a.Z - b.Z);
+    public static WPos operator -(WPos a, WDir b)
+    {
+        return new WPos(a.X - b.X, a.Z - b.Z);
+    }
 
     /// <summary>
     /// 两位置相减得到方向向量
@@ -420,7 +565,10 @@ public readonly struct WPos(float x, float z)
     /// 结果是从 b 指向 a 的方向向量
     /// 常用于计算两点之间的方向和距离
     /// </remarks>
-    public static WDir operator -(WPos a, WPos b) => new(a.X - b.X, a.Z - b.Z);
+    public static WDir operator -(WPos a, WPos b)
+    {
+        return new WDir(a.X - b.X, a.Z - b.Z);
+    }
 
     #endregion
 
@@ -432,24 +580,36 @@ public readonly struct WPos(float x, float z)
     /// <param name="b">比较目标</param>
     /// <param name="eps">容差值</param>
     /// <returns>各分量差值都在容差范围内返回 true</returns>
-    public readonly bool AlmostEqual(WPos b, float eps) => Math.Abs(X - b.X) <= eps && Math.Abs(Z - b.Z) <= eps;
+    public readonly bool AlmostEqual(WPos b, float eps)
+    {
+        return Math.Abs(X - b.X) <= eps && Math.Abs(Z - b.Z) <= eps;
+    }
 
     /// <summary>
     /// 缩放位置（相对于原点）
     /// </summary>
     /// <param name="multiplier">缩放倍数</param>
-    public readonly WPos Scaled(float multiplier) => new(X * multiplier, Z * multiplier);
+    public readonly WPos Scaled(float multiplier)
+    {
+        return new WPos(X * multiplier, Z * multiplier);
+    }
 
     /// <summary>
     /// 四舍五入到整数
     /// </summary>
-    public readonly WPos Rounded() => new(MathF.Round(X), MathF.Round(Z));
+    public readonly WPos Rounded()
+    {
+        return new WPos(MathF.Round(X), MathF.Round(Z));
+    }
 
     /// <summary>
     /// 按指定精度四舍五入
     /// </summary>
     /// <param name="precision">精度（如 0.1 表示保留一位小数）</param>
-    public readonly WPos Rounded(float precision) => Scaled(1f / precision).Rounded().Scaled(precision);
+    public readonly WPos Rounded(float precision)
+    {
+        return Scaled(1f / precision).Rounded().Scaled(precision);
+    }
 
     /// <summary>
     /// 线性插值
@@ -462,7 +622,10 @@ public readonly struct WPos(float x, float z)
     /// progress=0 返回 from，progress=1 返回 to
     /// 用于平滑移动、动画等
     /// </remarks>
-    public static WPos Lerp(WPos from, WPos to, float progress) => new(from.ToVec2() * (1f - progress) + to.ToVec2() * progress);
+    public static WPos Lerp(WPos from, WPos to, float progress)
+    {
+        return new WPos(from.ToVec2() * (1f - progress) + to.ToVec2() * progress);
+    }
 
     /// <summary>
     /// 量化位置到游戏网格
@@ -477,7 +640,8 @@ public readonly struct WPos(float x, float z)
     {
         const float gridSize = 2000f / 65535f;
         const float gridSizeInv = 1f / gridSize;
-        return new(((int)MathF.Round(X * gridSizeInv) - 0.5f) * gridSize, ((int)MathF.Round(Z * gridSizeInv) - 0.5f) * gridSize);
+        return new WPos(((int)MathF.Round(X * gridSizeInv) - 0.5f) * gridSize,
+            ((int)MathF.Round(Z * gridSizeInv) - 0.5f) * gridSize);
     }
 
     /// <summary>
@@ -494,7 +658,7 @@ public readonly struct WPos(float x, float z)
         var deltaZ = point.Z - origin.Z;
         var rotatedX = cos * deltaX - sin * deltaZ;
         var rotatedZ = sin * deltaX + cos * deltaZ;
-        return new(origin.X + rotatedX, origin.Z + rotatedZ);
+        return new WPos(origin.X + rotatedX, origin.Z + rotatedZ);
     }
 
     /// <summary>
@@ -517,10 +681,25 @@ public readonly struct WPos(float x, float z)
 
     #region Object 重写
 
-    public override readonly string ToString() => $"[{X:f3}, {Z:f3}]";
-    public readonly bool Equals(WPos other) => this == other;
-    public override readonly bool Equals(object? obj) => obj is WPos other && Equals(other);
-    public override readonly int GetHashCode() => (X, Z).GetHashCode();
+    public readonly override string ToString()
+    {
+        return $"[{X:f3}, {Z:f3}]";
+    }
+
+    public readonly bool Equals(WPos other)
+    {
+        return this == other;
+    }
+
+    public readonly override bool Equals(object? obj)
+    {
+        return obj is WPos other && Equals(other);
+    }
+
+    public readonly override int GetHashCode()
+    {
+        return (X, Z).GetHashCode();
+    }
 
     #endregion
 
@@ -533,23 +712,27 @@ public readonly struct WPos(float x, float z)
     {
         var s = (v2.X - v1.X) * (Z - v1.Z) - (v2.Z - v1.Z) * (X - v1.X);
         var t = (v3.X - v2.X) * (Z - v2.Z) - (v3.Z - v2.Z) * (X - v2.X);
-        if ((s < 0f) != (t < 0f) && s != 0f && t != 0f)
+        if (s < 0f != t < 0f && s != 0f && t != 0f)
             return false;
         var d = (v1.X - v3.X) * (Z - v3.Z) - (v1.Z - v3.Z) * (X - v3.X);
-        return d == 0f || (d < 0f) == (s + t <= 0f);
+        return d == 0f || d < 0f == s + t <= 0f;
     }
 
     /// <summary>
     /// 检测点是否在矩形内（使用方向向量）
     /// </summary>
     public readonly bool InRect(WPos origin, WDir direction, float lenFront, float lenBack, float halfWidth)
-        => (this - origin).InRect(direction, lenFront, lenBack, halfWidth);
+    {
+        return (this - origin).InRect(direction, lenFront, lenBack, halfWidth);
+    }
 
     /// <summary>
     /// 检测点是否在矩形内（使用角度）
     /// </summary>
     public readonly bool InRect(WPos origin, Angle direction, float lenFront, float lenBack, float halfWidth)
-        => (this - origin).InRect(direction.ToDirection(), lenFront, lenBack, halfWidth);
+    {
+        return (this - origin).InRect(direction.ToDirection(), lenFront, lenBack, halfWidth);
+    }
 
     /// <summary>
     /// 检测点是否在矩形内（使用起点到终点向量）
@@ -557,53 +740,65 @@ public readonly struct WPos(float x, float z)
     public readonly bool InRect(WPos origin, WDir startToEnd, float halfWidth)
     {
         var len = startToEnd.Length();
-        if (len <= 0f)
-        {
-            return false;
-        }
+        if (len <= 0f) return false;
         return InRect(origin, startToEnd / len, len, default, halfWidth);
     }
 
     /// <summary>
     /// 检测点是否在矩形内（使用起点和终点）
     /// </summary>
-    public readonly bool InRect(WPos origin, WPos end, float halfWidth) => InRect(origin, end - origin, halfWidth);
+    public readonly bool InRect(WPos origin, WPos end, float halfWidth)
+    {
+        return InRect(origin, end - origin, halfWidth);
+    }
 
     /// <summary>
     /// 检测点是否在旋转的正方形内
     /// </summary>
     public readonly bool InSquare(WPos origin, float halfWidth, Angle rotation)
-        => (this - origin).InRect(rotation.ToDirection(), halfWidth, halfWidth, halfWidth);
+    {
+        return (this - origin).InRect(rotation.ToDirection(), halfWidth, halfWidth, halfWidth);
+    }
 
     /// <summary>
     /// 检测点是否在旋转的正方形内（使用方向向量）
     /// </summary>
     public readonly bool InSquare(WPos origin, float halfWidth, WDir rotation)
-        => (this - origin).InRect(rotation, halfWidth, halfWidth, halfWidth);
+    {
+        return (this - origin).InRect(rotation, halfWidth, halfWidth, halfWidth);
+    }
 
     /// <summary>
     /// 检测点是否在轴对齐的正方形内（AABB）
     /// </summary>
     public readonly bool InSquare(WPos origin, float halfWidth)
-        => Math.Abs(X - origin.X) <= halfWidth && Math.Abs(Z - origin.Z) <= halfWidth;
+    {
+        return Math.Abs(X - origin.X) <= halfWidth && Math.Abs(Z - origin.Z) <= halfWidth;
+    }
 
     /// <summary>
     /// 检测点是否在轴对齐的矩形内（AABB）
     /// </summary>
     public readonly bool InRect(WPos origin, float halfWidth, float halfHeight)
-        => Math.Abs(X - origin.X) <= halfWidth && Math.Abs(Z - origin.Z) <= halfHeight;
+    {
+        return Math.Abs(X - origin.X) <= halfWidth && Math.Abs(Z - origin.Z) <= halfHeight;
+    }
 
     /// <summary>
     /// 检测点是否在十字形内（使用角度）
     /// </summary>
     public readonly bool InCross(WPos origin, Angle direction, float length, float halfWidth)
-        => (this - origin).InCross(direction.ToDirection(), length, halfWidth);
+    {
+        return (this - origin).InCross(direction.ToDirection(), length, halfWidth);
+    }
 
     /// <summary>
     /// 检测点是否在十字形内（使用方向向量）
     /// </summary>
     public readonly bool InCross(WPos origin, WDir direction, float length, float halfWidth)
-        => (this - origin).InCross(direction, length, halfWidth);
+    {
+        return (this - origin).InCross(direction, length, halfWidth);
+    }
 
     #endregion
 
@@ -612,49 +807,67 @@ public readonly struct WPos(float x, float z)
     /// <summary>
     /// 检测点是否在圆形内
     /// </summary>
-    public readonly bool InCircle(WPos origin, float radius) => (this - origin).LengthSq() <= radius * radius;
+    public readonly bool InCircle(WPos origin, float radius)
+    {
+        return (this - origin).LengthSq() <= radius * radius;
+    }
 
     /// <summary>
     /// 检测点是否在圆环内
     /// </summary>
     public readonly bool InDonut(WPos origin, float innerRadius, float outerRadius)
-        => InCircle(origin, outerRadius) && !InCircle(origin, innerRadius);
+    {
+        return InCircle(origin, outerRadius) && !InCircle(origin, innerRadius);
+    }
 
     /// <summary>
     /// 检测点是否在扇形内（使用方向向量）
     /// </summary>
     public readonly bool InCone(WPos origin, WDir direction, Angle halfAngle)
-        => (this - origin).Normalized().Dot(direction) >= halfAngle.Cos();
+    {
+        return (this - origin).Normalized().Dot(direction) >= halfAngle.Cos();
+    }
 
     /// <summary>
     /// 检测点是否在扇形内（使用角度）
     /// </summary>
     public readonly bool InCone(WPos origin, Angle direction, Angle halfAngle)
-        => InCone(origin, direction.ToDirection(), halfAngle);
+    {
+        return InCone(origin, direction.ToDirection(), halfAngle);
+    }
 
     /// <summary>
     /// 检测点是否在扇形圆内（圆形 + 扇形）
     /// </summary>
     public readonly bool InCircleCone(WPos origin, float radius, WDir direction, Angle halfAngle)
-        => InCircle(origin, radius) && InCone(origin, direction, halfAngle);
+    {
+        return InCircle(origin, radius) && InCone(origin, direction, halfAngle);
+    }
 
     /// <summary>
     /// 检测点是否在扇形圆内（使用角度）
     /// </summary>
     public readonly bool InCircleCone(WPos origin, float radius, Angle direction, Angle halfAngle)
-        => InCircle(origin, radius) && InCone(origin, direction, halfAngle);
+    {
+        return InCircle(origin, radius) && InCone(origin, direction, halfAngle);
+    }
 
     /// <summary>
     /// 检测点是否在扇形环内（圆环 + 扇形）
     /// </summary>
     public readonly bool InDonutCone(WPos origin, float innerRadius, float outerRadius, WDir direction, Angle halfAngle)
-        => InDonut(origin, innerRadius, outerRadius) && InCone(origin, direction, halfAngle);
+    {
+        return InDonut(origin, innerRadius, outerRadius) && InCone(origin, direction, halfAngle);
+    }
 
     /// <summary>
     /// 检测点是否在扇形环内（使用角度）
     /// </summary>
-    public readonly bool InDonutCone(WPos origin, float innerRadius, float outerRadius, Angle direction, Angle halfAngle)
-        => InDonut(origin, innerRadius, outerRadius) && InCone(origin, direction, halfAngle);
+    public readonly bool InDonutCone(WPos origin, float innerRadius, float outerRadius, Angle direction,
+        Angle halfAngle)
+    {
+        return InDonut(origin, innerRadius, outerRadius) && InCone(origin, direction, halfAngle);
+    }
 
     #endregion
 
@@ -675,7 +888,9 @@ public readonly struct WPos(float x, float z)
     /// 检测点是否在弧形胶囊内（使用方向向量）
     /// </summary>
     public readonly bool InArcCapsule(WPos start, WDir toOrbitCenter, Angle angularLength, float tubeRadius)
-        => InArcCapsule(start, start + toOrbitCenter, angularLength, tubeRadius);
+    {
+        return InArcCapsule(start, start + toOrbitCenter, angularLength, tubeRadius);
+    }
 
     /// <summary>
     /// 检测点是否在弧形胶囊内（使用轨道中心）
@@ -718,7 +933,7 @@ public readonly struct WPos(float x, float z)
         var sL = vx * nl.X + vz * nl.Z;
         var sR = vx * nr.X + vz * nr.Z;
 
-        return coneFactor > 0f ? (sL <= 0f && sR <= 0f) : (sL >= 0f || sR >= 0f);
+        return coneFactor > 0f ? sL <= 0f && sR <= 0f : sL >= 0f || sR >= 0f;
     }
 
     #endregion

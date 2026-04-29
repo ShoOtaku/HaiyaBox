@@ -44,7 +44,10 @@ public sealed record class ForbiddenZone
     /// <param name="position">要检查的位置</param>
     /// <returns>true 表示在禁止区域内，false 表示在区域外</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool Contains(Core.WPos position) => Shape.Contains(position);
+    public bool Contains(Core.WPos position)
+    {
+        return Shape.Contains(position);
+    }
 
     /// <summary>
     /// 计算指定位置到禁止区域边界的距离
@@ -57,7 +60,10 @@ public sealed record class ForbiddenZone
     /// - 零：在边界上
     /// </returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public float Distance(Core.WPos position) => Shape.Distance(position);
+    public float Distance(Core.WPos position)
+    {
+        return Shape.Distance(position);
+    }
 
     /// <summary>
     /// 检查禁止区域是否已激活
@@ -65,5 +71,8 @@ public sealed record class ForbiddenZone
     /// <param name="currentTime">当前时间</param>
     /// <returns>true 表示已激活，false 表示未激活</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool IsActive(DateTime currentTime) => currentTime >= Activation;
+    public bool IsActive(DateTime currentTime)
+    {
+        return currentTime >= Activation;
+    }
 }

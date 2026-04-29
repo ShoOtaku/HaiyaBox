@@ -16,6 +16,7 @@ public class 启动bmRA : ITriggerAction
     public int 持续时间;
     public string DisplayName { get; } = "启动bmr";
     public string Remark { get; set; } = string.Empty; // 为 Remark 提供默认值
+
     public bool Handle()
     {
         _ = Aion(持续时间);

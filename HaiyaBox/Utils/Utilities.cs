@@ -162,15 +162,9 @@ public static class Utilities
         var BC2 = Vector3.DistanceSquared(B, C);
         var CA2 = Vector3.DistanceSquared(C, A);
 
-        if (AB2 >= BC2 && AB2 >= CA2)
-        {
-            return C;
-        }
+        if (AB2 >= BC2 && AB2 >= CA2) return C;
 
-        if (BC2 >= AB2 && BC2 >= CA2)
-        {
-            return A;
-        }
+        if (BC2 >= AB2 && BC2 >= CA2) return A;
 
         return B;
     }
@@ -252,7 +246,10 @@ public static class Utilities
     /// 设置场地中心
     /// </summary>
     /// <param name="center">新的场地中心坐标</param>
-    public static void SetStageCenter(Vector3 center) => _stageCenter = center;
+    public static void SetStageCenter(Vector3 center)
+    {
+        _stageCenter = center;
+    }
 
     /// <summary>
     /// 通过旋转角度和距离计算坐标
@@ -265,21 +262,21 @@ public static class Utilities
     public static Vector3 GetPositionByRotation(Vector3 startPoint, float degrees, bool clockwise, float distance)
     {
         // 计算初始点到场地中心的方向向量
-        Vector3 direction = startPoint - _stageCenter;
+        var direction = startPoint - _stageCenter;
         // 计算旋转方向
-        float radians = MathF.PI * degrees / 180f * (clockwise ? 1 : -1); // 顺时针为正，逆时针为负
+        var radians = MathF.PI * degrees / 180f * (clockwise ? 1 : -1); // 顺时针为正，逆时针为负
 
         // 计算旋转后的方向向量
-        float cos = MathF.Cos(radians);
-        float sin = MathF.Sin(radians);
-        Vector3 rotatedDirection = new Vector3(
+        var cos = MathF.Cos(radians);
+        var sin = MathF.Sin(radians);
+        var rotatedDirection = new Vector3(
             direction.X * cos - direction.Z * sin,
             0,
             direction.X * sin + direction.Z * cos
         );
 
         // 计算最终位置（在旋转后的方向上移动指定距离）
-        Vector3 finalPosition = _stageCenter + Vector3.Normalize(rotatedDirection) * distance;
+        var finalPosition = _stageCenter + Vector3.Normalize(rotatedDirection) * distance;
 
         return finalPosition;
     }
@@ -312,10 +309,10 @@ public static class Utilities
     /// <param name="towerPositions">两塔坐标的数组</param>
     public static void SortTowersClockwise(Vector3[] towerPositions)
     {
-        Vector3 v0 = towerPositions[0] - _stageCenter;
-        Vector3 v1 = towerPositions[1] - _stageCenter;
+        var v0 = towerPositions[0] - _stageCenter;
+        var v1 = towerPositions[1] - _stageCenter;
 
-        float crossProduct = v0.X * v1.Z - v0.Z * v1.X;
+        var crossProduct = v0.X * v1.Z - v0.Z * v1.X;
 
         // 如果叉积大于 0，说明两座塔按顺时针排列；否则为逆时针
         if (crossProduct > 0)
@@ -332,13 +329,12 @@ public static class Utilities
     /// <returns>目标点相对于场地中心的角度</returns>
     public static float CalculateAngleFromCenter(Vector3 pos)
     {
-        Vector3 diff = pos - _stageCenter;
-        float rad = MathF.Atan2(diff.X, -diff.Z);
-        float angle = (rad * (180f / MathF.PI) + 360f) % 360f;
+        var diff = pos - _stageCenter;
+        var rad = MathF.Atan2(diff.X, -diff.Z);
+        var angle = (rad * (180f / MathF.PI) + 360f) % 360f;
         return angle;
     }
-    
-    
+
 
     /// <summary>
     /// 判断两个地火位置相对于场地中心的刷新方向
@@ -348,17 +344,17 @@ public static class Utilities
     /// <returns>如果刷新方向为顺时针则返回 true，否则返回 false</returns>
     public static bool IsExaflareClockwise(Vector3 firePos1, Vector3 firePos2)
     {
-        float angle1 = CalculateAngleFromCenter(firePos1);
-        float angle2 = CalculateAngleFromCenter(firePos2);
+        var angle1 = CalculateAngleFromCenter(firePos1);
+        var angle2 = CalculateAngleFromCenter(firePos2);
 
         // 计算从第一个地火到第二个地火的顺时针角度差
-        float diffCW = (angle2 - angle1 + 360f) % 360f;
+        var diffCW = (angle2 - angle1 + 360f) % 360f;
         // 计算逆时针角度差
-        float diffCCW = (angle1 - angle2 + 360f) % 360f;
+        var diffCCW = (angle1 - angle2 + 360f) % 360f;
 
         return diffCW < diffCCW;
     }
-    
+
     /// <summary>
     /// 以给定的点为中心，围绕它在 XZ 平面上旋转一个特定角度，然后沿旋转后的方向移动指定距离，计算得到旋转和平移后的新坐标。
     /// </summary>
@@ -367,38 +363,39 @@ public static class Utilities
     /// <param name="clockwise">是否为顺时针</param>
     /// <param name="distance">平移距离</param>
     /// <returns>旋转和平移后的新坐标</returns>
-    public static Vector3 CalculateNewCoordinates(Vector3 originalPosition, float degrees, bool clockwise, float distance)
+    public static Vector3 CalculateNewCoordinates(Vector3 originalPosition, float degrees, bool clockwise,
+        float distance)
     {
         // 1. 创建旋转前的点，假设在 Z 轴方向上有一定的偏移
-        Vector3 point = new Vector3(originalPosition.X, 0, originalPosition.Z - 1);
-        Vector3 center = originalPosition;
+        var point = new Vector3(originalPosition.X, 0, originalPosition.Z - 1);
+        var center = originalPosition;
 
         // 2. 计算点相对原点的偏移
-        Vector3 translatedPoint = point - center;
+        var translatedPoint = point - center;
 
         // 3. 计算旋转角度的弧度值
-        float radians = MathF.PI * degrees / 180f * (clockwise ? 1 : -1);
+        var radians = MathF.PI * degrees / 180f * (clockwise ? 1 : -1);
 
         // 4. 使用二维旋转公式计算旋转后的 X 和 Z 坐标
-        double rotatedX = translatedPoint.X * Math.Cos(radians) - translatedPoint.Z * Math.Sin(radians);
-        double rotatedZ = translatedPoint.X * Math.Sin(radians) + translatedPoint.Z * Math.Cos(radians);
+        var rotatedX = translatedPoint.X * Math.Cos(radians) - translatedPoint.Z * Math.Sin(radians);
+        var rotatedZ = translatedPoint.X * Math.Sin(radians) + translatedPoint.Z * Math.Cos(radians);
 
         // 5. 得到旋转后的点（忽略 Y 坐标变化）
-        Vector3 rotatedTranslatedPoint = new Vector3((float)rotatedX, 0, (float)rotatedZ);
+        var rotatedTranslatedPoint = new Vector3((float)rotatedX, 0, (float)rotatedZ);
 
         // 6. 计算旋转后的位置，相对原始位置
-        Vector3 rotatedPoint = rotatedTranslatedPoint + center;
+        var rotatedPoint = rotatedTranslatedPoint + center;
 
         // 7. 计算旋转后的方向向量，并将该方向向量按 distance 缩放
-        Vector3 direction = rotatedPoint - center; // 方向向量
+        var direction = rotatedPoint - center; // 方向向量
         direction = Vector3.Normalize(direction); // 归一化方向向量
         direction *= distance; // 按照给定的距离缩放方向向量
 
         // 8. 根据方向向量和中心坐标计算新的最终位置
-        Vector3 finalPosition = center + direction;
+        var finalPosition = center + direction;
 
         // 9. 四舍五入最终的坐标（保留 2 位小数）
-        Vector3 curVector = new Vector3(
+        var curVector = new Vector3(
             (float)Math.Round(finalPosition.X, 2),
             (float)Math.Round(finalPosition.Y, 2),
             (float)Math.Round(finalPosition.Z, 2)
@@ -423,7 +420,10 @@ public static class Utilities
     /// </summary>
     /// <param name="radians">输入的弧度值</param>
     /// <returns>转换后的角度，范围为0到360度</returns>
-    public static float RadToNormalizedDeg(this float radians) => RadiansToNormalizedDegrees(radians);
+    public static float RadToNormalizedDeg(this float radians)
+    {
+        return RadiansToNormalizedDegrees(radians);
+    }
 
     /// <summary>
     /// 根据角色名称传送到指定位置，并记录调试信息
@@ -436,27 +436,26 @@ public static class Utilities
         try
         {
             var roleSet = new HashSet<string> { "D1", "D2", "D3", "D4", "H1", "H2", "MT", "ST" };
-            var names = name.Contains('|') 
-                ? name.Split('|') 
+            var names = name.Contains('|')
+                ? name.Split('|')
                 : [name];
-            
+
             foreach (var n in names)
             {
-                string roleName = !roleSet.Contains(n) ? RemoteControlHelper.GetRoleByPlayerName(n) : n;
+                var roleName = !roleSet.Contains(n) ? RemoteControlHelper.GetRoleByPlayerName(n) : n;
                 RemoteControlHelper.SetPos(roleName, pos);
                 if (!FullAutoSettings.Instance.FaGeneralSetting.PrintDebugInfo)
                     return;
                 LogHelper.Print($"{dev}: {n} 移动至 {pos}");
                 DebugPoint.Add(pos);
             }
-
         }
         catch (Exception ex)
         {
             LogHelper.PrintError($"移动到位置失败 ({dev}): {ex.Message}");
         }
     }
-    
+
     /// <summary>
     /// 指定角色绿玩移动到给定位置，并记录调试信息
     /// </summary>
@@ -468,13 +467,13 @@ public static class Utilities
         try
         {
             var roleSet = new HashSet<string> { "D1", "D2", "D3", "D4", "H1", "H2", "MT", "ST" };
-            var names = name.Contains('|') 
-                ? name.Split('|') 
+            var names = name.Contains('|')
+                ? name.Split('|')
                 : [name];
 
             foreach (var n in names)
             {
-                string roleName = !roleSet.Contains(n) ? RemoteControlHelper.GetRoleByPlayerName(n) : n;
+                var roleName = !roleSet.Contains(n) ? RemoteControlHelper.GetRoleByPlayerName(n) : n;
                 RemoteControlHelper.MoveTo(roleName, pos);
                 if (!FullAutoSettings.Instance.FaGeneralSetting.PrintDebugInfo)
                     return;
@@ -500,20 +499,19 @@ public static class Utilities
         try
         {
             var roleSet = new HashSet<string> { "D1", "D2", "D3", "D4", "H1", "H2", "MT", "ST" };
-            var names = name.Contains('|') 
-                ? name.Split('|') 
+            var names = name.Contains('|')
+                ? name.Split('|')
                 : [name];
-            
+
             foreach (var n in names)
             {
-                string roleName = !roleSet.Contains(n) ? RemoteControlHelper.GetRoleByPlayerName(n) : n;
+                var roleName = !roleSet.Contains(n) ? RemoteControlHelper.GetRoleByPlayerName(n) : n;
                 RemoteControlHelper.LockPos(roleName, pos, duration);
                 if (!FullAutoSettings.Instance.FaGeneralSetting.PrintDebugInfo)
                     return;
                 LogHelper.Print($"{dev}: {n} 锁定在 {pos} {duration}ms");
                 DebugPoint.Add(pos);
             }
-
         }
         catch (Exception ex)
         {
@@ -532,13 +530,13 @@ public static class Utilities
         try
         {
             var roleSet = new HashSet<string> { "D1", "D2", "D3", "D4", "H1", "H2", "MT", "ST" };
-            var names = name.Contains('|') 
-                ? name.Split('|') 
+            var names = name.Contains('|')
+                ? name.Split('|')
                 : [name];
 
             foreach (var n in names)
             {
-                string roleName = roleSet.Contains(n) ? n : RemoteControlHelper.GetRoleByPlayerName(n);
+                var roleName = roleSet.Contains(n) ? n : RemoteControlHelper.GetRoleByPlayerName(n);
                 RemoteControlHelper.Stop(roleName, true);
                 await Coroutine.Instance.WaitAsync(500);
                 RemoteControlHelper.Cmd(roleName, "/共通技能 跳跃");
@@ -589,21 +587,21 @@ public static class Utilities
         double x2 = b.X, y2 = b.Y;
 
         // 将角度从度转换为弧度后，计算直线的斜率 m = tan(θ)
-        double m1 = Math.Tan(angle1 * Math.PI / 180.0);
-        double m2 = Math.Tan(angle2 * Math.PI / 180.0);
+        var m1 = Math.Tan(angle1 * Math.PI / 180.0);
+        var m2 = Math.Tan(angle2 * Math.PI / 180.0);
 
         // 根据直线方程 y = m*x + c，计算截距 b1 和 b2，其中 c = y - m*x
-        double b1 = y1 - m1 * x1;
-        double b2 = y2 - m2 * x2;
+        var b1 = y1 - m1 * x1;
+        var b2 = y2 - m2 * x2;
 
         // 如果两条直线的斜率相同（或几乎相同），说明直线平行，没有交点
         if (m1 - m2 == 0)
             return null;
 
         // 计算交点的 X 坐标：通过解方程 m1*x + b1 = m2*x + b2 得到
-        double xIntersect = (b2 - b1) / (m1 - m2);
+        var xIntersect = (b2 - b1) / (m1 - m2);
         // 代入任一条直线方程得到交点的 Y 坐标
-        double yIntersect = m1 * xIntersect + b1;
+        var yIntersect = m1 * xIntersect + b1;
         return new Vector2((float)xIntersect, (float)yIntersect);
     }
 
@@ -676,9 +674,10 @@ public static class Utilities
     public static void Protean(Vector3 posCenter, float length, List<IBattleChara> dude, float offset = 0f)
     {
         for (var i = 0; i < dude.Count; i++)
-        {
-            SetPosAndDebugPoint(RemoteControlHelper.GetRoleByPlayerName(dude[i].Name.ToString()), RotateAndExpend(posCenter, RotateAndExpend(posCenter, posCenter with { Z = posCenter.Z - length }, offset), 360f / dude.Count * i));
-        }
+            SetPosAndDebugPoint(RemoteControlHelper.GetRoleByPlayerName(dude[i].Name.ToString()),
+                RotateAndExpend(posCenter,
+                    RotateAndExpend(posCenter, posCenter with { Z = posCenter.Z - length }, offset),
+                    360f / dude.Count * i));
     }
 
     /// <summary>
@@ -693,12 +692,10 @@ public static class Utilities
         var nameBuilder = new SeStringBuilder().AddText(name);
 
         var homeWorldName = GetPlayerWorldInfo()?.HomeWorldName;
-        
+
         if (!string.IsNullOrEmpty(server) && server != homeWorldName)
-        {
             nameBuilder.AddIcon(BitmapFontIcon.CrossWorld).AddText(server);
-        }
-        
+
         Svc.Chat.Print(new XivChatEntry
         {
             Type = type,
@@ -707,7 +704,8 @@ public static class Utilities
         });
     }
 
-    private static (string HomeWorldName, string CurrentWorldName, uint HomeWorldId, uint CurrentWorldId)? GetPlayerWorldInfo()
+    private static (string HomeWorldName, string CurrentWorldName, uint HomeWorldId, uint CurrentWorldId)?
+        GetPlayerWorldInfo()
     {
         var localPlayer = Svc.Objects.LocalPlayer;
         if (localPlayer == null) return null;
